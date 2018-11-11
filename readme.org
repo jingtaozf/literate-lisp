@@ -65,7 +65,7 @@ function ~recursive-assoc~ is used to call ~assoc~ recursively on the children o
 
 #+END_SRC
 
-for example, you can use it like this,which get ~:b~ part of sub alist 
+for example, you can use it like this,which get ~:b~ part of the sub alist 
 which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp
 #+test(equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
