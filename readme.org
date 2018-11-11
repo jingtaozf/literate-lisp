@@ -4,7 +4,7 @@ This is a demo project to show one way of how to use literal programming in comm
 
 There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
 
-By using common lisp package [[https://github.com/jingtaozf/org-reader][org-reader]] , [[https://orgmode.org/][emacs org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+By using common lisp package [[https://github.com/jingtaozf/org-reader][org-reader]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 we can do it perfectly in one org file with both documentation and source codes,and this org file
 will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 * package definition
