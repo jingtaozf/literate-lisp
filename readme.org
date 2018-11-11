@@ -12,13 +12,13 @@ will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 There are two new reader are defined, one for "# "(# followed with a space) and one for "#+".
 ** "# (# followed with a space)"
 after a "# " is found, all lines after it will be ignored unless it find a line "#+BEGIN_SRC lisp"
-which means a lisp codes is found in org file, then it will switch to use a normal lisp reader to read
+which means some lisp codes is found in org file, then it will switch to use a normal lisp reader to read
 the lisp codes untils it read a "#+".
 ** "#+"
 When it read a "#+", it will test if it is "#+END_SRC" which means the end of lisp codes in an org file,
 if it is, it will do things like it meet "# ",otherwise it will do it like the original lisp syntax.
 
-So an org file should start with "# " to cause the lisp reader into the org syntax.I usually put this in my
+So an org file should start with "# " to make the lisp reader into the org syntax.I usually put this in my
 first org file
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
