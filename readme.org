@@ -1,0 +1,46 @@
+# -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
+* Introduce
+This is a demo project to show one way of how to use literal programming in common lisp.
+
+There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
+
+By using common lisp package [[https://github.com/jingtaozf/org-reader][org-reader]] , [[https://orgmode.org/][emacs org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+we can do it perfectly in one org file with both documentation and source codes,and this org file
+will works well with [[https://common-lisp.net/project/slime/][SLIME]].
+* package definition
+Firstly we define a new package for this project and switch to it.
+#+BEGIN_SRC lisp
+(in-package :common-lisp-user)
+(defpackage :org-demo (:use :cl))
+(in-package :org-demo)
+#+END_SRC
+* Utilities
+As a demo project, we just show a demo function ~recursive-assoc~ here.
+** an recursively assoc implementation
+function ~recursive-assoc~ is used to call ~assoc~ recursively on the children of an alist. 
+#+BEGIN_SRC lisp
+(defun funcall-recursive-assoc (alist &rest recursive-properties)
+  (loop with current-alist = alist
+        for property in recursive-properties
+        until (null current-alist)
+        do (setf current-alist (cdr (assoc property current-alist)))
+        finally (return current-alist)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun expand-recursive-assoc (alist recursive-properties)
+    (if (cdr recursive-properties)
+      (expand-recursive-assoc `(cdr (assoc ,(car recursive-properties) ,alist))
+                              (cdr recursive-properties))
+      `(cdr (assoc ,(car recursive-properties) ,alist)))))
+
+(defmacro recursive-assoc (alist &rest recursive-properties)
+  (when recursive-properties
+    (expand-recursive-assoc alist recursive-properties)))
+
+#+END_SRC
+
+for example, you can use it like this,which get ~:b~ part of sub alist 
+which is ~:a~ part of the original list.
+#+BEGIN_SRC lisp
+#+test(equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
+#+END_SRC
