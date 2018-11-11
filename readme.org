@@ -23,16 +23,17 @@ first org file
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 #+END_SRC
-* package definition
-Firstly we define a new package for this project and switch to it.
+* A demo lisp package
+** package definition
+Firstly we define a new package for this demo project and switch to it.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
 (defpackage :org-demo (:use :cl))
 (in-package :org-demo)
 #+END_SRC
-* Utilities
+** Utilities
 As a demo project, we just show a demo function ~recursive-assoc~ here.
-** an recursively assoc implementation
+*** an recursively assoc implementation
 function ~recursive-assoc~ is used to call ~assoc~ recursively on the children of an alist. 
 #+BEGIN_SRC lisp
 (defun funcall-recursive-assoc (alist &rest recursive-properties)
