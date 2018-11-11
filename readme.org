@@ -9,8 +9,8 @@ we can do it perfectly in one org file with both documentation and source codes,
 will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 * the syntax for common lisp side 
 
-There are two new reader are defined, one for "# " and one for "#+".
-** "# "
+There are two new reader are defined, one for "# "(# followed with a space) and one for "#+".
+** "# (# followed with a space)"
 after a "# " is found, all lines after it will be ignored unless it find a line "#+BEGIN_SRC lisp"
 which means a lisp codes is found in org file, then it will switch to use a normal lisp reader to read
 the lisp codes untils it read a "#+".
