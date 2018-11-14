@@ -30,7 +30,7 @@ When it read a "#+", it will test if it is "#+END_SRC" which means the end of li
 if it is, it will do things like it meet "# ",otherwise it will do it like the original lisp syntax.
 
 So an org file should start with "# " to make the lisp reader into the org syntax.I usually put this in my
-first org file
+first line of a org file.
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 #+END_SRC
