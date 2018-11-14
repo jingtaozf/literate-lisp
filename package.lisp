@@ -4,18 +4,18 @@
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.11.11 11:02:26(+0800)
-;; Last-Updated: 2018.11.14 15:03:54(+0800)
-;;     Update #: 7
+;; Last-Updated: 2018.11.14 15:16:20(+0800)
+;;     Update #: 8
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
 ;; 
 ;; 
 (in-package :common-lisp-user)
-(defpackage :org-reader 
+(defpackage :literate-lisp 
   (:use :cl :named-readtables)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
-(pushnew :org-reader *features*)
+(pushnew :literate-lisp *features*)
 
 (in-package :asdf)
 (defclass org (cl-source-file)

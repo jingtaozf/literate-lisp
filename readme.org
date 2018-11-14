@@ -15,7 +15,7 @@ This is a demo project to show one way of how to use [[http://www.literateprogra
 
 There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
 
-By using common lisp package [[https://github.com/jingtaozf/org-reader][org-reader]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 we can do it perfectly in one org file with both documentation and source codes,and this org file
 will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 * the syntax for common lisp side 
@@ -39,8 +39,8 @@ first org file
 Firstly we define a new package for this demo project and switch to it.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
-(defpackage :org-demo (:use :cl))
-(in-package :org-demo)
+(defpackage :literate-demo (:use :cl))
+(in-package :literate-demo)
 #+END_SRC
 ** Utilities
 As a demo project, we just show a demo function ~recursive-assoc~ here.

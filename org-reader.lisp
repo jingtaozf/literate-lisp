@@ -4,18 +4,18 @@
 ;; Description: load source codes in a org file(literate programming).
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.11.08 20:23:27(+0800)
-;; Last-Updated: 2018.11.14 15:08:28(+0800)
-;;     Update #: 56
+;; Last-Updated: 2018.11.14 15:16:42(+0800)
+;;     Update #: 58
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
 ;; The implementation is referenced from https://github.com/xtaniguchimasaya/papyrus
 ;; 
-(in-package :org-reader)
+(in-package :literate-lisp)
 
 (defvar old-plus-sign-reader (get-dispatch-macro-character #\# #\+))
-(defvar debug-org-reader-p nil)
-(declaim (type boolean debug-org-reader-p))
+(defvar debug-literate-lisp-p nil)
+(declaim (type boolean debug-literate-lisp-p))
 (defun org-reader-number-sign+space (stream a b)
   "ignore all lines after `# ' and before `#+BEGIN_SRC lisp'"
   (declare (ignore a b))
@@ -25,7 +25,7 @@
                            for i of-type fixnum from 0
                            until (not (find c '(#\Tab #\Space)))
                            finally (return i))
-        do (when debug-org-reader-p
+        do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
         until (equalp start1 (search "#+BEGIN_SRC lisp" line)))
   (values))
@@ -73,7 +73,7 @@
                          (*read-suppress* nil))
                      (read stream t nil t))))
       (cond ((eq :END_SRC feature)
-             (when debug-org-reader-p
+             (when debug-literate-lisp-p
                (format t "found #+END_SRC,start read org part...~%"))
              (funcall #'org-reader-number-sign+space stream sub-char numarg))
             ((featurep feature)
@@ -91,8 +91,8 @@
 
 (defmethod asdf:perform :around (o (c asdf:org))
   "after you load this package, then all org file will be supported to be loaded by asd automatically."
-    (when debug-org-reader-p
-      (format t "install org syntax for org file ~s.~%" c))
+  (when debug-literate-lisp-p
+    (format t "install org syntax for org file ~s.~%" c))
   (let ((*readtable* (ensure-readtable ':org)))
     (when (find-package :swank)
       (editor-hints.named-readtables::%frob-swank-readtable-alist *package* *readtable*))

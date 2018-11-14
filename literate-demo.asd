@@ -1,29 +1,29 @@
 ;;; -*- encoding:utf-8 Mode: LISP; Syntax: COMMON-LISP; Base: 10  -*- ---
 ;; 
-;; Filename: org-reader-demo.asd
+;; Filename: literate-demo.asd
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.14 14:54:37(+0800)
-;;     Update #: 49
+;; Last-Updated: 2018.11.14 15:17:38(+0800)
+;;     Update #: 51
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
 ;; 
 ;; 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :org-reader-demo.system)
-    (defpackage :org-reader-demo.system
+  (unless (find-package :literate-demo.system)
+    (defpackage :literate-demo.system
       (:use :cl :asdf))))
 
-(in-package :org-reader-demo.system)
+(in-package :literate-demo.system)
 
-(asdf:defsystem org-reader-demo
+(asdf:defsystem literate-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
   :version "0.1"
   :serial t
-  :description "an demo project of org-reader"
+  :description "an demo project of literate-lisp"
   :components ((:module org :pathname "./"
                         :components ((:org "readme"))))
   :properties ((version "0.1"))
-  :depends-on (:org-reader))
+  :depends-on (:literate-lisp))
