@@ -45,7 +45,18 @@ Firstly we define a new package for this demo project and switch to it.
 ** Utilities
 As a demo project, we just show a demo function ~recursive-assoc~ here.
 *** an recursively assoc implementation
-function ~recursive-assoc~ is used to call ~assoc~ recursively on the children of an alist. 
+the function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]], when I want to
+find item from an association list contains many other association list in depth level, I
+have to write codes like this which will lead the codes too long.
+#+BEGIN_SRC lisp
+#+test(assoc :b (assoc :a '((:a . ((:b . c))))))
+#+END_SRC
+To simplify the expression, I write a macro ~recursive-assoc~ to simply it to the following form
+#+BEGIN_SRC lisp
+#+test(recursive-assoc '((:a . ((:b . c)))) :a :b)
+#+END_SRC
+
+It also provides a function implementation ~funcall-recursive-assoc~ as an alternative of ~recursive-assoc~.
 #+BEGIN_SRC lisp
 (defun funcall-recursive-assoc (alist &rest recursive-properties)
   (loop with current-alist = alist
