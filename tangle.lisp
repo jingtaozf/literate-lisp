@@ -1,11 +1,11 @@
 ;;; -*- encoding:utf-8 Mode: LISP; Syntax: COMMON-LISP; Base: 10  -*- ---
 ;; 
-;; Filename: org-reader.lisp
+;; Filename: tangle.lisp
 ;; Description: load source codes in a org file(literate programming).
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.11.08 20:23:27(+0800)
-;; Last-Updated: 2018.11.14 15:16:42(+0800)
-;;     Update #: 58
+;; Last-Updated: 2018.11.14 21:39:07(+0800)
+;;     Update #: 59
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -16,7 +16,7 @@
 (defvar old-plus-sign-reader (get-dispatch-macro-character #\# #\+))
 (defvar debug-literate-lisp-p nil)
 (declaim (type boolean debug-literate-lisp-p))
-(defun org-reader-number-sign+space (stream a b)
+(defun tangle-number-sign+space (stream a b)
   "ignore all lines after `# ' and before `#+BEGIN_SRC lisp'"
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil) then (read-line stream nil nil)
@@ -75,7 +75,7 @@
       (cond ((eq :END_SRC feature)
              (when debug-literate-lisp-p
                (format t "found #+END_SRC,start read org part...~%"))
-             (funcall #'org-reader-number-sign+space stream sub-char numarg))
+             (funcall #'tangle-number-sign+space stream sub-char numarg))
             ((featurep feature)
              (read stream t nil t))
             (t
@@ -86,7 +86,7 @@
 
 (defreadtable :org
   (:merge :standard)
-  (:dispatch-macro-char #\# #\Space #'org-reader-number-sign+space)
+  (:dispatch-macro-char #\# #\Space #'tangle-number-sign+space)
   (:dispatch-macro-char #\# #\+ #'org-sharp-plus-minus))
 
 (defmethod asdf:perform :around (o (c asdf:org))

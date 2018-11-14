@@ -4,8 +4,8 @@
 ;; Description: package definition of literate-lisp.
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.14 15:17:09(+0800)
-;;     Update #: 50
+;; Last-Updated: 2018.11.14 21:39:27(+0800)
+;;     Update #: 51
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -25,7 +25,7 @@
   :description "a literate programming tool to write common lisp codes in org file."
   :components ((:module basics :pathname "./"
                         :components ((:file "package")
-                                     (:file "org-reader"))
+                                     (:file "tangle"))
                         :serial t)
                )
   :properties ((version "0.1"))
