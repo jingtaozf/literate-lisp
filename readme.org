@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 * Table of Contents                                                   :TOC:
-- [[#introduce][Introduce]]
+- [[#introducation][Introducation]]
 - [[#the-syntax-for-common-lisp-side][the syntax for common lisp side]]
   - [[#--followed-with-a-space]["# (# followed with a space)"]]
   - [[#]["#+"]]
@@ -8,7 +8,7 @@
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
 
-* Introduce
+* Introducation
 This is a demo project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] shows the reason to use org mode.

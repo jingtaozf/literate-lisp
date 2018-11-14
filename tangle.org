@@ -1,0 +1,19 @@
+# -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
+* Introducation
+This is a common lisp project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
+
+[[https://github.com/limist/literate-programming-examples][literate programming examples]] shows the reason why use org mode.
+There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
+
+By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+we can do it perfectly in one org file with both documentation and source codes,and this org file
+will works well with [[https://common-lisp.net/project/slime/][SLIME]].
+
+In org mode, the comment line start with character *#*, and the lisp codes are written like this:
+#+BEGIN_EXAMPLE
+#+BEGIN_SRC lisp
+(format t "This is a demo print in lisp~%")
+#+END_SRC
+#+END_EXAMPLE
+
+And in common lisp, character *#* is 

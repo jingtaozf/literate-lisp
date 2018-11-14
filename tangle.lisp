@@ -4,13 +4,25 @@
 ;; Description: load source codes in a org file(literate programming).
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.11.08 20:23:27(+0800)
-;; Last-Updated: 2018.11.14 21:39:07(+0800)
-;;     Update #: 59
+;; Last-Updated: 2018.11.14 22:13:20(+0800)
+;;     Update #: 61
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
 ;; The implementation is referenced from https://github.com/xtaniguchimasaya/papyrus
 ;; 
+(in-package :common-lisp-user)
+(defpackage :literate-lisp 
+  (:use :cl :named-readtables)
+  (:documentation "a literate programming tool to write common lisp codes in org file."))
+(pushnew :literate-lisp *features*)
+
+(in-package :asdf)
+(defclass org (cl-source-file)
+  ((type :initform "org")))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(org) :asdf))
+
 (in-package :literate-lisp)
 
 (defvar old-plus-sign-reader (get-dispatch-macro-character #\# #\+))
