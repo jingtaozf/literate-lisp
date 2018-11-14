@@ -6,7 +6,7 @@
   - [[#]["#+"]]
 - [[#a-demo-lisp-package][A demo lisp package]]
   - [[#package-definition][package definition]]
-  - [[#utilities][Utilities]]
+  - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
 
 * Introduce
 This is a demo project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
@@ -42,9 +42,8 @@ Firstly we define a new package for this demo project and switch to it.
 (defpackage :literate-demo (:use :cl))
 (in-package :literate-demo)
 #+END_SRC
-** Utilities
+** a demo function to a recursive assoc implementation
 As a demo project, we just show a demo function ~recursive-assoc~ here.
-*** an recursively assoc implementation
 the function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]], when I want to
 find item from an association list contains many other association list in depth level, I
 have to write codes like this which will lead the codes too long.
