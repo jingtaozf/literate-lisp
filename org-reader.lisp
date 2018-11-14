@@ -4,8 +4,8 @@
 ;; Description: load source codes in a org file(literate programming).
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.11.08 20:23:27(+0800)
-;; Last-Updated: 2018.11.11 11:07:16(+0800)
-;;     Update #: 45
+;; Last-Updated: 2018.11.14 15:08:28(+0800)
+;;     Update #: 56
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -89,8 +89,10 @@
   (:dispatch-macro-char #\# #\Space #'org-reader-number-sign+space)
   (:dispatch-macro-char #\# #\+ #'org-sharp-plus-minus))
 
-(defmethod asdf:perform :around (o c)
+(defmethod asdf:perform :around (o (c asdf:org))
   "after you load this package, then all org file will be supported to be loaded by asd automatically."
+    (when debug-org-reader-p
+      (format t "install org syntax for org file ~s.~%" c))
   (let ((*readtable* (ensure-readtable ':org)))
     (when (find-package :swank)
       (editor-hints.named-readtables::%frob-swank-readtable-alist *package* *readtable*))

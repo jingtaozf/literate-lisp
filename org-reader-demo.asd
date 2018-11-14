@@ -4,8 +4,8 @@
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.11 11:47:39(+0800)
-;;     Update #: 48
+;; Last-Updated: 2018.11.14 14:54:37(+0800)
+;;     Update #: 49
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -17,9 +17,6 @@
       (:use :cl :asdf))))
 
 (in-package :org-reader-demo.system)
-
-(defclass org (asdf:cl-source-file)
-  ((type :initform "org")))
 
 (asdf:defsystem org-reader-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
