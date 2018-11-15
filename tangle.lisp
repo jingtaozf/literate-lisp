@@ -5,7 +5,7 @@
   (:DOCUMENTATION "a literate programming tool to write common lisp codes in org file."))
 (PUSHNEW :LITERATE-LISP *FEATURES*)
 (IN-PACKAGE :LITERATE-LISP)
-(DEFVAR DEBUG-LITERATE-LISP-P NIL)
+(DEFVAR DEBUG-LITERATE-LISP-P ())
 (DECLAIM (TYPE BOOLEAN DEBUG-LITERATE-LISP-P))
 (DEFUN TANGLE-P (FEATURE)
   (CASE FEATURE
@@ -13,94 +13,105 @@
     (:NO NIL)
     (:TEST (FIND :TEST *FEATURES* :TEST #'EQ))))
 (DEFUN READ-ORG-CODE-BLOCK-OPTIONS (STRING BEGIN-POSITION-OF-OPTIONS)
-  (WITH-INPUT-FROM-STRING (STREAM STRING :START BEGIN-POSITION-OF-OPTIONS)
+  (WITH-INPUT-FROM-STRING (STREAM
+                           STRING
+                           :START
+                           BEGIN-POSITION-OF-OPTIONS)
     (LET ((*READTABLE* (COPY-READTABLE NIL))
           (*PACKAGE* (FIND-PACKAGE :KEYWORD))
           (*READ-SUPPRESS* NIL))
-      (LOOP FOR ELEM = (READ STREAM NIL)
-            WHILE ELEM
-            COLLECT ELEM))))
+      (LOOP FOR ELEM = (READ STREAM NIL) WHILE ELEM COLLECT ELEM))))
 (DEFUN TANGLE-NUMBER-SIGN+SPACE (STREAM A B)
   "ignore all lines after `# ' and before `#+BEGIN_SRC lisp'"
   (DECLARE (IGNORE A B))
-  (LOOP FOR LINE = (READ-LINE STREAM NIL NIL) THEN (READ-LINE STREAM NIL NIL)
+  (LOOP FOR LINE = (READ-LINE STREAM NIL NIL) THEN
+            (READ-LINE STREAM NIL NIL)
         UNTIL (NULL LINE)
-        FOR START1 = (LOOP FOR C OF-TYPE CHARACTER ACROSS LINE
-                           FOR I OF-TYPE FIXNUM FROM 0
-                           UNTIL (NOT (FIND C '(#\Tab #\ )))
-                           FINALLY (RETURN I))
-        DO (WHEN DEBUG-LITERATE-LISP-P (FORMAT T "ignore line ~a~%" LINE))
-        UNTIL (WHEN (EQUALP START1 (SEARCH "#+BEGIN_SRC lisp" LINE))
+        FOR START1 =
+            (LOOP FOR C OF-TYPE CHARACTER ACROSS LINE
+                  FOR I OF-TYPE FIXNUM FROM 0
+                  UNTIL (NOT (FIND C '(#\Tab #\Space)))
+                  FINALLY (RETURN I))
+        DO (WHEN DEBUG-LITERATE-LISP-P
+             (FORMAT T "ignore line ~a~%" LINE))
+        UNTIL (WHEN (EQUALP START1 (SEARCH #1="#+BEGIN_SRC lisp" LINE))
                 (LET* ((OPTIONS
                         (READ-ORG-CODE-BLOCK-OPTIONS LINE
                                                      (+ START1
-                                                        (LENGTH
-                                                         "#+BEGIN_SRC lisp")))))
+                                                        (LENGTH #1#)))))
                   (TANGLE-P (GETF OPTIONS :TANGLE :YES)))))
   (VALUES))
 (DEFUN FEATUREP (X)
   (TYPECASE X
-    (CONS
-     (CASE (CAR X)
-       ((:NOT NOT)
-        (COND
-         ((CDDR X)
-          (ERROR "too many subexpressions in feature expression: ~S" X))
-         ((NULL (CDR X))
-          (ERROR "too few subexpressions in feature expression: ~S" X))
-         (T (NOT (FEATUREP (CADR X))))))
-       ((:AND AND) (EVERY #'FEATUREP (CDR X)))
-       ((:OR OR) (SOME #'FEATUREP (CDR X)))
-       (T (ERROR "unknown operator in feature expression: ~S." X))))
+    (CONS (CASE (CAR X)
+            ((:NOT NOT)
+             (COND ((CDDR X)
+                    (ERROR "too many subexpressions in feature expression: ~S"
+                           X))
+                   ((NULL (CDR X))
+                    (ERROR "too few subexpressions in feature expression: ~S"
+                           X))
+                   (T (NOT (FEATUREP (CADR X))))))
+            ((:AND AND) (EVERY #'FEATUREP (CDR X)))
+            ((:OR OR) (SOME #'FEATUREP (CDR X)))
+            (T
+             (ERROR "unknown operator in feature expression: ~S." X))))
     (SYMBOL (NOT (NULL (MEMBER X *FEATURES* :TEST #'EQ))))
     (T (ERROR "invalid feature expression: ~S" X))))
 (DEFUN TANGLE-SHARP-PLUS-MINUS (STREAM SUB-CHAR NUMARG)
   (LET ((FEATURE
-         (LET ((*PACKAGE* (FIND-PACKAGE :KEYWORD)) (*READ-SUPPRESS* NIL))
+         (LET ((*PACKAGE* (FIND-PACKAGE :KEYWORD))
+               (*READ-SUPPRESS* NIL))
            (READ STREAM T NIL T))))
     (WHEN DEBUG-LITERATE-LISP-P
       (FORMAT T "found feature ~s,start read org part...~%" FEATURE))
-    (COND
-     ((EQ :END_SRC FEATURE)
-      (WHEN DEBUG-LITERATE-LISP-P
-        (FORMAT T "found #+END_SRC,start read org part...~%"))
-      (FUNCALL #'TANGLE-NUMBER-SIGN+SPACE STREAM SUB-CHAR NUMARG))
-     ((FEATUREP FEATURE) (READ STREAM T NIL T))
-     (T
-      (LET ((*READ-SUPPRESS* T))
-        (READ STREAM T NIL T)
-        (VALUES))))))
+    (COND ((EQ :END_SRC FEATURE)
+           (WHEN DEBUG-LITERATE-LISP-P
+             (FORMAT T "found #+END_SRC,start read org part...~%"))
+           (FUNCALL #'TANGLE-NUMBER-SIGN+SPACE STREAM SUB-CHAR NUMARG))
+          ((FEATUREP FEATURE) (READ STREAM T NIL T))
+          (T
+           (LET ((*READ-SUPPRESS* T))
+             (READ STREAM T NIL T)
+             (VALUES))))))
 (DEFREADTABLE :ORG
   (:MERGE :STANDARD)
-  (:DISPATCH-MACRO-CHAR #\# #\  #'TANGLE-NUMBER-SIGN+SPACE)
+  (:DISPATCH-MACRO-CHAR #\# #\Space #'TANGLE-NUMBER-SIGN+SPACE)
   (:DISPATCH-MACRO-CHAR #\# #\+ #'TANGLE-SHARP-PLUS-MINUS))
 (DEFUN TANGLE-ORG-FILE
-       (ORG-FILE
-        &OPTIONAL
+       (ORG-FILE &OPTIONAL
         (OUTPUT-FILE (MAKE-PATHNAME :DEFAULTS ORG-FILE :TYPE "lisp")))
   (LET ((*READTABLE* (ENSURE-READTABLE ':ORG))
         (*READ-EVAL* NIL)
         (*PRINT-PRETTY* T))
     (WITH-OPEN-FILE (INPUT ORG-FILE)
-      (WITH-OPEN-FILE
-          (OUTPUT OUTPUT-FILE :DIRECTION :OUTPUT :IF-DOES-NOT-EXIST :CREATE
-           :IF-EXISTS :SUPERSEDE)
+      (WITH-OPEN-FILE (OUTPUT
+                       OUTPUT-FILE
+                       :DIRECTION
+                       :OUTPUT
+                       :IF-DOES-NOT-EXIST
+                       :CREATE
+                       :IF-EXISTS
+                       :SUPERSEDE)
         (FORMAT OUTPUT
                 ";;; This file is automatically generated from file `~a.~a'.~%"
-                (PATHNAME-NAME ORG-FILE) (PATHNAME-TYPE ORG-FILE))
-        (LOOP FOR OBJECT = (READ INPUT NIL NIL NIL) THEN (READ INPUT NIL NIL
-                                                               NIL)
+                (PATHNAME-NAME ORG-FILE)
+                (PATHNAME-TYPE ORG-FILE))
+        (LOOP FOR OBJECT = (READ INPUT NIL NIL NIL) THEN
+                  (READ INPUT NIL NIL NIL)
               UNTIL (NULL OBJECT)
               DO (WHEN DEBUG-LITERATE-LISP-P
-                   (FORMAT T "read object ~s~%" OBJECT)) (WRITE OBJECT :STREAM
-                                                                OUTPUT) (WRITE-CHAR
-                                                                         #\Newline
-                                                                         OUTPUT))))))
+                   (FORMAT T "read object ~s~%" OBJECT))
+                 (WRITE OBJECT :STREAM OUTPUT)
+                 (WRITE-CHAR #\Newline OUTPUT))))))
 (IN-PACKAGE :ASDF)
 (DEFCLASS ORG (CL-SOURCE-FILE) ((TYPE :INITFORM "org")))
-(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE) (EXPORT '(ORG) :ASDF))
+(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
+  (EXPORT '(ORG) :ASDF))
 (IN-PACKAGE :LITERATE-LISP)
-(DEFMETHOD ASDF/ACTION:PERFORM :AROUND (O (C ASDF/INTERFACE:ORG))
+(DEFMETHOD ASDF/ACTION:PERFORM
+  :AROUND
+  (O (C ASDF/INTERFACE:ORG))
   (LET ((*READTABLE* (ENSURE-READTABLE ':ORG)))
     (WHEN (FIND-PACKAGE :SWANK)
       (EDITOR-HINTS.NAMED-READTABLES::%FROB-SWANK-READTABLE-ALIST *PACKAGE*
