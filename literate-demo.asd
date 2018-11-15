@@ -4,8 +4,8 @@
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.14 21:44:12(+0800)
-;;     Update #: 52
+;; Last-Updated: 2018.11.15 20:45:14(+0800)
+;;     Update #: 53
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -23,6 +23,7 @@
 (asdf:defsystem literate-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
   :version "0.1"
+  :licence "MIT"
   :serial t
   :description "an demo project of literate-lisp"
   :components ((:module org :pathname "./"
