@@ -23,12 +23,12 @@ As a demo project, we just show a demo function ~recursive-assoc~ here.
 the function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]], when I want to
 find item from an association list contains many other association list in depth level, I
 have to write codes like this which will lead the codes too long.
-#+BEGIN_SRC lisp
-#+test(assoc :b (assoc :a '((:a . ((:b . c))))))
+#+BEGIN_SRC lisp :tangle test
+(assoc :b (assoc :a '((:a . ((:b . c))))))
 #+END_SRC
 To simplify the expression, I write a macro ~recursive-assoc~ to simply it to the following form
-#+BEGIN_SRC lisp
-#+test(recursive-assoc '((:a . ((:b . c)))) :a :b)
+#+BEGIN_SRC lisp :tangle test
+(recursive-assoc '((:a . ((:b . c)))) :a :b)
 #+END_SRC
 
 It also provides a function implementation ~funcall-recursive-assoc~ as an alternative of ~recursive-assoc~.
@@ -55,6 +55,6 @@ It also provides a function implementation ~funcall-recursive-assoc~ as an alter
 
 for example, you can use it like this,which get ~:b~ part of the sub alist 
 which is ~:a~ part of the original list.
-#+BEGIN_SRC lisp
-#+test(equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
+#+BEGIN_SRC lisp :tangle test
+(equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
