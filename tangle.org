@@ -21,15 +21,15 @@ Here is a trick, we define a lisp reader macro "# "(# + Space)to make lisp reade
 org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC~.
 
 When ~#+begign_src~ is met, all org options for this code block will be read and it give us
-a change to switch back to normal lisp reader or not.
+a chance to switch back to normal lisp reader or not.
 
-And if it switch back to normal lisp reader we want to catch the end flat ~#+END_SRC~.
+And if it switch back to normal lisp reader we want to catch the end line ~#+END_SRC~.
 So we redefine lisp reader syntax for "#+" to determine if it is ~#+END_SRC~, 
 if it is, then we switch back to the org mode syntax,
 if it is not, we continue to read subsequent stream as like the original lisp reader.
 
 This workflow required the org file start with a comment character and a space character("# "),
-but it should not be a problem but indeed a convenient way for use to specify some local variables,
+but it should not be a problem but indeed a convenient way for us to specify some local variables,
 for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
@@ -234,4 +234,4 @@ Then we install the new read syntax for org file when asdf perform actions to th
       (editor-hints.named-readtables::%frob-swank-readtable-alist *package* *readtable*))
     (call-next-method)))
 #+END_SRC
-So after you load this package, all org file will be supported to be loaded by asd automatically.
+So after you load this package, all org file will be supported to be loaded by asdf automatically.
