@@ -234,4 +234,4 @@ Then we install the new read syntax for org file when asdf perform actions to th
       (editor-hints.named-readtables::%frob-swank-readtable-alist *package* *readtable*))
     (call-next-method)))
 #+END_SRC
-So after you load this package, all org file will be supported to be loaded by asdf automatically.
+So after you load this package, one org file will be supported to be loaded by asdf automatically.
