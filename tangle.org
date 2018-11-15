@@ -61,8 +61,8 @@ a debug variable is used to switch on/off the log messages for this library
 There are many different lisp codes are written in one org file, some for function implementation,
 some for demo, and some for test, so we should define an option to recognize them to decide to
 read them or not.
-For example, if one lisp code blocks are used for demo, they should be ignored when load the org file.
-And if one lisp code blocks are used for test, they should only be loaded in a test environment. 
+For example, if one lisp code block is used for demo, it should be ignored when load the org file.
+And if one lisp code block is used for test, it should only be loaded in a test environment. 
 
 So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it have three meanings
 - yes
