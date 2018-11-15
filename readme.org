@@ -1,9 +1,6 @@
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 * Table of Contents                                                   :TOC:
 - [[#introducation][Introducation]]
-- [[#the-syntax-for-common-lisp-side][the syntax for common lisp side]]
-  - [[#--followed-with-a-space]["# (# followed with a space)"]]
-  - [[#]["#+"]]
 - [[#a-demo-lisp-package][A demo lisp package]]
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
@@ -11,29 +8,8 @@
 * Introducation
 This is a demo project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
-[[https://github.com/limist/literate-programming-examples][literate programming examples]] shows the reason to use org mode.
+The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]].
 
-There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
-
-By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
-we can do it perfectly in one org file with both documentation and source codes,and this org file
-will works well with [[https://common-lisp.net/project/slime/][SLIME]].
-* the syntax for common lisp side 
-
-There are two common lisp readers are defined, one for "# "(# followed with a space) and one for "#+".
-** "# (# followed with a space)"
-after a "# " is found, all lines after it will be ignored unless it find a line "#+BEGIN_SRC lisp"
-which means some lisp codes is found in org file, then it will switch to use a normal lisp reader to read
-the lisp codes untils it read a "#+".
-** "#+"
-When it read a "#+", it will test if it is "#+END_SRC" which means the end of lisp codes in an org file,
-if it is, it will do things like it meet "# ",otherwise it will do it like the original lisp syntax.
-
-So an org file should start with "# " to make the lisp reader into the org syntax.I usually put this in my
-first line of a org file.
-#+BEGIN_SRC org
-# -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
-#+END_SRC
 * A demo lisp package
 ** package definition
 Firstly we define a new package for this demo project and switch to it.
