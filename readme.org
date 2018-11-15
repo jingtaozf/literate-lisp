@@ -21,7 +21,7 @@ Firstly we define a new package for this demo project and switch to it.
 ** a demo function to a recursive assoc implementation
 As a demo project, we just show a demo function ~recursive-assoc~ here.
 the function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]], when I want to
-find item from an association list contains many other association list in depth level, I
+find item from an association list contains many other association list with deep level, I
 have to write codes like this which will lead the codes too long.
 #+BEGIN_SRC lisp :tangle test
 (assoc :b (assoc :a '((:a . ((:b . c))))))
