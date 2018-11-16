@@ -14,6 +14,12 @@ will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 In org mode, the comment line start with character ~#~, and the lisp codes are surrounded
 by lines between ~#+begin_src lisp~ and ~#+end_src~.
 
+#+BEGIN_EXAMPLE
+   ,#+BEGIN_SRC lisp
+   (format t "this is a test.~%")
+   ,#+END_SRC
+#+END_EXAMPLE
+
 So to let lisp can read an org file directlly, we have to ignore all lines out of surrounding
 by ~#+begin_src lisp~ and ~#+end_src~.
 
