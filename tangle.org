@@ -12,7 +12,8 @@ will works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
 * How to do it?  
 In org mode, the comment line start with character ~#~, and the lisp codes are surrounded
-by lines between ~#+begin_src lisp~ and ~#+end_src~.
+by lines between ~#+begin_src lisp~ and ~#+end_src~ 
+(the syntax can be found in [[https://orgmode.org/manual/Literal-examples.html][Org literate examples]]).
 
 #+BEGIN_EXAMPLE
    ,#+BEGIN_SRC lisp :tangle no
