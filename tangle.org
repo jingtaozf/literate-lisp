@@ -42,7 +42,7 @@ for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 #+END_SRC
-Which make emacs open file with utf-8 encoding and ~poly-org-mode~.
+Which make emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
 
 * Implementation
 ** Preparation
