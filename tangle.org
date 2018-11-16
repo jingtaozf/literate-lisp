@@ -18,9 +18,9 @@ So to let lisp can read an org file directlly, we have to ignore all lines out o
 by ~#+begin_src lisp~ and ~#+end_src~.
 
 Here is a trick, we define a lisp reader macro "# "(# + Space)to make lisp reader enters into
-org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC~.
+org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 
-When ~#+begign_src~ is met, all org options for this code block will be read and it give us
+When ~#+begign_src lisp~ is met, all org options for this code block will be read and it give us
 a chance to switch back to normal lisp reader or not.
 
 And if it switch back to normal lisp reader we want to catch the end line ~#+END_SRC~.
