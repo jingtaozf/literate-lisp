@@ -1,5 +1,17 @@
 # -*- Mode: POLY-ORG;  -*- --- 
 #+STARTUP: entitiespretty
+* Table of Contents                                                   :TOC:
+- [[#introducation][Introducation]]
+- [[#how-to-do-it][How to do it?]]
+- [[#implementation][Implementation]]
+  - [[#preparation][Preparation]]
+  - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
+  - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
+  - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
+  - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
+  - [[#tangle-an-org-file][tangle an org file]]
+  - [[#make-asdf-handle-org-file-correctly][make asdf handle org file correctly]]
+
 * Introducation
 This is a common lisp project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
