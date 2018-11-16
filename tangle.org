@@ -21,7 +21,8 @@ by lines between ~#+begin_src lisp~ and ~#+end_src~.
 #+END_EXAMPLE
 
 So to let lisp can read an org file directlly, we have to ignore all lines out of surrounding
-by ~#+begin_src lisp~ and ~#+end_src~.
+by ~#+begin_src lisp~ and ~#+end_src~, and even codes surrounding by them should be ignored
+if the options for the code block request such behaviour.
 
 Here is a trick, we define a lisp reader macro "# "(# + Space)to make lisp reader enters into
 org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
