@@ -214,7 +214,7 @@ We also provide a way to build lisp file from an org file.
              (write-char #\Newline output))))))
 #+END_SRC
 
-So when we want to build a new version of file [[./tangle.lisp]] from this file, 
+So when we want to build a new version of [[./tangle.lisp]] from this file, 
 the following code should be executed.
 #+BEGIN_SRC lisp :tangle no
 (tangle-org-file
