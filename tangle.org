@@ -79,9 +79,11 @@ So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it have three meani
   it is the default mode when the option ~tangle~ is not provided.
 
 - no
+
   It means that current code block should be ignored by lisp reader.
 
 - test
+
   It means that current code block should be read only when feature ~test~ exist.
   
 #+BEGIN_SRC lisp
