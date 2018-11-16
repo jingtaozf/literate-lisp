@@ -25,7 +25,7 @@ So to let lisp can read an org file directlly, we have to ignore all lines out o
 by ~#+begin_src lisp~ and ~#+end_src~, and even codes surrounding by them should be ignored
 if the options for the code block request such behaviour.
 
-Here is a trick, we define a [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] macro for "# "(# + Space)to make lisp reader enters into
+Here is a trick, we define a [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "(# + Space)to make lisp reader enters into
 org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 
 When ~#+begign_src lisp~ is met, all org options for this code block will be read and it give us
@@ -64,7 +64,7 @@ a debug variable is used to switch on/off the log messages for this library
 (declaim (type boolean debug-literate-lisp-p))
 #+END_SRC
 
-** function to handle reader macro for "# "(# + Space)
+** function to handle reader syntax for "# "(# + Space)
 
 There are many different lisp codes are written in one org file, some for function implementation,
 some for demo, and some for test, so we should define an option to recognize them to decide to
@@ -150,7 +150,7 @@ This code block is borrowed from the sbcl source codes with some minor modificat
     (t
       (error "invalid feature expression: ~S" x))))
 #+END_SRC
-** function to handle reader macro for "#+"
+** function to handle reader syntax for "#+"
 
 The mechanism to handle normal lisp syntax "#+" is borrowed from sbcl source codes too.
 #+BEGIN_SRC lisp
@@ -177,7 +177,7 @@ The mechanism to handle normal lisp syntax "#+" is borrowed from sbcl source cod
              (read stream t nil t)
              (values))))))
 #+END_SRC
-** Install the new reader macro.
+** Install the new reader syntax.
 #+BEGIN_SRC lisp
 (defreadtable :org
   (:merge :standard)
