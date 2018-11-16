@@ -15,7 +15,7 @@ In org mode, the comment line start with character ~#~, and the lisp codes are s
 by lines between ~#+begin_src lisp~ and ~#+end_src~.
 
 #+BEGIN_EXAMPLE
-   ,#+BEGIN_SRC lisp
+   ,#+BEGIN_SRC lisp :tangle no
    (format t "this is a test.~%")
    ,#+END_SRC
 #+END_EXAMPLE
