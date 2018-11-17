@@ -49,7 +49,7 @@ to determine if it is ~#+END_SRC~,
 if it is, then we switch back to the org mode syntax,
 if it is not, we continue to read subsequent stream as like the original lisp reader.
 
-This workflow required the org file start with a comment character and a space character("# "),
+This workflow restricts the org file starting with a comment character and a space character("# "),
 but it should not be a problem but indeed a convenient way for us to specify some local variables,
 for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
