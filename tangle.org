@@ -241,7 +241,7 @@ So you can use ~:org~ to define an org file like this
 #+END_SRC
 And file ~readme.org~ will be treated as an lisp source file in asdf.
 
-Then we install the new read syntax for org file when asdf perform actions to them
+Then we install the new reader syntax for org file when asdf perform actions to them
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
