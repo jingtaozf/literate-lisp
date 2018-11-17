@@ -13,7 +13,7 @@
   - [[#make-asdf-handle-org-file-correctly][make asdf handle org file correctly]]
 
 * Introducation
-This is a common lisp project to show one way of how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
+This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] shows the reason why use org mode.
 There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
