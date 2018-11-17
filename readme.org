@@ -2,6 +2,8 @@
 * Table of Contents                                                   :TOC:
 - [[#introducation][Introducation]]
 - [[#a-demo-lisp-package][A demo lisp package]]
+  - [[#install-polymode-in-emacs][install polymode in emacs]]
+  - [[#prepare-the-asd-definition-file][Prepare the asd definition file]]
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
 
@@ -11,7 +13,28 @@ This is a demo project to show one way of how to use [[http://www.literateprogra
 The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]].
 
 * A demo lisp package
+** install polymode in emacs
+The org file should be opened with [[https://polymode.github.io/][polymode]],the following elisp scripts should be added in .emacs
+#+BEGIN_SRC elisp
+(use-package poly-org
+    :ensure t)
+#+END_SRC
+
+** Prepare the asd definition file
+
+We use the original asd definition file, so file [[./literate-demo.asd]] has to be added firstly.
+The documentation of extended syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]] .
+
+To use the extended asdf syntax, we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] firstly in asd file like this
+#+BEGIN_SRC lisp :tangle no
+(eval-when (:load-toplevel :execute)
+  (asdf:load-system :literate-lisp))
+#+END_SRC
+
 ** package definition
+
+Now we can add both documents and lisp codes in this org file directly in emacs.
+
 Firstly we define a new package for this demo project and switch to it.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
