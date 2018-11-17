@@ -22,8 +22,8 @@ The org file should be opened with [[https://polymode.github.io/][polymode]],the
 
 ** Prepare the asd definition file
 
-We use the original asd definition file, so file [[./literate-demo.asd]] has to be added firstly.
-The documentation of extended syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]] .
+We use the original asd definition file, so file [[./literate-demo.asd]] has to be added firstly
+(The documentation of extended asdf syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
 
 To use the extended asdf syntax, we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] firstly in asd file like this
 #+BEGIN_SRC lisp :tangle no
