@@ -85,7 +85,7 @@ read them or not.
 For example, if one lisp code block is used for demo, it should be ignored when load the org file.
 And if one lisp code block is used for test, it should only be loaded in a test environment. 
 
-So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it have three meanings
+So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it has three meanings
 - yes \\
   It means that current code block should be read normally, 
   it is the default mode when the option ~tangle~ is not provided.
