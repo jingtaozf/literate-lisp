@@ -80,7 +80,7 @@ a debug variable is used to switch on/off the log messages for this library
 ** function to handle reader syntax for "# "(# + Space)
 
 There are many different lisp codes are written in one org file, some for function implementation,
-some for demo, and some for test, so we should define an option to recognize them to decide to
+some for demo, and some for test, so we should define an option to recognize them and decide to
 read them or not.
 For example, if one lisp code block is used for demo, it should be ignored when load the org file.
 And if one lisp code block is used for test, it should only be loaded in a test environment. 
