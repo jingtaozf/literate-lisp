@@ -103,7 +103,7 @@ So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it has three meanin
 #+END_SRC
 
 Let's implement a function to read options after ~#+BEGIN_SRC~,actually split them by space
-and convert key and value to a lisp keyword.
+and convert key and value to lisp keywords.
 #+BEGIN_SRC lisp
 (defun read-org-code-block-options (string begin-position-of-options)
   (with-input-from-string (stream string :start begin-position-of-options)
