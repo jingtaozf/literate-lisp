@@ -1,8 +1,9 @@
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 * Table of Contents                                                   :TOC:
 - [[#introducation][Introducation]]
-- [[#a-demo-lisp-package][A demo lisp package]]
+- [[#preparation][Preparation]]
   - [[#install-polymode-in-emacs][install polymode in emacs]]
+- [[#a-demo-lisp-package][A demo lisp package]]
   - [[#prepare-the-asd-definition-file][Prepare the asd definition file]]
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
@@ -12,7 +13,7 @@ This is a demo project to show a way how to use [[http://www.literateprogramming
 
 The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]].
 
-* A demo lisp package
+* Preparation
 ** install polymode in emacs
 The org file should be opened with [[https://polymode.github.io/][polymode]],the following elisp scripts should be added in .emacs
 #+BEGIN_SRC elisp
@@ -20,6 +21,7 @@ The org file should be opened with [[https://polymode.github.io/][polymode]],the
     :ensure t)
 #+END_SRC
 
+* A demo lisp package
 ** Prepare the asd definition file
 
 We use the original asd definition file, so file [[./literate-demo.asd]] has to be added firstly
