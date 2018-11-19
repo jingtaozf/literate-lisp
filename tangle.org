@@ -1,6 +1,6 @@
 # -*- Mode: POLY-ORG;  -*- --- 
 #+STARTUP: entitiespretty
-* Table of Contents                                                   :TOC:
+* Table of Contents                                               :noexport:TOC:
 - [[#introducation][Introducation]]
 - [[#how-to-do-it][How to do it?]]
 - [[#implementation][Implementation]]
