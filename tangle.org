@@ -1,4 +1,6 @@
 # -*- Mode: POLY-ORG;  -*- --- 
+#+Title: literate lisp
+#+SubTitle: an literate programming tool to write common lisp codes in org mode.
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
 - [[#introducation][Introducation]]
@@ -221,6 +223,8 @@ the following code should be executed.
 (tangle-org-file
  (format nil "~a/tangle.org" (asdf:component-pathname (asdf:find-system :literate-lisp))))
 #+END_SRC
+
+This function is only an experimental implementaion yet.
 
 ** make asdf handle org file correctly
 
