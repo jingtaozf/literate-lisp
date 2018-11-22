@@ -222,6 +222,7 @@ We also provide a way to build lisp file from an org file.
 
 So when we want to build a new version of [[./tangle.lisp]] from this file, 
 the following code should be executed.
+#+caption: a demo code to tangle current org file.
 #+BEGIN_SRC lisp :tangle no
 (tangle-org-file
  (format nil "~a/tangle.org"
@@ -241,6 +242,7 @@ Firstly we define a new source file class for org files.
   (export '(org) :asdf))
 #+END_SRC 
 So you can use ~:org~ to define an org file like this
+#+caption: a demo code to show how to include org file in asdf.
 #+BEGIN_SRC lisp :tangle no
 (asdf:defsystem literate-demo
   :components ((:module demo :pathname "./"
