@@ -11,7 +11,7 @@
 * Introducation
 This is a demo project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
-The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]].
+The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
 
 * Preparation
 ** install polymode in emacs
