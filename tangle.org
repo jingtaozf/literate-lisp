@@ -1,6 +1,6 @@
 # -*- Mode: POLY-ORG;  -*- --- 
 #+Title: literate lisp
-#+SubTitle: an literate programming tool to write common lisp codes in org mode.
+#+SubTitle: a literate programming tool to write common lisp codes in org mode.
 #+STARTUP: entitiespretty
 #+LATEX_COMPILER: xelatex
 * Table of Contents                                               :noexport:TOC:
