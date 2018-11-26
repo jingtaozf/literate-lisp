@@ -33,6 +33,23 @@ To use the extended asdf syntax, we have to load [[https://github.com/jingtaozf/
   (asdf:load-system :literate-lisp))
 #+END_SRC
 
+Now define the asd system for this demo package
+#+BEGIN_SRC elisp :tangle no
+(asdf:defsystem literate-demo
+  :author "Xu Jingtao <jingtaozf@gmail.com>"
+  :version "0.1"
+  :licence "MIT"
+  :serial t
+  :description "an demo project of literate-lisp"
+  :components ((:module org :pathname "./"
+                        :components ((:org "readme"))))
+  :properties ((version "0.1"))
+  :depends-on (:literate-lisp))
+#+END_SRC
+Which will load this [[./readme.org]] directlly as a lisp source file.
+
+The whole content of asd file can be found in [[./literate-demo.asd]].
+
 ** package definition
 
 Now we can add both documents and lisp codes in this org file directly in emacs.
