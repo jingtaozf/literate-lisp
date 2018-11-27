@@ -1,4 +1,5 @@
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
+#+Startup: noindent
 * Table of Contents                                                   :TOC:
 - [[#introducation][Introducation]]
 - [[#preparation][Preparation]]

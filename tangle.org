@@ -1,5 +1,6 @@
 # -*- Mode: POLY-ORG;  -*- --- 
 #+Title: literate lisp
+#+Startup: noindent
 #+SubTitle: a literate programming tool to write common lisp codes in org mode.
 #+STARTUP: entitiespretty
 #+LATEX_COMPILER: xelatex
