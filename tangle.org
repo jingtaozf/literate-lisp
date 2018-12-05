@@ -16,14 +16,14 @@
   - [[#make-asdf-handle-org-file-correctly][make asdf handle org file correctly]]
 
 * Introducation
-This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
+This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in common lisp.
 
-[[https://github.com/limist/literate-programming-examples][literate programming examples]] shows the reason why use org mode.
-There are another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
+[[https://github.com/limist/literate-programming-examples][literate programming examples]] show the reason why use org mode,
+and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
 
 By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
-we can do it perfectly in one org file with both documentation and source codes,and this org file
-will works well with [[https://common-lisp.net/project/slime/][SLIME]].
+literate programming can be done perfectly in one org file containing both documentation and source codes,
+and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
 * How to do it?  
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ), 
@@ -36,21 +36,23 @@ and the lisp codes are surrounded by lines between ~#+begin_src lisp~ and ~#+end
    ,#+END_SRC
 #+END_EXAMPLE
 
-So to let lisp can read an org file directlly, we have to ignore all lines out of surrounding
-by ~#+begin_src lisp~ and ~#+end_src~, and even codes surrounding by them should be ignored
-if the options for the code block request such behaviour.
+So to let lisp can read an org file directlly, all lines out of surrounding
+by ~#+begin_src lisp~ and ~#+end_src~ should be ignored, 
+and even codes surrounding by them should be ignored 
+if the options in a code block request such behaviour.
 
-Here is a trick, we define a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]])to make lisp reader enters into
-org mode syntax, then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
+Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) is defined 
+to make lisp reader enter into org mode syntax, 
+then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 
 When ~#+begign_src lisp~ is met, all org options for this code block will be read and it give us
 a chance to switch back to normal lisp reader or not.
 
-And if it switch back to normal lisp reader we want to catch the end line ~#+END_SRC~,
-so we redefine lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]])
+And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should be catched,
+so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]]) is redefined
 to determine if it is ~#+END_SRC~, 
-if it is, then we switch back to the org mode syntax,
-if it is not, we continue to read subsequent stream as like the original lisp reader.
+if it is, then lisp reader will switch back to the org mode syntax,
+if it is not, lisp reader will continue to read subsequent stream as like the original lisp reader.
 
 This workflow restricts the org file starting with a comment character and a space character("# "),
 but it should not be a problem but indeed a convenient way for us to specify some local variables,
@@ -63,7 +65,7 @@ Which make emacs open file with utf-8 encoding and [[https://github.com/polymode
 * Implementation
 ** Preparation
 
-Firstly we define an package for this library and switch to it.
+Firstly a new lisp package for this library is defined.
 Package [[https://github.com/melisgl/named-readtables][named-readtables]] is used here to simplify the definition of reader syntax.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
@@ -83,12 +85,12 @@ a debug variable is used to switch on/off the log messages for this library
 ** function to handle reader syntax for "# "(# + Space)
 
 There are many different lisp codes are written in one org file, some for function implementation,
-some for demo, and some for test, so we should define an option to recognize them and decide to
+some for demo, and some for test, so an org code block option is defined to decide to
 read them or not.
-For example, if one lisp code block is used for demo, it should be ignored when load the org file.
+For example, if one lisp code block is used for demo, then it should be ignored when loading this org file.
 And if one lisp code block is used for test, it should only be loaded in a test environment. 
 
-So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it has three meanings
+a new org code block option ~tangle~ is defined after ~#+BEGIN_SRC lisp~,and it has three meanings:
 - yes \\
   It means that current code block should be read normally, 
   it is the default mode when the option ~tangle~ is not provided.
@@ -105,8 +107,8 @@ So we add a new option ~tangle~ after ~#+BEGIN_SRC lisp~,and it has three meanin
     (:test (find :test *features* :test #'eq))))
 #+END_SRC
 
-Let's implement a function to read options after ~#+BEGIN_SRC~,actually split them by space
-and convert key and value to lisp keywords.
+Let's implement a function to read options after ~#+BEGIN_SRC~,
+and convert every key and value to a lisp keyword.
 #+BEGIN_SRC lisp
 (defun read-org-code-block-options (string begin-position-of-options)
   (with-input-from-string (stream string :start begin-position-of-options)
@@ -121,7 +123,6 @@ and convert key and value to lisp keywords.
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 #+BEGIN_SRC lisp
 (defun tangle-number-sign+space (stream a b)
-  "ignore all lines after `# ' and before `#+BEGIN_SRC lisp'"
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil) then (read-line stream nil nil)
         until (null line)
@@ -138,7 +139,7 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
 #+END_SRC
 ** an implementation of original feature test.
 
-This code block is borrowed from the sbcl source codes with some minor modifications.
+This code block is referenced from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]] with some minor modifications.
 #+BEGIN_SRC lisp
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
 ;;; handle arbitrary combinations of atoms using NOT, AND, OR.
@@ -163,7 +164,7 @@ This code block is borrowed from the sbcl source codes with some minor modificat
 #+END_SRC
 ** function to handle reader syntax for "#+"
 
-The mechanism to handle normal lisp syntax "#+" is borrowed from sbcl source codes too.
+The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]].
 #+BEGIN_SRC lisp
 (defun tangle-sharp-plus-minus (stream sub-char numarg)
   ;; 1. read into the feature as an keyword.
@@ -197,7 +198,7 @@ The mechanism to handle normal lisp syntax "#+" is borrowed from sbcl source cod
 #+END_SRC
 ** tangle an org file
 
-We also provide a way to build lisp file from an org file.
+A function is provided to build lisp file from an org file.
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &optional
                         (output-file (make-pathname :defaults org-file
@@ -220,7 +221,7 @@ We also provide a way to build lisp file from an org file.
              (write-char #\Newline output))))))
 #+END_SRC
 
-So when we want to build a new version of [[./tangle.lisp]] from this file, 
+So when a new version of [[./tangle.lisp]] can be released from this file, 
 the following code should be executed.
 #+caption: a demo code to tangle current org file.
 #+BEGIN_SRC lisp :tangle no
@@ -233,7 +234,7 @@ This function is only an experimental implementaion yet.
 
 ** make asdf handle org file correctly
 
-Firstly we define a new source file class for org files.
+Firstly a new source file class for org files is defined in asdf.
 #+BEGIN_SRC lisp
 (in-package :asdf)
 (defclass org (cl-source-file)
@@ -241,7 +242,7 @@ Firstly we define a new source file class for org files.
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(org) :asdf))
 #+END_SRC 
-So you can use ~:org~ to define an org file like this
+So a new asdf source file type ~:org~ can be used to define an org file like this
 #+caption: a demo code to show how to include org file in asdf.
 #+BEGIN_SRC lisp :tangle no
 (asdf:defsystem literate-demo
@@ -249,9 +250,9 @@ So you can use ~:org~ to define an org file like this
                         :components ((:org "readme"))))
   :depends-on (:literate-lisp))
 #+END_SRC
-And file ~readme.org~ will be treated as an lisp source file in asdf.
+And file ~readme.org~ will be treated as a lisp source file in asdf.
 
-Then we install the new reader syntax for org file when asdf perform actions to them
+Then the new reader syntax for org file is intalled when asdf actions are performed to org files.
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
@@ -261,4 +262,4 @@ Then we install the new reader syntax for org file when asdf perform actions to 
        *package* *readtable*))
     (call-next-method)))
 #+END_SRC
-So after you load this package, one org file will be supported to be loaded by asdf automatically.
+Then after this package is loaded, one org file can be supported to be loaded by asdf automatically.
