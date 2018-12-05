@@ -3,7 +3,6 @@
 #+Startup: noindent
 #+SubTitle: a literate programming tool to write common lisp codes in org mode.
 #+STARTUP: entitiespretty
-#+LATEX_COMPILER: xelatex
 * Table of Contents                                               :noexport:TOC:
 - [[#introducation][Introducation]]
 - [[#how-to-do-it][How to do it?]]
