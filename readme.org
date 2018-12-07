@@ -1,5 +1,10 @@
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 #+Startup: noindent
+#+MACRO: imglnk @@html:<a href="$1"><img src="$2"></a>@@
+
+#+ATTR_HTML: title="Build Status"
+[[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
+
 * Table of Contents                                                   :TOC:
 - [[#introducation][Introducation]]
 - [[#preparation][Preparation]]
