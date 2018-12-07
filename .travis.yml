@@ -23,9 +23,11 @@ env:
 
 install:
   - curl -L https://github.com/luismbo/cl-travis/raw/master/install.sh | sh
+  - git clone --depth=1 git://github.com/trivial-features/trivial-features.git ~/lisp/trivial-features
 
 script:
   - cl -e '(pushnew :test *features*)
+           (ql:quickload :literate-lisp)
            (ql:quickload :literate-demo)
            (uiop:quit 1)'
 
