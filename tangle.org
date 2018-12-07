@@ -51,7 +51,7 @@ a chance to switch back to normal lisp reader or not.
 And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should be catched,
 so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]]) is redefined
 to determine if it is ~#+END_SRC~, 
-if it is, then lisp reader will switch back to the org mode syntax,
+if it is, then lisp reader will switch back to org mode syntax,
 if it is not, lisp reader will continue to read subsequent stream as like the original lisp reader.
 
 This workflow restricts the org file starting with a comment character and a space character("# "),
