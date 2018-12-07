@@ -68,10 +68,10 @@ The function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first
 find item from an association list contains many other association list with deep level, I
 have to write codes like this which will lead the codes too long.
 #+BEGIN_SRC lisp :tangle test
-(assoc :b (assoc :a '((:a . ((:b . c))))))
+(cdr (assoc :b (cdr (assoc :a '((:a . ((:b . c))))))))
 #+END_SRC
 To simplify the expression, I write a macro ~recursive-assoc~ to simply it to the following form
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :tangle no
 (recursive-assoc '((:a . ((:b . c)))) :a :b)
 #+END_SRC
 
