@@ -2,7 +2,7 @@
 #+Startup: noindent
 #+MACRO: imglnk @@html:<a href="$1"><img src="$2"></a>@@
 
-#+caption: "Build Status"
+#+ATTR_HTML: :alt Build Status
 [[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
 
 * Table of Contents                                                   :TOC:
