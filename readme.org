@@ -109,7 +109,7 @@ which is ~:a~ part of the original list.
 Now it's time to validate some functions.
 The [[https://github.com/jphmrst/cl-nst][nst]] library is used to test.
 #+BEGIN_SRC lisp :tangle test
-(eval-when (:load-toplevel :execute)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :nst)
     (ql:quickload :nst)))
 #+END_SRC

@@ -277,7 +277,7 @@ Then after this package is loaded, one org file can be supported to be loaded by
 Now it's time to validate some functions.
 The [[https://github.com/jphmrst/cl-nst][nst]] test framework is used.
 #+BEGIN_SRC lisp :tangle test
-(eval-when (:load-toplevel :execute)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :nst)
     (ql:quickload :nst)))
 #+END_SRC
