@@ -11,7 +11,7 @@
   - [[#prepare-the-asd-definition-file][Prepare the asd definition file]]
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
-  - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
+- [[#test-cases-for-this-demo-project][Test cases for this demo project]]
   - [[#preparation-1][Preparation]]
   - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
@@ -104,7 +104,7 @@ which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :tangle test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
-** Test cases for this demo project
+* Test cases for this demo project
 ** Preparation
 Now it's time to validate some functions.
 The [[https://github.com/jphmrst/cl-nst][nst]] library is used to test.
