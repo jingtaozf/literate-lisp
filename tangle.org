@@ -295,7 +295,7 @@ label:test-read-org-code-block-options
 #+END_SRC
 
 ** run all tests in this library
-this function is the start point to run all tests and return true if all test cases pass.
+this function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :tangle test
 (defun run-test ()
   (nst::run-package :literate-lisp)
