@@ -38,11 +38,11 @@ cache:
     - $HOME/.config/common-lisp
 
 script:
-  - ros run -e '(pushnew :test *features*)' \
-            -e '(ql:quickload :literate-lisp)' \
-            -e '(let ((*readtable* (named-readtables:ensure-readtable :org))) (load "./tangle.org"))' \
-            -e '(ql:quickload :literate-demo)' \
-            -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))' \
-            -e '(if (not (literate-demo::run-test)) (uiop:quit 1))' \
+  - ros run -e '(pushnew :test *features*)'
+            -e '(ql:quickload :literate-lisp)'
+            -e '(let ((*readtable* (named-readtables:ensure-readtable :org))) (load "./tangle.org"))'
+            -e '(ql:quickload :literate-demo)'
+            -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))'
+            -e '(if (not (literate-demo::run-test)) (uiop:quit 1))'
             -e '(uiop:quit 0)'
             
