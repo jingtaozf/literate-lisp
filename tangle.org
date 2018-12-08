@@ -14,6 +14,11 @@
   - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
   - [[#tangle-an-org-file][tangle an org file]]
   - [[#make-asdf-handle-org-file-correctly][make asdf handle org file correctly]]
+- [[#test-cases][Test cases]]
+  - [[#preparation-1][Preparation]]
+  - [[#test-groups][test groups]]
+  - [[#run-all-tests-in-this-library][run all tests in this library]]
+  - [[#run-all-tests-in-demo-project][run all tests in demo project]]
 
 * Introducation
 This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in common lisp.
@@ -108,7 +113,7 @@ a new org code block option ~tangle~ is defined after ~#+BEGIN_SRC lisp~,and it 
 #+END_SRC
 
 Let's implement a function to read options after ~#+BEGIN_SRC~,
-and convert every key and value to a lisp keyword.
+and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-options).
 #+BEGIN_SRC lisp
 (defun read-org-code-block-options (string begin-position-of-options)
   (with-input-from-string (stream string :start begin-position-of-options)
@@ -197,13 +202,18 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
   (:dispatch-macro-char #\# #\+ #'tangle-sharp-plus-minus))
 #+END_SRC
 ** tangle an org file
-
-A function is provided to build lisp file from an org file.
+A function is provided to build lisp file from an org file. \\
+Argument ~org-file~ is the source org file. \\
+Argument ~keep-test-codes~ is a boolean value to indicate whether test codes should be kept.
 #+BEGIN_SRC lisp
-(defun tangle-org-file (org-file &optional
+(defun tangle-org-file (org-file &key
+                        (keep-test-codes nil)
                         (output-file (make-pathname :defaults org-file
                                                     :type "lisp")))
   (let ((*readtable* (ensure-readtable ':org))
+        (*features* (if keep-test-codes
+                      *features*
+                      (remove :test *features* :test 'eq)))
         (*read-eval* nil)
         (*print-pretty* t))
     (with-open-file (input org-file)
@@ -220,7 +230,6 @@ A function is provided to build lisp file from an org file.
              (write object :stream output)
              (write-char #\Newline output))))))
 #+END_SRC
-
 So when a new version of [[./tangle.lisp]] can be released from this file, 
 the following code should be executed.
 #+caption: a demo code to tangle current org file.
@@ -263,3 +272,40 @@ Then the new reader syntax for org file is intalled when asdf actions are perfor
     (call-next-method)))
 #+END_SRC
 Then after this package is loaded, one org file can be supported to be loaded by asdf automatically.
+* Test cases
+** Preparation
+Now it's time to validate some functions.
+The [[https://github.com/jphmrst/cl-nst][nst]] test framework is used.
+#+BEGIN_SRC lisp :tangle test
+(eval-when (:load-toplevel :execute)
+  (unless (find-package :nst)
+    (ql:quickload :nst)))
+#+END_SRC
+** test groups
+*** test for reading org code block options
+label:test-read-org-code-block-options
+#+BEGIN_SRC lisp :tangle test
+(nst:def-test-group read-org-code-block-options ()
+  (nst:def-test t1
+      (:equal nil) (read-org-code-block-options "" 0))
+  (nst:def-test t2
+    (:equal '(:tangle :no)) (read-org-code-block-options " :tangle no  " 0))
+  (nst:def-test t3
+    (:equal '(:tangle :no)) (read-org-code-block-options " :tangle no" 0)))
+#+END_SRC
+
+** run all tests in this library
+this function is the start point to run all tests and return true if all test cases pass.
+#+BEGIN_SRC lisp :tangle test
+(defun run-test ()
+  (nst::run-package :literate-lisp)
+  (multiple-value-bind (status checks passed error fail warn)
+      (nst::result-summary (nst::all-tests-report))
+    (format t "~&nst test status for literate-lisp:~a, checks:~d, passed:~d, error:~D,faile:~D,warn:~D"
+            status checks passed error fail warn)
+    (and (= fail 0) (= 0 error))))
+#+END_SRC
+
+** run all tests in demo project
+To run all tests in demo project ~literate-demo~, please load it by yourself, it'll be loaded by [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] which will
+load config file [[./.travis.yml]] automatically every time there is a new git change.

@@ -11,6 +11,10 @@
   - [[#prepare-the-asd-definition-file][Prepare the asd definition file]]
   - [[#package-definition][package definition]]
   - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
+  - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
+  - [[#preparation-1][Preparation]]
+  - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
+  - [[#run-all-tests-in-this-library][run all tests in this library]]
 
 * Introducation
 This is a demo project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
@@ -73,31 +77,26 @@ have to write codes like this which will lead the codes too long.
 #+BEGIN_SRC lisp :tangle test
 (cdr (assoc :b (cdr (assoc :a '((:a . ((:b . c))))))))
 #+END_SRC
-To simplify the expression, I write a macro ~recursive-assoc~ to simply it to the following form
+To simplify the expression, a macro ~recursive-assoc~ is provided to simply it to the following form
 #+BEGIN_SRC lisp :tangle no
 (recursive-assoc '((:a . ((:b . c)))) :a :b)
 #+END_SRC
 
-It also provides a function implementation ~funcall-recursive-assoc~ as an alternative of ~recursive-assoc~.
+a macro function to expand lisp expressions recursively is provided firstly.
 #+BEGIN_SRC lisp
-(defun funcall-recursive-assoc (alist &rest recursive-properties)
-  (loop with current-alist = alist
-        for property in recursive-properties
-        until (null current-alist)
-        do (setf current-alist (cdr (assoc property current-alist)))
-        finally (return current-alist)))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-recursive-assoc (alist recursive-properties)
     (if (cdr recursive-properties)
       (expand-recursive-assoc `(cdr (assoc ,(car recursive-properties) ,alist))
                               (cdr recursive-properties))
       `(cdr (assoc ,(car recursive-properties) ,alist)))))
+#+END_SRC
 
+Then the implementation macro is very simple(test is here: ref:test-recursive-assoc)
+#+BEGIN_SRC lisp
 (defmacro recursive-assoc (alist &rest recursive-properties)
   (when recursive-properties
     (expand-recursive-assoc alist recursive-properties)))
-
 #+END_SRC
 
 for example, you can use it like this,which get ~:b~ part of the sub alist 
@@ -105,3 +104,31 @@ which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :tangle test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
+** Test cases for this demo project
+** Preparation
+Now it's time to validate some functions.
+The [[https://github.com/jphmrst/cl-nst][nst]] library is used to test.
+#+BEGIN_SRC lisp :tangle test
+(eval-when (:load-toplevel :execute)
+  (unless (find-package :nst)
+    (ql:quickload :nst)))
+#+END_SRC
+** tests for ~recursive-assoc~
+label:test-recursive-assoc
+#+BEGIN_SRC lisp :tangle test
+(nst:def-test-group recursive-assoc ()
+  (nst:def-test t1
+      (:equal 'c) (recursive-assoc '((:a . ((:b . c)))) :a :b))))
+#+END_SRC
+** run all tests in this library
+this function is the entry point to run all tests and return true if all test cases pass.
+#+BEGIN_SRC lisp :tangle test
+(defun run-test ()
+  (nst::run-package :literate-demo)
+  (multiple-value-bind (status checks passed error fail warn)
+      (nst::result-summary (nst::all-tests-report))
+    (format t "~&nst test status for literate-demo:~a, checks:~d, passed:~d, error:~D,faile:~D,warn:~D"
+            status checks passed error fail warn)
+    (and (= fail 0) (= 0 error))))
+#+END_SRC
+

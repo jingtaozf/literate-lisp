@@ -28,7 +28,12 @@ install:
 script:
   - cl -e '(pushnew :test *features*)
            (ql:quickload :literate-lisp)
+           (let ((*readtable* (named-readtables:ensure-readtable :org)))
+            (load "./tangle.org"))
            (ql:quickload :literate-demo)
-           (uiop:quit 0)'
+           (if (and (literate-lisp::run-test)
+                    (literate-demo::run-test))
+            (uiop:quit 0)
+            (uiop:quit 1))'
 
 sudo: required
