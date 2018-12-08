@@ -18,7 +18,7 @@ env:
     #- LISP=abcl
     - LISP=clisp
     #- LISP=ecl
-    - LISP=cmucl
+    #- LISP=cmucl
     #- LISP=alisp
 
 # matrix:
@@ -35,7 +35,7 @@ install:
 cache:
   directories:
     - $HOME/.roswell
-    # - $HOME/.config/common-lisp
+    - $HOME/.config/common-lisp
 
 script:
   - ros run -e '(pushnew :test *features*)'
