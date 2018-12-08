@@ -118,7 +118,7 @@ label:test-recursive-assoc
 #+BEGIN_SRC lisp :tangle test
 (nst:def-test-group recursive-assoc ()
   (nst:def-test t1
-      (:equal 'c) (recursive-assoc '((:a . ((:b . c)))) :a :b))))
+      (:equal 'c) (recursive-assoc '((:a . ((:b . c)))) :a :b)))
 #+END_SRC
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.
