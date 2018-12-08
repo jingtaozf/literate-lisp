@@ -11,11 +11,11 @@ env:
     - LISP=sbcl
     - LISP=sbcl32
     - LISP=ccl
-    - LISP=ccl32
-    #- LISP=clisp
+    #- LISP=ccl32
+    - LISP=clisp
     #- LISP=clisp32
-    #- LISP=cmucl
-    #- LISP=ecl
+    - LISP=cmucl
+    - LISP=ecl
 
 # matrix:
 #   allow_failures:
