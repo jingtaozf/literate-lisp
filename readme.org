@@ -54,7 +54,7 @@ Now define the asd system for this demo package
   :properties ((version "0.1"))
   :depends-on (:literate-lisp))
 #+END_SRC
-Which will load this [[./readme.org]] directlly as a lisp source file.
+Which will load this [[./readme.org]] directly as a lisp source file.
 
 The whole content of asd file can be found in [[./literate-demo.asd]].
 
