@@ -275,7 +275,8 @@ Then after this package is loaded, one org file can be supported to be loaded by
 * Test cases
 ** Preparation
 Now it's time to validate some functions.
-The [[https://github.com/jphmrst/cl-nst][nst]] test framework is used.
+The [[https://github.com/jphmrst/cl-nst][nst]] test framework is used, and web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
+every time there is a new git change.
 #+BEGIN_SRC lisp :tangle test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :nst)
@@ -307,5 +308,4 @@ this function is the entry point to run all tests and return true if all test ca
 #+END_SRC
 
 ** run all tests in demo project
-To run all tests in demo project ~literate-demo~, please load it by yourself, it'll be loaded by [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] which will
-load config file [[./.travis.yml]] automatically every time there is a new git change.
+To run all tests in demo project ~literate-demo~, please load it by yourself.

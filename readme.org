@@ -121,7 +121,7 @@ label:test-recursive-assoc
       (:equal 'c) (recursive-assoc '((:a . ((:b . c)))) :a :b)))
 #+END_SRC
 ** run all tests in this library
-this function is the entry point to run all tests and return true if all test cases pass.
+This function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :tangle test
 (defun run-test ()
   (nst::run-package :literate-demo)
@@ -131,4 +131,5 @@ this function is the entry point to run all tests and return true if all test ca
             status checks passed error fail warn)
     (and (= fail 0) (= 0 error))))
 #+END_SRC
-
+Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] to run these tests automatically 
+every time there is a new git change.
