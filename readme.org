@@ -3,7 +3,7 @@
 
 [[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
 
-* Table of Contents                                                   :TOC:
+* Table of Contents                                            :TOC:noexport:
 - [[#introducation][Introducation]]
 - [[#preparation][Preparation]]
   - [[#install-polymode-in-emacs][install polymode in emacs]]
@@ -20,6 +20,22 @@
 This is a demo project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
 The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
+
+This library contains the following files:
+- tangle.org \\ 
+  The implementation and documentation of literate lisp reader.
+- tangle.lisp \\
+  The tangled codes of literate lisp reader, generated from ~tangle.org~
+- tangle.pdf \\
+  The weaved documentation, generated from ~tangle.org~ by org mode's pulish feature.
+- readme.org \\
+  This file contains introduction and demo codes for how to do literate lisp in an org file.
+- .travis.yml \\
+  The config file used by Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] to test this library.
+- literate-lisp.asd \\
+  The asdf definition for literate-lisp project.
+- literate-demo.asd \\
+  The asdf definition for literate demo project.
 
 * Preparation
 ** install polymode in emacs
