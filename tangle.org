@@ -4,7 +4,7 @@
 #+SubTitle: a literate programming tool to write common lisp codes in org mode.
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
-- [[#introducation][Introducation]]
+- [[#introduction][Introduction]]
 - [[#how-to-do-it][How to do it?]]
 - [[#implementation][Implementation]]
   - [[#preparation][Preparation]]
@@ -13,18 +13,18 @@
   - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
   - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
   - [[#tangle-an-org-file][tangle an org file]]
-  - [[#make-asdf-handle-org-file-correctly][make asdf handle org file correctly]]
+  - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
 - [[#test-cases][Test cases]]
   - [[#preparation-1][Preparation]]
   - [[#test-groups][test groups]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
   - [[#run-all-tests-in-demo-project][run all tests in demo project]]
 
-* Introducation
+* Introduction
 This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in common lisp.
 
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] show the reason why use org mode,
-and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similiar thing but it use markdown file format.
+and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
 
 By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 literate programming can be done perfectly in one org file containing both documentation and source codes,
@@ -41,10 +41,10 @@ and the lisp codes are surrounded by lines between ~#+begin_src lisp~ and ~#+end
    ,#+END_SRC
 #+END_EXAMPLE
 
-So to let lisp can read an org file directlly, all lines out of surrounding
+So to let lisp can read an org file directly, all lines out of surrounding
 by ~#+begin_src lisp~ and ~#+end_src~ should be ignored, 
 and even codes surrounding by them should be ignored 
-if the options in a code block request such behaviour.
+if the options in a code block request such behavior.
 
 Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) is defined 
 to make lisp reader enter into org mode syntax, 
@@ -53,7 +53,7 @@ then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 When ~#+begign_src lisp~ is met, all org options for this code block will be read and it give us
 a chance to switch back to normal lisp reader or not.
 
-And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should be catched,
+And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should be caught,
 so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]]) is redefined
 to determine if it is ~#+END_SRC~, 
 if it is, then lisp reader will switch back to org mode syntax,
@@ -204,7 +204,7 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
 ** tangle an org file
 A function is provided to build lisp file from an org file. \\
 Argument ~org-file~ is the source org file. \\
-Argument ~keep-test-codes~ is a boolean value to indicate whether test codes should be kept.
+Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should be kept.
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
@@ -239,11 +239,11 @@ the following code should be executed.
          (asdf:component-pathname (asdf:find-system :literate-lisp))))
 #+END_SRC
 
-This function is only an experimental implementaion yet.
+This function is only an experimental implementation yet.
 
-** make asdf handle org file correctly
+** make ASDF handle org file correctly
 
-Firstly a new source file class for org files is defined in asdf.
+Firstly a new source file class for org files is defined in ASDF.
 #+BEGIN_SRC lisp
 (in-package :asdf)
 (defclass org (cl-source-file)
@@ -251,17 +251,17 @@ Firstly a new source file class for org files is defined in asdf.
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(org) :asdf))
 #+END_SRC 
-So a new asdf source file type ~:org~ can be used to define an org file like this
-#+caption: a demo code to show how to include org file in asdf.
+So a new ASDF source file type ~:org~ can be used to define an org file like this
+#+caption: a demo code to show how to include org file in ASDF.
 #+BEGIN_SRC lisp :tangle no
 (asdf:defsystem literate-demo
   :components ((:module demo :pathname "./"
                         :components ((:org "readme"))))
   :depends-on (:literate-lisp))
 #+END_SRC
-And file ~readme.org~ will be treated as a lisp source file in asdf.
+And file ~readme.org~ will be treated as a lisp source file in ASDF.
 
-Then the new reader syntax for org file is intalled when asdf actions are performed to org files.
+Then the new reader syntax for org file is installed when ASDF actions are performed to org files.
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
@@ -271,7 +271,7 @@ Then the new reader syntax for org file is intalled when asdf actions are perfor
        *package* *readtable*))
     (call-next-method)))
 #+END_SRC
-Then after this package is loaded, one org file can be supported to be loaded by asdf automatically.
+Then after this package is loaded, one org file can be supported to be loaded by ASDF automatically.
 * Test cases
 ** Preparation
 Now it's time to validate some functions.

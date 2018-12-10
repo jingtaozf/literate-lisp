@@ -4,7 +4,7 @@
 [[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
 
 * Table of Contents                                            :TOC:noexport:
-- [[#introducation][Introducation]]
+- [[#introduction][Introduction]]
 - [[#preparation][Preparation]]
   - [[#install-polymode-in-emacs][install polymode in emacs]]
 - [[#a-demo-lisp-package][A demo lisp package]]
@@ -16,7 +16,7 @@
   - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
 
-* Introducation
+* Introduction
 This is a demo project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
 
 The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
@@ -33,9 +33,9 @@ This library contains the following files:
 - [[./.travis.yml]] \\
   The config file used by Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] to test this library.
 - [[./literate-lisp.asd]] \\
-  The asdf definition for literate-lisp project.
+  The ASDF definition for literate-lisp project.
 - [[./literate-demo.asd]] \\
-  The asdf definition for literate demo project.
+  The ASDF definition for literate demo project.
 
 * Preparation
 ** install polymode in emacs
@@ -49,15 +49,15 @@ The org file should be opened with [[https://polymode.github.io/][polymode]],the
 ** Prepare the asd definition file
 
 We use the original asd definition file, so file [[./literate-demo.asd]] has to be added firstly
-(The documentation of extended asdf syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
+(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
 
-To use the extended asdf syntax, we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] firstly in asd file like this
+To use the extended asdf syntax, we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] firstly in ASDF definition file like this
 #+BEGIN_SRC lisp :tangle no
 (eval-when (:load-toplevel :execute)
   (asdf:load-system :literate-lisp))
 #+END_SRC
 
-Now define the asd system for this demo package
+Now define the ASDF system for this demo package
 #+BEGIN_SRC elisp :tangle no
 (asdf:defsystem literate-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
@@ -72,7 +72,7 @@ Now define the asd system for this demo package
 #+END_SRC
 Which will load this [[./readme.org]] directly as a lisp source file.
 
-The whole content of asd file can be found in [[./literate-demo.asd]].
+The whole content of ASDF definition file can be found in [[./literate-demo.asd]].
 
 ** package definition
 
@@ -115,7 +115,7 @@ Then the implementation macro is very simple(test is here: ref:test-recursive-as
     (expand-recursive-assoc alist recursive-properties)))
 #+END_SRC
 
-for example, you can use it like this,which get ~:b~ part of the sub alist 
+for example, you can use it like this,which get ~:b~ part of the sub association list 
 which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :tangle test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
