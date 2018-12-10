@@ -27,7 +27,7 @@ This library contains the following files:
 - [[./tangle.lisp]] \\
   The tangled codes of literate lisp reader, generated from ~tangle.org~
 - [[./tangle.pdf]] \\
-  The weaved documentation, generated from ~tangle.org~ by org mode's publish feature.
+  The weaved documentation, generated from ~tangle.org~ by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
 - [[./readme.org]] \\
   This file contains introduction and demo codes for how to do literate lisp in an org file.
 - [[./.travis.yml]] \\
