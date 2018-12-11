@@ -27,12 +27,12 @@ This is a common lisp project to show a way how to use [[http://www.literateprog
 and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
 
 By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
-literate programming can be done perfectly in one org file containing both documentation and source codes,
+literate programming can be simple in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
 * How to do it?  
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ), 
-and the lisp codes are surrounded by lines between ~#+begin_src lisp~ and ~#+end_src~ 
+and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~ 
 (see [[https://orgmode.org/manual/Literal-examples.html][org manual]]).
 
 #+BEGIN_EXAMPLE
@@ -42,19 +42,19 @@ and the lisp codes are surrounded by lines between ~#+begin_src lisp~ and ~#+end
 #+END_EXAMPLE
 
 So to let lisp can read an org file directly, all lines out of surrounding
-by ~#+begin_src lisp~ and ~#+end_src~ should be ignored, 
-and even codes surrounding by them should be ignored 
+by ~#+begin_src lisp~ and ~#+end_src~ should mean nothing, 
+and even codes surrounding by them should mean nothing 
 if the options in a code block request such behavior.
 
-Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) is defined 
+Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) will have a meaning 
 to make lisp reader enter into org mode syntax, 
 then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 
-When ~#+begign_src lisp~ is met, all org options for this code block will be read and it give us
+When ~#+begign_src lisp~ occurs, org options for this code block give us
 a chance to switch back to normal lisp reader or not.
 
-And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should be caught,
-so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]]) is redefined
+And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should mean the end of current
+code block,so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]])will have an additional meaning 
 to determine if it is ~#+END_SRC~, 
 if it is, then lisp reader will switch back to org mode syntax,
 if it is not, lisp reader will continue to read subsequent stream as like the original lisp reader.
@@ -81,7 +81,7 @@ Package [[https://github.com/melisgl/named-readtables][named-readtables]] is use
 (in-package :literate-lisp)
 #+END_SRC
 
-a debug variable is used to switch on/off the log messages for this library
+There is a debug variable to switch on/off the log messages.
 #+BEGIN_SRC lisp
 (defvar debug-literate-lisp-p nil)
 (declaim (type boolean debug-literate-lisp-p))
@@ -89,21 +89,17 @@ a debug variable is used to switch on/off the log messages for this library
 
 ** function to handle reader syntax for "# "(# + Space)
 
-There are many different lisp codes are written in one org file, some for function implementation,
-some for demo, and some for test, so an org code block option is defined to decide to
-read them or not.
-For example, if one lisp code block is used for demo, then it should be ignored when loading this org file.
-And if one lisp code block is used for test, it should only be loaded in a test environment. 
-
-a new org code block option ~tangle~ is defined after ~#+BEGIN_SRC lisp~,and it has three meanings:
+There are a lot of different lisp codes occur in one org file, some for function implementation,
+some for demo, and some for test, so a new org code block option ~tangle~ to decide to
+read them or not should define,and it has three meanings:
 - yes \\
-  It means that current code block should be read normally, 
+  It means that current code block should load normally, 
   it is the default mode when the option ~tangle~ is not provided.
 - no \\
-  It means that current code block should be ignored by lisp reader.
+  It means that current code block should ignore by lisp reader.
 - test \\
-  It means that current code block should be read only when feature ~test~ exist.
-  
+  It means that current code block should load only when feature ~test~ exist.
+
 #+BEGIN_SRC lisp
 (defun tangle-p (feature)
   (case feature
@@ -144,7 +140,7 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
 #+END_SRC
 ** an implementation of original feature test.
 
-This code block is referenced from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]] with some minor modifications.
+This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]] with some minor modifications.
 #+BEGIN_SRC lisp
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
 ;;; handle arbitrary combinations of atoms using NOT, AND, OR.
@@ -202,9 +198,9 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
   (:dispatch-macro-char #\# #\+ #'tangle-sharp-plus-minus))
 #+END_SRC
 ** tangle an org file
-A function is provided to build lisp file from an org file. \\
+To build lisp file from an org file, we implement a function ~tangle-org-file~. \\
 Argument ~org-file~ is the source org file. \\
-Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should be kept.
+Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should tangle.
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
@@ -230,8 +226,8 @@ Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes sho
              (write object :stream output)
              (write-char #\Newline output))))))
 #+END_SRC
-So when a new version of [[./tangle.lisp]] can be released from this file, 
-the following code should be executed.
+So when a new version of [[./tangle.lisp]] can release from this file, 
+the following code should execute.
 #+caption: a demo code to tangle current org file.
 #+BEGIN_SRC lisp :tangle no
 (tangle-org-file
@@ -243,7 +239,7 @@ This function is only an experimental implementation yet.
 
 ** make ASDF handle org file correctly
 
-Firstly a new source file class for org files is defined in ASDF.
+Firstly a new source file class for org files define in ASDF package.
 #+BEGIN_SRC lisp
 (in-package :asdf)
 (defclass org (cl-source-file)
@@ -251,7 +247,7 @@ Firstly a new source file class for org files is defined in ASDF.
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(org) :asdf))
 #+END_SRC 
-So a new ASDF source file type ~:org~ can be used to define an org file like this
+So a new ASDF source file type ~:org~ can define an org file like this
 #+caption: a demo code to show how to include org file in ASDF.
 #+BEGIN_SRC lisp :tangle no
 (asdf:defsystem literate-demo
@@ -259,9 +255,9 @@ So a new ASDF source file type ~:org~ can be used to define an org file like thi
                         :components ((:org "readme"))))
   :depends-on (:literate-lisp))
 #+END_SRC
-And file ~readme.org~ will be treated as a lisp source file in ASDF.
+And file ~readme.org~ will load as a lisp source file by ASDF.
 
-Then the new reader syntax for org file is installed when ASDF actions are performed to org files.
+Then the new reader syntax for org file installs when ASDF actions perform to every org file.
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
@@ -271,11 +267,12 @@ Then the new reader syntax for org file is installed when ASDF actions are perfo
        *package* *readtable*))
     (call-next-method)))
 #+END_SRC
-Then after this package is loaded, one org file can be supported to be loaded by ASDF automatically.
+Then after this package  load, one org file can load by ASDF automatically.
 * Test cases
 ** Preparation
 Now it's time to validate some functions.
-The [[https://github.com/jphmrst/cl-nst][nst]] test framework is used, and web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
+The [[https://github.com/jphmrst/cl-nst][nst]] test framework is the choice for this library, 
+and web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
 every time there is a new git change.
 #+BEGIN_SRC lisp :tangle test
 (eval-when (:compile-toplevel :load-toplevel :execute)
