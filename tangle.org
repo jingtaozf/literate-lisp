@@ -27,7 +27,7 @@ This is a common lisp project to show a way how to use [[http://www.literateprog
 and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
 
 By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
-literate programming can be simple in one org file containing both documentation and source codes,
+literate programming can be easy in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
 * How to do it?  
