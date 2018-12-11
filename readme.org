@@ -17,7 +17,7 @@
   - [[#run-all-tests-in-this-library][run all tests in this library]]
 
 * Introduction
-[[https://github.com/jingtaozf/literate-lisp][literate-lisp]] show a easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language. 
+[[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language. 
 
 By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 literate programming can be very easy in one org file containing both documentation and source codes,
