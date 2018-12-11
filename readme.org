@@ -17,13 +17,13 @@
   - [[#run-all-tests-in-this-library][run all tests in this library]]
 
 * Introduction
-This is a demo project to show a way how to use [[http://www.literateprogramming.com/][literal programming]] in common lisp.
+[[https://github.com/jingtaozf/literate-lisp][literate-lisp]] show a easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language. 
 
 By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
-literate programming can be easy in one org file containing both documentation and source codes,
-and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
+literate programming can be very easy in one org file containing both documentation and source codes,
+and this org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
 
-The implementation details of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
+The implementation detail of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] can be found in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
 
 This library contains the following files:
 - [[./tangle.org]] \\ 
