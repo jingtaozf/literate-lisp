@@ -19,6 +19,7 @@
   - [[#test-groups][test groups]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
   - [[#run-all-tests-in-demo-project][run all tests in demo project]]
+- [[#references][References]]
 
 * Introduction
 This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in common lisp.
@@ -306,3 +307,10 @@ this function is the entry point to run all tests and return true if all test ca
 
 ** run all tests in demo project
 To run all tests in demo project ~literate-demo~, please load it by yourself.
+* References
+- [[http://www.literateprogramming.com/knuthweb.pdf][Literate. Programming.]] by [[https://www-cs-faculty.stanford.edu/~knuth/lp.html][Donald E. Knuth]]
+- [[http://www.literateprogramming.com/][Literate Programming]]  a site of literate programming
+- [[https://www.youtube.com/watch?v=Av0PQDVTP4A][Literate Programming in the Large]] a talk video from Timothy Daly,one of the original authors of [[https://en.wikipedia.org/wiki/Axiom_(computer_algebra_system)][Axiom]].
+- [[https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming][literate programming in org babel]]
+- [[https://github.com/limist/literate-programming-examples][A collection of literate programming examples using Emacs Org mode]]
+- [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] A common lisp Literate Programming Tool in markdown file
