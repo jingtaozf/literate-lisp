@@ -72,7 +72,7 @@ Now define the ASDF system for this demo package
 #+END_SRC
 Which will load this [[./readme.org]] directly as a lisp source file.
 
-The whole content of ASDF definition file can be found in [[./literate-demo.asd]].
+The whole content of ASDF definition file is in [[./literate-demo.asd]].
 
 ** package definition
 
@@ -88,17 +88,17 @@ Firstly we define a new package for this demo project and switch to it.
 As a demo project, we just show a demo function ~recursive-assoc~ here.
 
 The function [[http://clhs.lisp.se/Body/f_assocc.htm][cl:assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]], when I want to
-find item from an association list contains many other association list with deep level, I
+find item from an association list contains a lot of other association list with deep level, I
 have to write codes like this which will lead the codes too long.
 #+BEGIN_SRC lisp :tangle test
 (cdr (assoc :b (cdr (assoc :a '((:a . ((:b . c))))))))
 #+END_SRC
-To simplify the expression, a macro ~recursive-assoc~ is provided to simply it to the following form
+To simplify the expression, a macro ~recursive-assoc~ to simply it to the following form provides:
 #+BEGIN_SRC lisp :tangle no
 (recursive-assoc '((:a . ((:b . c)))) :a :b)
 #+END_SRC
 
-a macro function to expand lisp expressions recursively is provided firstly.
+a macro function to expand lisp expressions recursively provides firstly.
 #+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-recursive-assoc (alist recursive-properties)
@@ -108,7 +108,7 @@ a macro function to expand lisp expressions recursively is provided firstly.
       `(cdr (assoc ,(car recursive-properties) ,alist)))))
 #+END_SRC
 
-Then the implementation macro is very simple(test is here: ref:test-recursive-assoc)
+Then the implementation macro is simple(test is here: ref:test-recursive-assoc)
 #+BEGIN_SRC lisp
 (defmacro recursive-assoc (alist &rest recursive-properties)
   (when recursive-properties
