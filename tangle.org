@@ -91,7 +91,7 @@ There is a debug variable to switch on/off the log messages.
 ** function to handle reader syntax for "# "(# + Space)
 
 There are a lot of different lisp codes occur in one org file, some for function implementation,
-some for demo, and some for test, so a new org code block option ~tangle~ to decide to
+some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] option ~tangle~ to decide to
 read them or not should define,and it has three meanings:
 - yes \\
   It means that current code block should load normally, 
@@ -109,7 +109,7 @@ read them or not should define,and it has three meanings:
     (:test (find :test *features* :test #'eq))))
 #+END_SRC
 
-Let's implement a function to read options after ~#+BEGIN_SRC~,
+Let's implement a function to read options after ~#+BEGIN_SRC lisp~,
 and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-options).
 #+BEGIN_SRC lisp
 (defun read-org-code-block-options (string begin-position-of-options)
@@ -199,8 +199,9 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
   (:dispatch-macro-char #\# #\+ #'tangle-sharp-plus-minus))
 #+END_SRC
 ** tangle an org file
-To build lisp file from an org file, we implement a function ~tangle-org-file~. \\
-Argument ~org-file~ is the source org file. \\
+To build lisp file from an org file, we implement a function ~tangle-org-file~.
+
+Argument ~org-file~ is the source org file.
 Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should tangle.
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &key
