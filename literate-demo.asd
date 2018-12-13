@@ -4,8 +4,8 @@
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.15 20:45:14(+0800)
-;;     Update #: 53
+;; Last-Updated: 2018.12.13 13:08:49(+0800)
+;;     Update #: 55
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -16,7 +16,8 @@
     (defpackage :literate-demo.system
       (:use :cl :asdf))))
 (cl:eval-when (:load-toplevel :execute)
-  (asdf:load-system :literate-lisp))
+  #+quicklisp (ql:quickload :literate-lisp)
+  #-quicklisp (asdf:load-system :literate-lisp))
 
 (in-package :literate-demo.system)
 
