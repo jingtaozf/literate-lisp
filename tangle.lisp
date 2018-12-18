@@ -129,7 +129,18 @@
                         (format t "read code line:~s~%" line))
                       (write-line line output))))))))))
 
-(export '(tangle-org-file) :literate-lisp)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(tangle-org-file) :literate-lisp))
+
+(defmacro with-literate-syntax (&body body)
+  `(let ((*readtable* (named-readtables:ensure-readtable ':org)))
+     (when (find-package :swank)
+       (named-readtables::%frob-swank-readtable-alist
+        *package* *readtable*))
+     ,@body))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(with-literate-syntax) :literate-lisp))
 
 (in-package :asdf)
 (defclass org (cl-source-file)
@@ -139,9 +150,6 @@
 
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
-  (let ((*readtable* (named-readtables:ensure-readtable ':org)))
-    (when (find-package :swank)
-      (named-readtables::%frob-swank-readtable-alist
-       *package* *readtable*))
+  (literate-lisp:with-literate-syntax
     (call-next-method)))
 

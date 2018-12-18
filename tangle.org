@@ -257,30 +257,29 @@ the following code should execute.
 
 Let's export this function so it can be used by other library conveniently.
 #+BEGIN_SRC lisp
-(export '(tangle-org-file) :literate-lisp)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(tangle-org-file) :literate-lisp))
 #+END_SRC
 
 ** make ASDF handle org file correctly
 
-# FIXME: macro `with-literate-syntax' will not be tangled to lisp source file correctly when
-# it is used in ASDF package.
+Firstly, let's define a macro so org syntax codes can be compiled and loaded.
+#+BEGIN_SRC lisp
+(defmacro with-literate-syntax (&body body)
+  `(let ((*readtable* (named-readtables:ensure-readtable ':org)))
+     (when (find-package :swank)
+       (named-readtables::%frob-swank-readtable-alist
+        *package* *readtable*))
+     ,@body))
+#+END_SRC
+In above macro, we add the org readtable in slime environment,
+it should be a little convenient for developers.
 
-# Firstly, let's define a macro so org syntax codes can be compiled and loaded.
-# #+BEGIN_SRC lisp
-# (defmacro with-literate-syntax (&body body)
-#   `(let ((*readtable* (named-readtables:ensure-readtable ':org)))
-#      (when (find-package :swank)
-#        (named-readtables::%frob-swank-readtable-alist
-#         *package* *readtable*))
-#      ,@body))
-# #+END_SRC
-# In above macro, we add the org readtable in slime environment,
-# it should be a little convenient for developers.
-
-# Let's export this macro so it can be used by other library conveniently.
-# #+BEGIN_SRC lisp
-# (export '(with-literate-syntax) :literate-lisp)
-# #+END_SRC
+Let's export this macro so it can be used by other library conveniently.
+#+BEGIN_SRC lisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(with-literate-syntax) :literate-lisp))
+#+END_SRC
 
 Now let's add literate support to ASDF system.
 
@@ -306,10 +305,7 @@ Then the new reader syntax for org file installs when ASDF actions perform to ev
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
-  (let ((*readtable* (named-readtables:ensure-readtable ':org)))
-    (when (find-package :swank)
-      (named-readtables::%frob-swank-readtable-alist
-       *package* *readtable*))
+  (literate-lisp:with-literate-syntax
     (call-next-method)))
 #+END_SRC
 Then after this package  load, one org file can load by ASDF automatically.
