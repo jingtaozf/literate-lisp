@@ -308,7 +308,7 @@ Then the new reader syntax for org file installs when ASDF actions perform to ev
   (literate-lisp:with-literate-syntax
     (call-next-method)))
 #+END_SRC
-Then after this package  load, one org file can load by ASDF automatically.
+Then after loading this package, one org file can load by ASDF automatically.
 * Test cases
 ** Preparation
 Now it's time to validate some functions.
