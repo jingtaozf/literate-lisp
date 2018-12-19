@@ -18,7 +18,7 @@
 
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language. 
-It extends the common lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]] so a common lisp vendor can read org files as source codes files directly.
+It extends the common lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]] so a common lisp vendor can read org files as source files directly.
 
 By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 literate programming can be very easy in one org file containing both documentation and source codes,
