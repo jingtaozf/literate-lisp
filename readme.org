@@ -150,7 +150,7 @@ This function is the entry point to run all tests and return true if all test ca
   (nst::run-package :literate-demo)
   (multiple-value-bind (status checks passed error fail warn)
       (nst::result-summary (nst::package-report (find-package :literate-demo)))
-    (format t "~&nst test status for literate-demo:~a, checks:~d, passed:~d, error:~D,faile:~D,warn:~D~%"
+    (format t "~&nst test status for literate-demo:~a, checks:~d, passed:~d, error:~D,fail:~D,warn:~D~%"
             status checks passed error fail warn)
     (and (= fail 0) (= 0 error))))
 #+END_SRC

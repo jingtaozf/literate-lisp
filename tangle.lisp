@@ -19,8 +19,8 @@
     (:no nil)
     (:test (find :test *features* :test #'eq))))
 
-(defun read-org-code-block-options (string begin-position-of-options)
-  (with-input-from-string (stream string :start begin-position-of-options)
+(defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
+  (with-input-from-string (stream string :start begin-position-of-header-arguments)
     (let ((*readtable* (copy-readtable nil))
           (*package* #.(find-package :keyword))
           (*read-suppress* nil))
@@ -39,8 +39,8 @@
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
         until (when (equalp start1 (search #1="#+BEGIN_SRC lisp" line))
-                   (let* ((options (read-org-code-block-options line (+ start1 (length #1#)))))
-                     (tangle-p (getf options :tangle :yes)))))
+                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length #1#)))))
+                     (tangle-p (getf header-arguments :tangle :yes)))))
   (values))
 
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also

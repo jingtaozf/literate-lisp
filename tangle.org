@@ -45,13 +45,13 @@ and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
 So to let lisp can read an org file directly, all lines out of surrounding
 by ~#+begin_src lisp~ and ~#+end_src~ should mean nothing, 
 and even codes surrounding by them should mean nothing 
-if the options in a code block request such behavior.
+if the [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]]  in a code block request such behavior.
 
 Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) will have a meaning 
 to make lisp reader enter into org mode syntax, 
 then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 
-When ~#+begign_src lisp~ occurs, org options for this code block give us
+When ~#+begign_src lisp~ occurs, org [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] for this code block give us
 a chance to switch back to normal lisp reader or not.
 
 And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should mean the end of current
@@ -91,11 +91,11 @@ There is a debug variable to switch on/off the log messages.
 ** function to handle reader syntax for "# "(# + Space)
 
 There are a lot of different lisp codes occur in one org file, some for function implementation,
-some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] option ~tangle~ to decide to
+some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~tangle~ to decide to
 read them or not should define,and it has three meanings:
 - yes \\
   It means that current code block should load normally, 
-  it is the default mode when the option ~tangle~ is not provided.
+  it is the default mode when the header argument ~tangle~ is not provided.
 - no \\
   It means that current code block should ignore by lisp reader.
 - test \\
@@ -109,11 +109,11 @@ read them or not should define,and it has three meanings:
     (:test (find :test *features* :test #'eq))))
 #+END_SRC
 
-Let's implement a function to read options after ~#+BEGIN_SRC lisp~,
-and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-options).
+Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
+and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-header-arguments).
 #+BEGIN_SRC lisp
-(defun read-org-code-block-options (string begin-position-of-options)
-  (with-input-from-string (stream string :start begin-position-of-options)
+(defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
+  (with-input-from-string (stream string :start begin-position-of-header-arguments)
     (let ((*readtable* (copy-readtable nil))
           (*package* #.(find-package :keyword))
           (*read-suppress* nil))
@@ -135,8 +135,8 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
         until (when (equalp start1 (search #1="#+BEGIN_SRC lisp" line))
-                   (let* ((options (read-org-code-block-options line (+ start1 (length #1#)))))
-                     (tangle-p (getf options :tangle :yes)))))
+                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length #1#)))))
+                     (tangle-p (getf header-arguments :tangle :yes)))))
   (values))
 #+END_SRC
 ** an implementation of original feature test.
@@ -321,16 +321,16 @@ every time there is a new git change.
     (ql:quickload :nst)))
 #+END_SRC
 ** test groups
-*** test for reading org code block options
-label:test-read-org-code-block-options
+*** test for reading org code block header-arguments
+label:test-read-org-code-block-header-arguments
 #+BEGIN_SRC lisp :tangle test
-(nst:def-test-group read-org-code-block-options ()
+(nst:def-test-group read-org-code-block-header-arguments ()
   (nst:def-test t1
-      (:equal nil) (read-org-code-block-options "" 0))
+      (:equal nil) (read-org-code-block-header-arguments "" 0))
   (nst:def-test t2
-    (:equal '(:tangle :no)) (read-org-code-block-options " :tangle no  " 0))
+    (:equal '(:tangle :no)) (read-org-code-block-header-arguments " :tangle no  " 0))
   (nst:def-test t3
-    (:equal '(:tangle :no)) (read-org-code-block-options " :tangle no" 0)))
+    (:equal '(:tangle :no)) (read-org-code-block-header-arguments " :tangle no" 0)))
 #+END_SRC
 
 ** run all tests in this library
@@ -340,7 +340,7 @@ this function is the entry point to run all tests and return true if all test ca
   (nst::run-package :literate-lisp)
   (multiple-value-bind (status checks passed error fail warn)
       (nst::result-summary (nst::package-report (find-package :literate-lisp)))
-    (format t "~&nst test status for literate-lisp:~a, checks:~d, passed:~d, error:~D,faile:~D,warn:~D~%"
+    (format t "~&nst test status for literate-lisp:~a, checks:~d, passed:~d, error:~D,fail:~D,warn:~D~%"
             status checks passed error fail warn)
     (and (= fail 0) (= 0 error))))
 #+END_SRC
