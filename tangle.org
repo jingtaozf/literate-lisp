@@ -24,6 +24,9 @@
 * Introduction
 This is a common lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in common lisp.
 
+It extends the common lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]] 
+so a common lisp vendor can read org files as common lisp source files.
+
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] show the reason why use org mode,
 and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
 
