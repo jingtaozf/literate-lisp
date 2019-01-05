@@ -98,7 +98,7 @@
                                                     :type "lisp")))
   (let ((*features* (if keep-test-codes
                       *features*
-                      (remove :test *features* :test 'eq))))
+                      (remove :literate-test *features* :test 'eq))))
     (with-open-file (input org-file)
       (with-open-file (output output-file :direction :output
                               :if-does-not-exist :create
