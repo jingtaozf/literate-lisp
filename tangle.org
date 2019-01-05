@@ -90,6 +90,11 @@ There is a debug variable to switch on/off the log messages.
 (declaim (type boolean debug-literate-lisp-p))
 #+END_SRC
 
+And let's define the org code block identifier.
+#+BEGIN_SRC lisp
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
+#+END_SRC
+
 ** function to handle reader syntax for "# "(# + Space)
 
 There are a lot of different lisp codes occur in one org file, some for function implementation,
@@ -136,8 +141,8 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
                            finally (return i))
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
-        until (when (equalp start1 (search #1="#+BEGIN_SRC lisp" line))
-                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length #1#)))))
+        until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
                      (tangle-p (getf header-arguments :tangle :yes)))))
   (values))
 #+END_SRC
@@ -287,11 +292,10 @@ Now let's add literate support to ASDF system.
 
 Firstly a new source file class for org files should define in ASDF package.
 #+BEGIN_SRC lisp
-(in-package :asdf)
-(defclass org (cl-source-file)
-  ((type :initform "org")))
+(defclass asdf::org (asdf:cl-source-file)
+  ((asdf::type :initform "org")))
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(org) :asdf))
+  (export '(asdf::org) :asdf))
 #+END_SRC 
 So a new ASDF source file type ~:org~ can define an org file like this
 #+caption: a demo code to show how to include org file in ASDF.
@@ -305,7 +309,6 @@ And file ~readme.org~ will load as a lisp source file by ASDF.
 
 Then the new reader syntax for org file installs when ASDF actions perform to every org file.
 #+BEGIN_SRC lisp
-(in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
@@ -314,37 +317,32 @@ Then after loading this package, one org file can load by ASDF automatically.
 * Test cases
 ** Preparation
 Now it's time to validate some functions.
+The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 
 Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
 every time there is a new git change.
 #+BEGIN_SRC lisp :tangle test
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :nst)
-    (ql:quickload :nst)))
+  (unless (find-package :fiveam)
+    (ql:quickload :fiveam)))
+(5am:def-suite literate-lisp-suite :description "The test suite of literate-lisp.")
+(5am:in-suite literate-lisp-suite)
 #+END_SRC
 ** test groups
 *** test for reading org code block header-arguments
 label:test-read-org-code-block-header-arguments
 #+BEGIN_SRC lisp :tangle test
-(nst:def-test-group read-org-code-block-header-arguments ()
-  (nst:def-test t1
-      (:equal nil) (read-org-code-block-header-arguments "" 0))
-  (nst:def-test t2
-    (:equal '(:tangle :no)) (read-org-code-block-header-arguments " :tangle no  " 0))
-  (nst:def-test t3
-    (:equal '(:tangle :no)) (read-org-code-block-header-arguments " :tangle no" 0)))
+(5am:test read-org-code-block-header-arguments
+  (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
+  (5am:is (equal '(:tangle :no) (read-org-code-block-header-arguments " :tangle no  " 0)))
+  (5am:is (equal '(:tangle :no) (read-org-code-block-header-arguments " :tangle no" 0))))
 #+END_SRC
 
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :tangle test
 (defun run-test ()
-  (nst::run-package :literate-lisp)
-  (multiple-value-bind (status checks passed error fail warn)
-      (nst::result-summary (nst::package-report (find-package :literate-lisp)))
-    (format t "~&nst test status for literate-lisp:~a, checks:~d, passed:~d, error:~D,fail:~D,warn:~D~%"
-            status checks passed error fail warn)
-    (and (= fail 0) (= 0 error))))
+  (5am:run! 'literate-lisp-suite))
 #+END_SRC
 
 ** run all tests in demo project

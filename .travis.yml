@@ -18,7 +18,7 @@ env:
     #- LISP=clasp
     - LISP=clisp
     - LISP=cmu-bin
-    #- LISP=ecl
+    - LISP=ecl
     #- LISP=mkcl
     - LISP=sbcl-bin
 

@@ -130,29 +130,25 @@ which is ~:a~ part of the original list.
 * Test cases for this demo project
 ** Preparation
 Now it's time to validate some functions.
-The [[https://github.com/jphmrst/cl-nst][nst]] library is used to test.
+The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 #+BEGIN_SRC lisp :tangle test
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :nst)
-    (ql:quickload :nst)))
+  (unless (find-package :fiveam)
+    (ql:quickload :fiveam)))
+(5am:def-suite literate-demo-suite :description "The test suite of literate-demo.")
+(5am:in-suite literate-demo-suite)
 #+END_SRC
 ** tests for ~recursive-assoc~
 label:test-recursive-assoc
 #+BEGIN_SRC lisp :tangle test
-(nst:def-test-group recursive-assoc ()
-  (nst:def-test t1
-      (:equal 'c) (recursive-assoc '((:a . ((:b . c)))) :a :b)))
+(5am:test recursive-assoc 
+  (5am:is (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))))
 #+END_SRC
 ** run all tests in this library
 This function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :tangle test
 (defun run-test ()
-  (nst::run-package :literate-demo)
-  (multiple-value-bind (status checks passed error fail warn)
-      (nst::result-summary (nst::package-report (find-package :literate-demo)))
-    (format t "~&nst test status for literate-demo:~a, checks:~d, passed:~d, error:~D,fail:~D,warn:~D~%"
-            status checks passed error fail warn)
-    (and (= fail 0) (= 0 error))))
+  (5am:run! 'literate-demo-suite))
 #+END_SRC
 Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] to run these tests automatically 
 every time there is a new git change.

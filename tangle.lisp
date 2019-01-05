@@ -13,6 +13,8 @@
 (defvar debug-literate-lisp-p nil)
 (declaim (type boolean debug-literate-lisp-p))
 
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
+
 (defun tangle-p (feature)
   (case feature
     ((nil :yes) t)
@@ -38,8 +40,8 @@
                            finally (return i))
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
-        until (when (equalp start1 (search #1="#+BEGIN_SRC lisp" line))
-                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length #1#)))))
+        until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
                      (tangle-p (getf header-arguments :tangle :yes)))))
   (values))
 
@@ -139,13 +141,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(with-literate-syntax) :literate-lisp))
 
-(in-package :asdf)
-(defclass org (cl-source-file)
-  ((type :initform "org")))
+(defclass asdf::org (asdf:cl-source-file)
+  ((asdf::type :initform "org")))
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(org) :asdf))
+  (export '(asdf::org) :asdf))
 
-(in-package :literate-lisp)
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
