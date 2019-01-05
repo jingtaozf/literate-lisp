@@ -12,13 +12,15 @@ env:
     - PATH=~/.roswell/bin:$PATH
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
   matrix:
-    - LISP=sbcl-bin
+    - LISP=abcl-bin
+    - LISP=allegro
     - LISP=ccl-bin
-    #- LISP=abcl
+    #- LISP=clasp
     - LISP=clisp
-    #- LISP=ecl
-    #- LISP=cmucl
-    #- LISP=alisp
+    - LISP=cmu-bin
+    - LISP=ecl
+    #- LISP=mkcl
+    - LISP=sbcl-bin
 
 # matrix:
 #   allow_failures:
@@ -37,10 +39,9 @@ cache:
     - $HOME/.config/common-lisp
 
 script:
-  - ros run -e '(pushnew :test *features*)'
-            -e '(ql:quickload :nst)'
+  - ros run -e '(pushnew :literate-test *features*)'
             -e '(ql:quickload :literate-lisp)'
-            -e '(let ((*readtable* (named-readtables:ensure-readtable :org))) (load "./tangle.org"))'
+            -e '(literate-lisp:with-literate-syntax (load "./tangle.org"))'
             -e '(ql:quickload :literate-demo)'
             -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))'
             -e '(if (not (literate-demo::run-test)) (uiop:quit 1))'

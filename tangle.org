@@ -75,11 +75,10 @@ Which make emacs open file with utf-8 encoding and [[https://github.com/polymode
 ** Preparation
 
 Firstly a new lisp package for this library is defined.
-Package [[https://github.com/melisgl/named-readtables][named-readtables]] is used here to simplify the definition of reader syntax.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
 (defpackage :literate-lisp 
-  (:use :cl :named-readtables)
+  (:use :cl)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -102,14 +101,14 @@ read them or not should define,and it has three meanings:
 - no \\
   It means that current code block should ignore by lisp reader.
 - test \\
-  It means that current code block should load only when feature ~test~ exist.
+  It means that current code block should load only when feature ~literate-test~ exist.
 
 #+BEGIN_SRC lisp
 (defun tangle-p (feature)
   (case feature
     ((nil :yes) t)
     (:no nil)
-    (:test (find :test *features* :test #'eq))))
+    (:test (find :literate-test *features* :test #'eq))))
 #+END_SRC
 
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
@@ -195,11 +194,14 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
              (values))))))
 #+END_SRC
 ** Install the new reader syntax.
+Let's use a new read table to hold the reader for org syntax.
 #+BEGIN_SRC lisp
-(defreadtable :org
-  (:merge :standard)
-  (:dispatch-macro-char #\# #\Space #'tangle-number-sign+space)
-  (:dispatch-macro-char #\# #\+ #'tangle-sharp-plus-minus))
+(defvar *org-readtable* (copy-readtable))
+#+END_SRC
+Now install the reader function to this read table.
+#+BEGIN_SRC lisp
+(set-dispatch-macro-character #\# #\space #'tangle-number-sign+space *org-readtable*)
+(set-dispatch-macro-character #\# #\+ #'tangle-sharp-plus-minus *org-readtable*)
 #+END_SRC
 ** tangle an org file
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
@@ -269,13 +271,10 @@ Let's export this function so it can be used by other library conveniently.
 Firstly, let's define a macro so org syntax codes can be compiled and loaded.
 #+BEGIN_SRC lisp
 (defmacro with-literate-syntax (&body body)
-  `(let ((*readtable* (named-readtables:ensure-readtable ':org)))
-     (when (find-package :swank)
-       (named-readtables::%frob-swank-readtable-alist
-        *package* *readtable*))
+  `(let ((*readtable* *org-readtable*))
      ,@body))
 #+END_SRC
-In above macro, we add the org readtable in slime environment,
+In above macro, we add the org read table in slime environment,
 it should be a little convenient for developers.
 
 Let's export this macro so it can be used by other library conveniently.
@@ -315,8 +314,8 @@ Then after loading this package, one org file can load by ASDF automatically.
 * Test cases
 ** Preparation
 Now it's time to validate some functions.
-The [[https://github.com/jphmrst/cl-nst][nst]] test framework is the choice for this library, 
-and web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
+
+Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
 every time there is a new git change.
 #+BEGIN_SRC lisp :tangle test
 (eval-when (:compile-toplevel :load-toplevel :execute)

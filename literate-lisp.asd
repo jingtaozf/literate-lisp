@@ -4,8 +4,8 @@
 ;; Description: package definition of literate-lisp.
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2018.11.15 20:44:59(+0800)
-;;     Update #: 54
+;; Last-Updated: 2019.01.05 12:58:23(+0800)
+;;     Update #: 55
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -28,5 +28,4 @@
                         :components ((:file "tangle"))
                         :serial t)
                )
-  :properties ((version "0.1"))
-  :depends-on (:named-readtables))
+  :properties ((version "0.1")))

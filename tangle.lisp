@@ -5,7 +5,7 @@
 
 (in-package :common-lisp-user)
 (defpackage :literate-lisp 
-  (:use :cl :named-readtables)
+  (:use :cl)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -17,7 +17,7 @@
   (case feature
     ((nil :yes) t)
     (:no nil)
-    (:test (find :test *features* :test #'eq))))
+    (:test (find :literate-test *features* :test #'eq))))
 
 (defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
   (with-input-from-string (stream string :start begin-position-of-header-arguments)
@@ -87,10 +87,10 @@
              (read stream t nil t)
              (values))))))
 
-(defreadtable :org
-  (:merge :standard)
-  (:dispatch-macro-char #\# #\Space #'tangle-number-sign+space)
-  (:dispatch-macro-char #\# #\+ #'tangle-sharp-plus-minus))
+(defvar *org-readtable* (copy-readtable))
+
+(set-dispatch-macro-character #\# #\space #'tangle-number-sign+space *org-readtable*)
+(set-dispatch-macro-character #\# #\+ #'tangle-sharp-plus-minus *org-readtable*)
 
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
@@ -133,10 +133,7 @@
   (export '(tangle-org-file) :literate-lisp))
 
 (defmacro with-literate-syntax (&body body)
-  `(let ((*readtable* (named-readtables:ensure-readtable ':org)))
-     (when (find-package :swank)
-       (named-readtables::%frob-swank-readtable-alist
-        *package* *readtable*))
+  `(let ((*readtable* *org-readtable*))
      ,@body))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
