@@ -61,13 +61,13 @@ We use the original ASD definition file, so file [[./literate-demo.asd]] is defi
 To use the [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][extended ASDF syntax]] of ~literate-lisp~,
 we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] 
 like this firstly:
-#+BEGIN_SRC lisp :tangle no
+#+BEGIN_SRC lisp :load no
 (eval-when (:load-toplevel :execute)
   (asdf:load-system :literate-lisp))
 #+END_SRC
 
 Now let's define the ASDF system for this demo package
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp :load no
 (asdf:defsystem literate-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
   :version "0.1"
@@ -97,11 +97,11 @@ As a demo project, we just show a demo function ~recursive-assoc~ here.
 The function [[http://clhs.lisp.se/Body/f_assocc.htm][assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]]. When I want to
 find item from an association list contains a lot of other association list with very deep level, I
 have to write codes like this which is too long.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (cdr (assoc :b (cdr (assoc :a '((:a . ((:b . c))))))))
 #+END_SRC
 To simplify the expression, a macro ~recursive-assoc~ to simply to the following form provides:
-#+BEGIN_SRC lisp :tangle no
+#+BEGIN_SRC lisp :load no
 (recursive-assoc '((:a . ((:b . c)))) :a :b)
 #+END_SRC
 
@@ -124,14 +124,14 @@ Then the implementation macro is simple(test is here: ref:test-recursive-assoc)
 
 For example, you can use it like this,which get ~:b~ part of the sub association list 
 which is ~:a~ part of the original list.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
 * Test cases for this demo project
 ** Preparation
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
     (ql:quickload :fiveam)))
@@ -140,13 +140,13 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 #+END_SRC
 ** tests for ~recursive-assoc~
 label:test-recursive-assoc
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (5am:test recursive-assoc 
   (5am:is (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))))
 #+END_SRC
 ** run all tests in this library
 This function is the entry point to run all tests and return true if all test cases pass.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (defun run-test ()
   (5am:run! 'literate-demo-suite))
 #+END_SRC

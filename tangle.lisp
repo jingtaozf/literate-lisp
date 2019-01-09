@@ -15,7 +15,7 @@
 
 (defvar org-lisp-begin-src-id "#+begin_src lisp")
 
-(defun tangle-p (feature)
+(defun load-p (feature)
   (case feature
     ((nil :yes) t)
     (:no nil)
@@ -30,7 +30,7 @@
                      while elem
                      collect elem))))
 
-(defun tangle-number-sign+space (stream a b)
+(defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
         until (null line)
@@ -42,7 +42,7 @@
              (format t "ignore line ~a~%" line))
         until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
                    (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
-                     (tangle-p (getf header-arguments :tangle :yes)))))
+                     (load-p (getf header-arguments :load :yes)))))
   (values))
 
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
@@ -66,7 +66,7 @@
     (t
       (error "invalid feature expression: ~S" x))))
 
-(defun tangle-sharp-plus-minus (stream sub-char numarg)
+(defun sharp-plus (stream sub-char numarg)
   ;; 1. read into the feature as an keyword.
   (let ((feature (let ((*package* #.(find-package :keyword))
                        ;;(*reader-package* nil)
@@ -78,7 +78,7 @@
     (cond ((eq :END_SRC feature)
            (when debug-literate-lisp-p
              (format t "found #+END_SRC,start read org part...~%"))
-           (funcall #'tangle-number-sign+space stream sub-char numarg))
+           (funcall #'sharp-space stream sub-char numarg))
           ;; 2.2 otherwise test the feature.
           ;;   2.2.1 If the feature exist, read the following object recursively normally.
           ((featurep feature)
@@ -91,8 +91,8 @@
 
 (defvar *org-readtable* (copy-readtable))
 
-(set-dispatch-macro-character #\# #\space #'tangle-number-sign+space *org-readtable*)
-(set-dispatch-macro-character #\# #\+ #'tangle-sharp-plus-minus *org-readtable*)
+(set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
+(set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*)
 
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
@@ -115,7 +115,7 @@
         (block read-org-files
           (loop do
             ;; ignore all lines of org syntax.
-            (tangle-number-sign+space input nil nil)
+            (sharp-space input nil nil)
             ;; start to read codes in code block until reach `#+end_src'
             (loop for line = (read-line input nil nil)
                   do
@@ -130,6 +130,10 @@
                       (when debug-literate-lisp-p
                         (format t "read code line:~s~%" line))
                       (write-line line output))))))))))
+
+(tangle-org-file
+ (format nil "~a/tangle.org"
+         (asdf:component-pathname (asdf:find-system :literate-lisp))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(tangle-org-file) :literate-lisp))
@@ -146,7 +150,26 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(asdf::org) :asdf))
 
+(asdf:defsystem literate-demo
+  :components ((:module demo :pathname "./"
+                        :components ((:org "readme"))))
+  :depends-on (:literate-lisp))
+
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package :fiveam)
+    (ql:quickload :fiveam)))
+(5am:def-suite literate-lisp-suite :description "The test suite of literate-lisp.")
+(5am:in-suite literate-lisp-suite)
+
+(5am:test read-org-code-block-header-arguments
+  (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
+  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
+  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
+
+(defun run-test ()
+  (5am:run! 'literate-lisp-suite))
 

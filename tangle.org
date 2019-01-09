@@ -40,7 +40,7 @@ and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
 (see [[https://orgmode.org/manual/Literal-examples.html][org manual]]).
 
 #+BEGIN_EXAMPLE
-   ,#+BEGIN_SRC lisp :tangle no
+   ,#+BEGIN_SRC lisp :load no
    (format t "this is a test.~%")
    ,#+END_SRC
 #+END_EXAMPLE
@@ -98,18 +98,18 @@ And let's define the org code block identifier.
 ** function to handle reader syntax for "# "(# + Space)
 
 There are a lot of different lisp codes occur in one org file, some for function implementation,
-some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~tangle~ to decide to
+some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
 read them or not should define,and it has three meanings:
 - yes \\
   It means that current code block should load normally, 
-  it is the default mode when the header argument ~tangle~ is not provided.
+  it is the default mode when the header argument ~load~ is not provided.
 - no \\
   It means that current code block should ignore by lisp reader.
 - test \\
   It means that current code block should load only when feature ~literate-test~ exist.
 
 #+BEGIN_SRC lisp
-(defun tangle-p (feature)
+(defun load-p (feature)
   (case feature
     ((nil :yes) t)
     (:no nil)
@@ -131,7 +131,7 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
 
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 #+BEGIN_SRC lisp
-(defun tangle-number-sign+space (stream a b)
+(defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
         until (null line)
@@ -143,7 +143,7 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
              (format t "ignore line ~a~%" line))
         until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
                    (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
-                     (tangle-p (getf header-arguments :tangle :yes)))))
+                     (load-p (getf header-arguments :load :yes)))))
   (values))
 #+END_SRC
 ** an implementation of original feature test.
@@ -175,7 +175,7 @@ This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/sr
 
 The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]].
 #+BEGIN_SRC lisp
-(defun tangle-sharp-plus-minus (stream sub-char numarg)
+(defun sharp-plus (stream sub-char numarg)
   ;; 1. read into the feature as an keyword.
   (let ((feature (let ((*package* #.(find-package :keyword))
                        ;;(*reader-package* nil)
@@ -187,7 +187,7 @@ The mechanism to handle normal lisp syntax "#+" is also referenced from [[https:
     (cond ((eq :END_SRC feature)
            (when debug-literate-lisp-p
              (format t "found #+END_SRC,start read org part...~%"))
-           (funcall #'tangle-number-sign+space stream sub-char numarg))
+           (funcall #'sharp-space stream sub-char numarg))
           ;; 2.2 otherwise test the feature.
           ;;   2.2.1 If the feature exist, read the following object recursively normally.
           ((featurep feature)
@@ -205,16 +205,16 @@ Let's use a new read table to hold the reader for org syntax.
 #+END_SRC
 Now install the reader function to this read table.
 #+BEGIN_SRC lisp
-(set-dispatch-macro-character #\# #\space #'tangle-number-sign+space *org-readtable*)
-(set-dispatch-macro-character #\# #\+ #'tangle-sharp-plus-minus *org-readtable*)
+(set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
+(set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*)
 #+END_SRC
 ** tangle an org file
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
 
 Argument ~org-file~ is the source org file.
-Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should tangle.
+Argument ~keep-test-codes~ is a Boolean value to indicate whether test codes should load.
 
-The basic method is simple here, we use function ~tangle-number-sign+space~ to ignore all lines should be ignored,
+The basic method is simple here, we use function ~sharp-space~ to ignore all lines should be ignored,
 then export all code lines until we reach ~#+end_src~, this process is repeated to end of org file.
 
 This mechanism is good enough because it will not damage any codes in org code blocks.
@@ -240,7 +240,7 @@ This mechanism is good enough because it will not damage any codes in org code b
         (block read-org-files
           (loop do
             ;; ignore all lines of org syntax.
-            (tangle-number-sign+space input nil nil)
+            (sharp-space input nil nil)
             ;; start to read codes in code block until reach `#+end_src'
             (loop for line = (read-line input nil nil)
                   do
@@ -259,7 +259,7 @@ This mechanism is good enough because it will not damage any codes in org code b
 So when a new version of [[./tangle.lisp]] can release from this file, 
 the following code should execute.
 #+caption: a demo code to tangle current org file.
-#+BEGIN_SRC lisp :tangle no
+#+BEGIN_SRC lisp :load no
 (tangle-org-file
  (format nil "~a/tangle.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp))))
@@ -299,7 +299,7 @@ Firstly a new source file class for org files should define in ASDF package.
 #+END_SRC 
 So a new ASDF source file type ~:org~ can define an org file like this
 #+caption: a demo code to show how to include org file in ASDF.
-#+BEGIN_SRC lisp :tangle no
+#+BEGIN_SRC lisp :load no
 (asdf:defsystem literate-demo
   :components ((:module demo :pathname "./"
                         :components ((:org "readme"))))
@@ -321,7 +321,7 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 
 Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically 
 every time there is a new git change.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
     (ql:quickload :fiveam)))
@@ -331,16 +331,16 @@ every time there is a new git change.
 ** test groups
 *** test for reading org code block header-arguments
 label:test-read-org-code-block-header-arguments
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (5am:test read-org-code-block-header-arguments
   (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
-  (5am:is (equal '(:tangle :no) (read-org-code-block-header-arguments " :tangle no  " 0)))
-  (5am:is (equal '(:tangle :no) (read-org-code-block-header-arguments " :tangle no" 0))))
+  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
+  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
 #+END_SRC
 
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.
-#+BEGIN_SRC lisp :tangle test
+#+BEGIN_SRC lisp :load test
 (defun run-test ()
   (5am:run! 'literate-lisp-suite))
 #+END_SRC
