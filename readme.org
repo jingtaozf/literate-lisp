@@ -5,16 +5,11 @@
 
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
-- [[#preparation][Preparation]]
+- [[#tutorial][Tutorial]]
   - [[#install-polymode-in-emacs][install polymode in emacs]]
-- [[#a-demo-lisp-package][A demo lisp package]]
-  - [[#prepare-the-asd-definition-file][Prepare the asd definition file]]
-  - [[#package-definition][package definition]]
-  - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
-- [[#test-cases-for-this-demo-project][Test cases for this demo project]]
-  - [[#preparation-1][Preparation]]
-  - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
-  - [[#run-all-tests-in-this-library][run all tests in this library]]
+  - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
+  - [[#a-demo-lisp-package][A demo lisp package]]
+  - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
 
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language. 
@@ -43,7 +38,7 @@ This library contains the following files:
 - [[./literate-demo.asd]] \\
   The ASDF definition for literate demo project.
 
-* Preparation
+* Tutorial
 ** install polymode in emacs
 It's better to edit the org file with [[https://polymode.github.io/][polymode]],which will make code block use its native file mode. 
 The following elisp scripts in .emacs will install it.
@@ -52,8 +47,10 @@ The following elisp scripts in .emacs will install it.
     :ensure t)
 #+END_SRC
 
-* A demo lisp package
-** Prepare the asd definition file
+** a new code block header argument ~load~
+Please have a look of the section [[./literate-lisp.org#function-to-handle-reader-syntax-for----space][function to handle reader syntax for “# “(# + Space)]] in [[./literate-lisp.org]].
+** A demo lisp package
+*** Prepare the asd definition file
 
 We use the original ASD definition file, so file [[./literate-demo.asd]] is defined
 (The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
@@ -83,7 +80,7 @@ Which will load this [[./readme.org]] directly as a lisp source file.
 
 The whole content of ASDF definition file is in [[./literate-demo.asd]].
 
-** package definition
+*** package definition
 
 Firstly we define a new package for this demo project and switch to it.
 #+BEGIN_SRC lisp
@@ -91,7 +88,7 @@ Firstly we define a new package for this demo project and switch to it.
 (defpackage :literate-demo (:use :cl))
 (in-package :literate-demo)
 #+END_SRC
-** a demo function to a recursive assoc implementation
+*** a demo function to a recursive assoc implementation
 As a demo project, we just show a demo function ~recursive-assoc~ here.
 
 The function [[http://clhs.lisp.se/Body/f_assocc.htm][assoc]] only find first level item from an [[http://clhs.lisp.se/Body/26_glo_a.htm#association_list][association list]]. When I want to
@@ -127,8 +124,8 @@ which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :load test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
-* Test cases for this demo project
-** Preparation
+** Test cases for this demo project
+*** Preparation
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 #+BEGIN_SRC lisp :load test
@@ -138,13 +135,13 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 (5am:def-suite literate-demo-suite :description "The test suite of literate-demo.")
 (5am:in-suite literate-demo-suite)
 #+END_SRC
-** tests for ~recursive-assoc~
+*** tests for ~recursive-assoc~
 label:test-recursive-assoc
 #+BEGIN_SRC lisp :load test
 (5am:test recursive-assoc 
   (5am:is (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))))
 #+END_SRC
-** run all tests in this library
+*** run all tests in this library
 This function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :load test
 (defun run-test ()
