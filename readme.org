@@ -2,6 +2,7 @@
 #+Startup: noindent
 
 [[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
+[[http://quickdocs.org/literate-lisp/][file:http://quickdocs.org/badge/literate-lisp.svg]]
 
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
