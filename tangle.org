@@ -279,8 +279,6 @@ Firstly, let's define a macro so org syntax codes can be compiled and loaded.
   `(let ((*readtable* *org-readtable*))
      ,@body))
 #+END_SRC
-In above macro, we add the org read table in slime environment,
-it should be a little convenient for developers.
 
 Let's export this macro so it can be used by other library conveniently.
 #+BEGIN_SRC lisp
