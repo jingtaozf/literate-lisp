@@ -61,7 +61,7 @@ we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]]
 like this firstly:
 #+BEGIN_SRC lisp :load no
 (eval-when (:load-toplevel :execute)
-  (ql:quickload :literate-lisp))
+  (asdf:load-system :literate-lisp))
 #+END_SRC
 
 Now let's define the ASDF system for this demo package
