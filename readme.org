@@ -7,7 +7,7 @@
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
 - [[#tutorial][Tutorial]]
-  - [[#install-polymode-in-emacs][install polymode in emacs]]
+  - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
   - [[#a-demo-lisp-package][A demo lisp package]]
   - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
@@ -17,7 +17,7 @@
 It extends the common lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]] 
 so a common lisp vendor can read org files as common lisp source files.
 
-By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), Emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 literate programming can be very easy in one org file containing both documentation and source codes,
 and this org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
 
@@ -40,7 +40,7 @@ This library contains the following files:
   The ASDF definition for literate demo project.
 
 * Tutorial
-** install polymode in emacs
+** install polymode in Emacs
 It's better to edit the org file with [[https://polymode.github.io/][polymode]],which will make code block use its native file mode. 
 The following elisp scripts in .emacs will install it.
 #+BEGIN_SRC elisp

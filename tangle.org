@@ -30,7 +30,7 @@ so a common lisp vendor can read org files as common lisp source files.
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] show the reason why use org mode,
 and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
 
-By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
+By using common lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , Emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]], 
 literate programming can be easy in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
@@ -69,7 +69,7 @@ for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- --- 
 #+END_SRC
-Which make emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
+Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
 
 * Implementation
 ** Preparation
