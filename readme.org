@@ -132,7 +132,8 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 #+BEGIN_SRC lisp :load test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
-    (ql:quickload :fiveam)))
+    #+quicklisp (ql:quickload :fiveam)
+    #-quicklisp (asdf:load-system :fiveam)))
 (5am:def-suite literate-demo-suite :description "The test suite of literate-demo.")
 (5am:in-suite literate-demo-suite)
 #+END_SRC

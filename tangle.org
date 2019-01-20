@@ -322,7 +322,8 @@ every time there is a new git change.
 #+BEGIN_SRC lisp :load test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
-    (ql:quickload :fiveam)))
+    #+quicklisp (ql:quickload :fiveam)
+    #-quicklisp (asdf:load-system :fiveam)))
 (5am:def-suite literate-lisp-suite :description "The test suite of literate-lisp.")
 (5am:in-suite literate-lisp-suite)
 #+END_SRC

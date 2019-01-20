@@ -131,10 +131,6 @@
                         (format t "read code line:~s~%" line))
                       (write-line line output))))))))))
 
-(tangle-org-file
- (format nil "~a/tangle.org"
-         (asdf:component-pathname (asdf:find-system :literate-lisp))))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(tangle-org-file) :literate-lisp))
 
@@ -150,26 +146,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(asdf::org) :asdf))
 
-(asdf:defsystem literate-demo
-  :components ((:module demo :pathname "./"
-                        :components ((:org "readme"))))
-  :depends-on (:literate-lisp))
-
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :fiveam)
-    (ql:quickload :fiveam)))
-(5am:def-suite literate-lisp-suite :description "The test suite of literate-lisp.")
-(5am:in-suite literate-lisp-suite)
-
-(5am:test read-org-code-block-header-arguments
-  (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
-
-(defun run-test ()
-  (5am:run! 'literate-lisp-suite))
 
