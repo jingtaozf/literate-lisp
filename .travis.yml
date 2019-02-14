@@ -13,7 +13,7 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
   matrix:
     - LISP=abcl-bin
-    - LISP=allegro
+    # - LISP=allegro
     - LISP=ccl-bin
     #- LISP=clasp
     - LISP=clisp
