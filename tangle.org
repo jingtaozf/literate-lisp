@@ -79,6 +79,7 @@ Firstly a new lisp package for this library is defined.
 (in-package :common-lisp-user)
 (defpackage :literate-lisp 
   (:use :cl)
+  (:export :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -265,12 +266,6 @@ the following code should execute.
          (asdf:component-pathname (asdf:find-system :literate-lisp))))
 #+END_SRC
 
-Let's export this function so it can be used by other library conveniently.
-#+BEGIN_SRC lisp
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(tangle-org-file) :literate-lisp))
-#+END_SRC
-
 ** make ASDF handle org file correctly
 
 Firstly, let's define a macro so org syntax codes can be compiled and loaded.
@@ -278,12 +273,6 @@ Firstly, let's define a macro so org syntax codes can be compiled and loaded.
 (defmacro with-literate-syntax (&body body)
   `(let ((*readtable* *org-readtable*))
      ,@body))
-#+END_SRC
-
-Let's export this macro so it can be used by other library conveniently.
-#+BEGIN_SRC lisp
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(with-literate-syntax) :literate-lisp))
 #+END_SRC
 
 Now let's add literate support to ASDF system.

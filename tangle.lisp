@@ -6,6 +6,7 @@
 (in-package :common-lisp-user)
 (defpackage :literate-lisp 
   (:use :cl)
+  (:export :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -131,15 +132,9 @@
                         (format t "read code line:~s~%" line))
                       (write-line line output))))))))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(tangle-org-file) :literate-lisp))
-
 (defmacro with-literate-syntax (&body body)
   `(let ((*readtable* *org-readtable*))
      ,@body))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(with-literate-syntax) :literate-lisp))
 
 (defclass asdf::org (asdf:cl-source-file)
   ((asdf::type :initform "org")))
