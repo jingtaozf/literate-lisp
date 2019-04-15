@@ -53,18 +53,12 @@ Please have a look of the section [[./literate-lisp.org#function-to-handle-reade
 ** A demo lisp package
 *** Prepare the asd definition file
 
-We use the original ASD definition file, so file [[./literate-demo.asd]] is defined
-(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
+We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
 
-To use the [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][extended ASDF syntax]] of ~literate-lisp~,
-we have to load [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] 
-like this firstly:
-#+BEGIN_SRC lisp :load no
-(eval-when (:load-toplevel :execute)
-  (asdf:load-system :literate-lisp))
-#+END_SRC
+In a short word,we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and 
+declare the org source file with new ASDF keyword ~:org~.  
 
-Now let's define the ASDF system for this demo package
+Now let's define the ASDF system file [[./literate-demo.asd]] for this demo package
 #+BEGIN_SRC elisp :load no
 (asdf:defsystem literate-demo
   :author "Xu Jingtao <jingtaozf@gmail.com>"
@@ -72,10 +66,10 @@ Now let's define the ASDF system for this demo package
   :licence "MIT"
   :serial t
   :description "an demo project of literate-lisp"
-  :components ((:module org :pathname "./"
+  :defsystem-depends-on ("literate-lisp")
+  :components ((:module :demo :pathname "./"
                         :components ((:org "readme"))))
-  :properties ((version "0.1"))
-  :depends-on (:literate-lisp))
+  :properties ((version "0.1")))
 #+END_SRC
 Which will load this [[./readme.org]] directly as a lisp source file.
 

@@ -4,8 +4,8 @@
 ;; Description: 
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2019.01.20 23:34:51(+0800)
-;;     Update #: 56
+;; Last-Updated: 2019.04.15 08:52:48(+0800)
+;;     Update #: 61
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary: 
@@ -15,9 +15,6 @@
   (unless (find-package :literate-demo.system)
     (defpackage :literate-demo.system
       (:use :cl :asdf))))
-(cl:eval-when (:load-toplevel :execute)
-  #+quicklisp (ql:quickload :literate-lisp)
-  #-quicklisp (asdf:load-system :literate-lisp))
 
 (in-package :literate-demo.system)
 
@@ -27,7 +24,7 @@
   :licence "MIT"
   :serial t
   :description "an demo project of literate-lisp"
-  :components ((:module org :pathname "./"
+  :defsystem-depends-on ("literate-lisp")
+  :components ((:module :demo :pathname "./"
                         :components ((:org "readme"))))
-  :properties ((version "0.1"))
-  :depends-on (:literate-lisp))
+  :properties ((version "0.1")))
