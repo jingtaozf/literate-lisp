@@ -22,13 +22,9 @@ env:
     #- LISP=mkcl
     - LISP=sbcl-bin
 
-# matrix:
-#   allow_failures:
-#     - env: LISP=clisp
-#     - env: LISP=abcl
-#     - env: LISP=ecl
-#     - env: LISP=cmucl
-#     - env: LISP=alisp
+matrix:
+  allow_failures:
+    - env: LISP=clisp
 
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
