@@ -49,7 +49,7 @@ The following elisp scripts in .emacs will install it.
 #+END_SRC
 
 ** a new code block header argument ~load~
-Please have a look of the section [[./literate-lisp.org#function-to-handle-reader-syntax-for----space][function to handle reader syntax for “# “(# + Space)]] in [[./literate-lisp.org]].
+Please have a look of the section [[./tangle.org#function-to-handle-reader-syntax-for----space][function to handle reader syntax for “# “(# + Space)]] in [[./tangle.org]].
 ** A demo lisp package
 *** Prepare the asd definition file
 
