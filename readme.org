@@ -51,7 +51,7 @@ The following elisp scripts in .emacs will install it.
 ** a new code block header argument ~load~
 Please have a look of the section [[./tangle.org#function-to-handle-reader-syntax-for----space][function to handle reader syntax for “# “(# + Space)]] in [[./tangle.org]].
 ** A demo lisp package
-*** Prepare the asd definition file
+*** Prepare the ASD definition file
 
 We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
 
