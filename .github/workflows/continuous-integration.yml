@@ -1,0 +1,28 @@
+name: Continous Integration
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        LISP: [abcl-bin, ccl-bin, cmu-bin, ecl, sbcl-bin]
+    steps:
+    - uses: actions/checkout@v1
+    - name: install Lisp
+      env:
+        LISP: ${{matrix.LISP}}
+      run: |
+        export PATH=~/.roswell/bin:$PATH
+        export ROSWELL_INSTALL_DIR=$HOME/.roswell
+        curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+    - name: run test       
+      run: |
+        export PATH=~/.roswell/bin:$PATH
+        ros run -e '(pushnew :literate-test *features*)' \
+            -e '(ql:quickload :literate-lisp)' \
+            -e '(literate-lisp:with-literate-syntax (load "./tangle.org"))' \
+            -e '(ql:quickload :literate-demo)' \
+            -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))' \
+            -e '(if (not (literate-demo::run-test)) (uiop:quit 1))' \
+            -e '(uiop:quit 0)'
+            

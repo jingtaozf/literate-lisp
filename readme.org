@@ -3,6 +3,7 @@
 
 [[https://travis-ci.com/jingtaozf/literate-lisp][file:https://travis-ci.com/jingtaozf/literate-lisp.svg?branch=master]]
 [[http://quickdocs.org/literate-lisp/][file:http://quickdocs.org/badge/literate-lisp.svg]]
+[[https://github.com/jingtaozf/literate-lisp/actions][file:https://github.com/jingtaozf/literate-lisp/workflows/Continous%20Integration/badge.svg]]
 
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
