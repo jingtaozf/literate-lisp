@@ -4,7 +4,7 @@
 ;;; Please read file `tangle.org' to find out the usage and implementation detail of this source file.
 
 (in-package :common-lisp-user)
-(defpackage :literate-lisp 
+(defpackage :literate-lisp
   (:use :cl)
   (:export :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
@@ -144,4 +144,9 @@
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
+
+#+lispworks
+(lw:defadvice (cl:load literate-load :around) (&rest args)
+  (literate-lisp:with-literate-syntax
+    (apply #'lw:call-next-advice args)))
 
