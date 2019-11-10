@@ -14,6 +14,7 @@
 - [[#how-to-do-it][How to do it?]]
 - [[#implementation][Implementation]]
   - [[#preparation][Preparation]]
+  - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
   - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
   - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
@@ -101,11 +102,9 @@ There is a debug variable to switch on/off the log messages.
 
 And let's define the org code block identifier.
 #+BEGIN_SRC lisp
-(defvar org-lisp-begin-src-id "#+begin_src lisp")
 #+END_SRC
 
-** function to handle reader syntax for "# "(# + Space)
-
+** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
 read them or not should define,and it has three meanings:
@@ -116,7 +115,6 @@ read them or not should define,and it has three meanings:
   It means that current code block should ignore by lisp reader.
 - test \\
   It means that current code block should load only when feature ~literate-test~ exist.
-
 #+BEGIN_SRC lisp
 (defun load-p (feature)
   (case feature
@@ -124,9 +122,9 @@ read them or not should define,and it has three meanings:
     (:no nil)
     (:test (find :literate-test *features* :test #'eq))))
 #+END_SRC
-
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
 and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-header-arguments).
+
 #+BEGIN_SRC lisp
 (defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
   (with-input-from-string (stream string :start begin-position-of-header-arguments)
@@ -138,19 +136,33 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
                      collect elem))))
 #+END_SRC
 
+** function to handle reader syntax for "# "(# + Space)
 Now it's time to implement the new reader function for syntax "# "(# + Space).
+
+We have to check whether current line is a ~#+begin src lisp~. 
+Additionally, we will ignore space characters in the beginning of line,let's find the position of it by a function.
+#+BEGIN_SRC lisp
+(defun start-position-after-space-characters (line)
+  (loop for c of-type character across line
+        for i of-type fixnum from 0
+        until (not (find c '(#\Tab #\Space)))
+        finally (return i)))
+#+END_SRC
+
+#+BEGIN_SRC lisp
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
+#+END_SRC
+
+the reader syntax is simple, ignore all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
 #+BEGIN_SRC lisp
 (defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
         until (null line)
-        for start1 = (loop for c of-type character across line
-                           for i of-type fixnum from 0
-                           until (not (find c '(#\Tab #\Space)))
-                           finally (return i))
+        for start1 = (start-position-after-space-characters line)
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
-        until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+        until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
                    (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
                      (load-p (getf header-arguments :load :yes)))))
   (values))
@@ -158,6 +170,7 @@ Now it's time to implement the new reader function for syntax "# "(# + Space).
 ** an implementation of original feature test.
 
 This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]] with some minor modifications.
+It implements how to do feature test.
 #+BEGIN_SRC lisp
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
 ;;; handle arbitrary combinations of atoms using NOT, AND, OR.
@@ -183,29 +196,45 @@ This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/sr
 ** function to handle reader syntax for "#+"
 
 The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]].
+
+Let's read the ~feature value~ after ~#+~ as a keyword
+#+BEGIN_SRC lisp
+(defun read-feature-as-a-keyword (stream)
+  (let ((*package* #.(find-package :keyword))
+        ;;(*reader-package* nil)
+        (*read-suppress* nil))
+    (read stream t nil t)))
+#+END_SRC
+
+And if ~feature~ is ~END_SRC~, switch back to org mode syntax
+#+BEGIN_SRC lisp
+(defun handle-feature-end-src (stream sub-char numarg)
+  (when debug-literate-lisp-p
+    (format t "found #+END_SRC,start read org part...~%"))
+  (funcall #'sharp-space stream sub-char numarg))
+#+END_SRC
+if ~feature~ available, read the following object recursively normally.
+#+BEGIN_SRC lisp
+(defun read-featurep-object (stream)
+  (read stream t nil t))
+#+END_SRC
+
+if the feature doesn't exist, read the following object recursively and ignore it.
+#+BEGIN_SRC lisp
+(defun read-unavailable-feature-object (stream)
+  (let ((*read-suppress* t))
+    (read stream t nil t)
+    (values)))
+#+END_SRC
+
 #+BEGIN_SRC lisp
 (defun sharp-plus (stream sub-char numarg)
-  ;; 1. read into the feature as an keyword.
-  (let ((feature (let ((*package* #.(find-package :keyword))
-                       ;;(*reader-package* nil)
-                       (*read-suppress* nil))
-                   (read stream t nil t))))
-    ;;       2.1 if the feature is `#+END_SRC', then switch back to org syntax.
+  (let ((feature (read-feature-as-a-keyword stream)))
     (when debug-literate-lisp-p
       (format t "found feature ~s,start read org part...~%" feature))
-    (cond ((eq :END_SRC feature)
-           (when debug-literate-lisp-p
-             (format t "found #+END_SRC,start read org part...~%"))
-           (funcall #'sharp-space stream sub-char numarg))
-          ;; 2.2 otherwise test the feature.
-          ;;   2.2.1 If the feature exist, read the following object recursively normally.
-          ((featurep feature)
-           (read stream t nil t))
-          ;;   2.2.1 if the feature doesn't exist, read the following object recursively and ignore it.
-          (t
-           (let ((*read-suppress* t))
-             (read stream t nil t)
-             (values))))))
+    (cond ((eq :END_SRC feature) (handle-feature-end-src stream sub-char numarg))
+          ((featurep feature)    (read-featurep-object stream))
+          (t                     (read-unavailable-feature-object stream)))))
 #+END_SRC
 ** Install the new reader syntax.
 Let's use a new read table to hold the reader for org syntax.

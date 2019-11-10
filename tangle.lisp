@@ -14,7 +14,6 @@
 (defvar debug-literate-lisp-p nil)
 (declaim (type boolean debug-literate-lisp-p))
 
-(defvar org-lisp-begin-src-id "#+begin_src lisp")
 
 (defun load-p (feature)
   (case feature
@@ -31,17 +30,22 @@
                      while elem
                      collect elem))))
 
+(defun start-position-after-space-characters (line)
+  (loop for c of-type character across line
+        for i of-type fixnum from 0
+        until (not (find c '(#\Tab #\Space)))
+        finally (return i)))
+
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
+
 (defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
         until (null line)
-        for start1 = (loop for c of-type character across line
-                           for i of-type fixnum from 0
-                           until (not (find c '(#\Tab #\Space)))
-                           finally (return i))
+        for start1 = (start-position-after-space-characters line)
         do (when debug-literate-lisp-p
              (format t "ignore line ~a~%" line))
-        until (when (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+        until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
                    (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
                      (load-p (getf header-arguments :load :yes)))))
   (values))
@@ -67,28 +71,32 @@
     (t
       (error "invalid feature expression: ~S" x))))
 
+(defun read-feature-as-a-keyword (stream)
+  (let ((*package* #.(find-package :keyword))
+        ;;(*reader-package* nil)
+        (*read-suppress* nil))
+    (read stream t nil t)))
+
+(defun handle-feature-end-src (stream sub-char numarg)
+  (when debug-literate-lisp-p
+    (format t "found #+END_SRC,start read org part...~%"))
+  (funcall #'sharp-space stream sub-char numarg))
+
+(defun read-featurep-object (stream)
+  (read stream t nil t))
+
+(defun read-unavailable-feature-object (stream)
+  (let ((*read-suppress* t))
+    (read stream t nil t)
+    (values)))
+
 (defun sharp-plus (stream sub-char numarg)
-  ;; 1. read into the feature as an keyword.
-  (let ((feature (let ((*package* #.(find-package :keyword))
-                       ;;(*reader-package* nil)
-                       (*read-suppress* nil))
-                   (read stream t nil t))))
-    ;;       2.1 if the feature is `#+END_SRC', then switch back to org syntax.
+  (let ((feature (read-feature-as-a-keyword stream)))
     (when debug-literate-lisp-p
       (format t "found feature ~s,start read org part...~%" feature))
-    (cond ((eq :END_SRC feature)
-           (when debug-literate-lisp-p
-             (format t "found #+END_SRC,start read org part...~%"))
-           (funcall #'sharp-space stream sub-char numarg))
-          ;; 2.2 otherwise test the feature.
-          ;;   2.2.1 If the feature exist, read the following object recursively normally.
-          ((featurep feature)
-           (read stream t nil t))
-          ;;   2.2.1 if the feature doesn't exist, read the following object recursively and ignore it.
-          (t
-           (let ((*read-suppress* t))
-             (read stream t nil t)
-             (values))))))
+    (cond ((eq :END_SRC feature) (handle-feature-end-src stream sub-char numarg))
+          ((featurep feature)    (read-featurep-object stream))
+          (t                     (read-unavailable-feature-object stream)))))
 
 (defvar *org-readtable* (copy-readtable))
 
