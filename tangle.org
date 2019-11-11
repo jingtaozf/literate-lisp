@@ -227,6 +227,7 @@ if the feature doesn't exist, read the following object recursively and ignore i
     (values)))
 #+END_SRC
 
+And the new logic to handle lisp syntax "#+":
 #+BEGIN_SRC lisp
 (defun sharp-plus (stream sub-char numarg)
   (let ((feature (read-feature-as-a-keyword stream)))
