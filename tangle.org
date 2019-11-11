@@ -358,8 +358,6 @@ the following code should execute.
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 
-Web service [[https://travis-ci.com/jingtaozf/literate-lisp][travis ci]] will load config file [[./.travis.yml]] automatically
-every time there is a new git change.
 #+BEGIN_SRC lisp :load test
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
