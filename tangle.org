@@ -346,7 +346,7 @@ this facility to make function ~load~ can handle org file correctly.
 
 
 ** CWEB syntax
-The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writting structured documentation.
+The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writing structured documentation.
 In Common Lisp, we will use a macro to record named code block, then use a macro to insert them later in compiler time.
 
 *** CWEB Specification
