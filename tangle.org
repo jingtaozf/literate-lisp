@@ -446,8 +446,8 @@ The macro to expand one named code block
 The macro to expand defun
 #+BEGIN_SRC lisp
 (defmacro defun-literate (name arguments &body body)
-  `(defun ,name ,arguments
-     ,@(expand-web-form body)))
+  `(defun ,name ,(expand-web-form arguments)
+    ,@(expand-web-form body)))
 #+END_SRC
 Please have a look of section [[*test for web syntax][test for web syntax]] for a simple test of it.
 

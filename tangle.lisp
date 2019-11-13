@@ -218,6 +218,6 @@
   `(progn ,@(expand-web-form form)))
 
 (defmacro defun-literate (name arguments &body body)
-  `(defun ,name ,arguments
-     ,@(expand-web-form body)))
+  `(defun ,name ,(expand-web-form arguments)
+    ,@(expand-web-form body)))
 
