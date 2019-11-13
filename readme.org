@@ -13,8 +13,14 @@
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
   - [[#a-demo-lisp-package][A demo lisp package]]
-  - [[#cweb-syntax][CWEB syntax]]
+    - [[#prepare-the-asd-definition-file][Prepare the ASD definition file]]
+    - [[#package-definition][package definition]]
+    - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
+  - [[#web-syntax][WEB syntax]]
   - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
+    - [[#preparation][Preparation]]
+    - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
+    - [[#run-all-tests-in-this-library][run all tests in this library]]
 
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in common lisp language.
@@ -124,7 +130,7 @@ which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :load test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
-** CWEB syntax
+** WEB syntax
 There is only a [[./tangle.org#CWEB-Specification][simple specification]] and a [[./tangle.org#test-for-web-syntax][simple case]] for it.
 ** Test cases for this demo project
 *** Preparation

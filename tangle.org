@@ -22,8 +22,8 @@
   - [[#tangle-an-org-file][tangle an org file]]
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
-  - [[#cweb-syntax][CWEB syntax]]
-    - [[#cweb-specification][CWEB Specification]]
+  - [[#web-syntax][WEB syntax]]
+    - [[#web-specification][WEB Specification]]
     - [[#implementation-1][implementation]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
@@ -345,11 +345,11 @@ this facility to make function ~load~ can handle org file correctly.
 #+END_SRC
 
 
-** CWEB syntax
+** WEB syntax
 The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writing structured documentation.
 In Common Lisp, we will use a macro to record named code block, then use a macro to insert them later in compiler time.
 
-*** CWEB Specification
+*** WEB Specification
 There are several syntax to recognize:
 - (@= |code block name| &body code-block) \\
   This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
@@ -423,7 +423,8 @@ We walk through the lisp form and replace all WEB forms to their actual code blo
                     (with-code-block ((second (car left-form)) codes)
                       (unless codes
                         (error "code block ~a is null for syntax :@@" (second (car left-form))))
-                      (let* ((copied-codes (copy-list codes))
+                      ;; support recursive web syntax in a code block by expanding the defined code block
+                      (let* ((copied-codes (expand-web-form (copy-tree codes)))
                              (last-codes (last copied-codes)))
                         ;; update next form
                         (setf (cdr last-codes) (cdr left-form))
@@ -490,10 +491,17 @@ label:test-read-org-code-block-header-arguments
 *** test for web syntax
 **** a simple test
 
-define local variables
+define local variables 1
+#+BEGIN_SRC lisp :load test
+(@= |local variables part 1 for test1|
+    (x 1))
+#+END_SRC
+
+a code block contains other code block name.
 #+BEGIN_SRC lisp :load test
 (@= |local variables for test1|
-    (x 1) (y 2))
+    (:@@ |local variables part 1 for test1|)
+    (y 2))
 #+END_SRC
 
 define a function

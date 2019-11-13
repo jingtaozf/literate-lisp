@@ -161,13 +161,28 @@
 (defvar named-code-blocks (make-hash-table))
 
 (defmacro @= (name &body body)
+  (if (nth-value 1 (gethash name named-code-blocks))
+    (warn "code block ~a has been updated" name))
   (setf (gethash name named-code-blocks) body)
-  `',name)
+  `(progn
+     #+lispworks
+     (dspec:def (type ,name))
+     ',name))
 
 (defmacro @+= (name &body body)
   (setf (gethash name named-code-blocks)
           (append (gethash name named-code-blocks)
                   body)))
+
+(defmacro with-code-block ((name codes) &body body)
+  (let ((present-p (gensym "PRESENT-P"))
+        (code-block-name (gensym "NAME")))
+    `(let ((,code-block-name ,name))
+       (multiple-value-bind (,codes ,present-p)
+           (gethash ,code-block-name named-code-blocks)
+         (unless ,present-p
+           (error "Can't find code block:~a" ,code-block-name))
+         ,@body))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-web-form (form)
@@ -180,29 +195,22 @@
               do (case (caar left-form)
                    (quote nil); ignore a quote list.
                    (:@ ; replace item as its actual codes
-                    (let ((code-block-name (second (car left-form))))
-                      (multiple-value-bind (codes present-p)
-                          (gethash code-block-name named-code-blocks)
-                        (unless present-p
-                          (error "Can't find code block:~a" code-block-name))
-                        (setf (car left-form) codes))))
+                    (with-code-block ((second (car left-form)) codes)
+                        (setf (car left-form) codes)))
                    (:@@ ; concentrate codes to `form'.
-                    (let ((code-block-name (second (car left-form))))
-                      (multiple-value-bind (codes present-p)
-                          (gethash code-block-name named-code-blocks)
-                        (unless present-p
-                          (error "Can't find code block:~a" code-block-name))
-                        (unless codes
-                          (error "code block ~a is null for syntax :@@" code-block-name))
-                        (let* ((copied-codes (copy-list codes))
-                               (last-codes (last copied-codes)))
-                          ;; update next form
-                          (setf (cdr (last copied-codes)) (cadr left-form))
-                          ;; update left-form
-                          (setf left-form last-codes)
-                          (if previous-form
-                            (setf (cdr previous-form) (car codes))
-                            (setf form copied-codes))))))
+                    (with-code-block ((second (car left-form)) codes)
+                      (unless codes
+                        (error "code block ~a is null for syntax :@@" (second (car left-form))))
+                      ;; support recursive web syntax in a code block by expanding the defined code block
+                      (let* ((copied-codes (expand-web-form (copy-tree codes)))
+                             (last-codes (last copied-codes)))
+                        ;; update next form
+                        (setf (cdr last-codes) (cdr left-form))
+                        ;; update left-form
+                        (setf left-form last-codes)
+                        (if previous-form
+                          (setf (cdr previous-form) copied-codes)
+                          (setf form copied-codes)))))
                    (t (setf (car left-form) (expand-web-form (car left-form)))))
             finally (return form)))))
 
