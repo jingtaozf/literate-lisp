@@ -125,7 +125,7 @@ which is ~:a~ part of the original list.
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
 ** CWEB syntax
-There is only a [[./tangle.org#test-for-web-syntax][simple case]] for it.
+There is only a [[./tangle.org#CWEB-Specification][simple specification]]  [[./tangle.org#test-for-web-syntax][simple case]] for it.
 ** Test cases for this demo project
 *** Preparation
 Now it's time to validate some functions.

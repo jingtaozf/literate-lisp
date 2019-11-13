@@ -23,6 +23,7 @@
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
   - [[#cweb-syntax][CWEB syntax]]
+    - [[#cweb-specification][CWEB Specification]]
     - [[#implementation-1][implementation]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
@@ -348,6 +349,7 @@ this facility to make function ~load~ can handle org file correctly.
 The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writting structured documentation.
 In Common Lisp, we will use a macro to record named code block, then use a macro to insert them later in compiler time.
 
+*** CWEB Specification
 There are several syntax to recognize:
 - (@= |code block name| &body code-block)
   This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
