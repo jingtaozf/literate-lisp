@@ -360,9 +360,9 @@ There are several syntax to recognize:
 - (defun-literate name arguments &body body) \\
   A macro to enable web syntax in original ~defun~.
 - (:@ |code block name|) \\
-  The codes for ~|code block name|~ will replace above list, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,~.
+  The codes for ~|code block name|~ will replace above list, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax _,_.
 - (:@@ |code block name|) \\
-  The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,@~.
+  The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax _,@_.
 
 *** implementation
 Let's store all named code blocks in a hash table.
