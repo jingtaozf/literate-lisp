@@ -365,9 +365,12 @@ There are several syntax to recognize:
   The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax `(x1 x2 ,@x3).
 
 *** implementation
+
+**** The storage and creation of code blocks
 Let's store all named code blocks in a hash table.
+The key is ~|code block name|~, it can be any lisp object only if they can compare with ~equalp~.
 #+BEGIN_SRC lisp
-(defvar named-code-blocks (make-hash-table))
+(defvar named-code-blocks (make-hash-table :test #'equalp))
 #+END_SRC
 
 Let's implemente macro ~@=~ to record a code block.
@@ -403,7 +406,7 @@ And an internal macro to get codes from a code block name
          ,@body))))
 #+END_SRC
 
-
+**** expand form with WEB syntax
 We walk through the lisp form and replace all WEB forms to their actual code block.
 #+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -459,7 +462,6 @@ the following code should execute.
 (tangle-org-file
  (format nil "~a/tangle.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp))))
-
 #+END_SRC
 
 * Test cases

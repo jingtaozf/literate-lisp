@@ -158,7 +158,7 @@
   (literate-lisp:with-literate-syntax
     (apply #'lw:call-next-advice args)))
 
-(defvar named-code-blocks (make-hash-table))
+(defvar named-code-blocks (make-hash-table :test #'equalp))
 
 (defmacro @= (name &body body)
   (if (nth-value 1 (gethash name named-code-blocks))
