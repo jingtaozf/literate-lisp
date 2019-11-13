@@ -373,8 +373,13 @@ Let's store all named code blocks in a hash table.
 Let's implemente macro ~@=~ to record a code block.
 #+BEGIN_SRC lisp
 (defmacro @= (name &body body)
+  (if (nth-value 1 (gethash name named-code-blocks))
+    (warn "code block ~a has been updated" name))
   (setf (gethash name named-code-blocks) body)
-  `',name)
+  `(progn
+     #+lispworks
+     (dspec:def (type ,name))
+     ',name))
 #+END_SRC
 
 Let's implemente macro ~@+=~ to append to an existing code block.
@@ -384,6 +389,20 @@ Let's implemente macro ~@+=~ to append to an existing code block.
           (append (gethash name named-code-blocks)
                   body)))
 #+END_SRC
+
+And an internal macro to get codes from a code block name
+#+BEGIN_SRC lisp
+(defmacro with-code-block ((name codes) &body body)
+  (let ((present-p (gensym "PRESENT-P"))
+        (code-block-name (gensym "NAME")))
+    `(let ((,code-block-name ,name))
+       (multiple-value-bind (,codes ,present-p)
+           (gethash ,code-block-name named-code-blocks)
+         (unless ,present-p
+           (error "Can't find code block:~a" ,code-block-name))
+         ,@body))))
+#+END_SRC
+
 
 We walk through the lisp form and replace all WEB forms to their actual code block.
 #+BEGIN_SRC lisp
@@ -398,29 +417,21 @@ We walk through the lisp form and replace all WEB forms to their actual code blo
               do (case (caar left-form)
                    (quote nil); ignore a quote list.
                    (:@ ; replace item as its actual codes
-                    (let ((code-block-name (second (car left-form))))
-                      (multiple-value-bind (codes present-p)
-                          (gethash code-block-name named-code-blocks)
-                        (unless present-p
-                          (error "Can't find code block:~a" code-block-name))
-                        (setf (car left-form) codes))))
+                    (with-code-block ((second (car left-form)) codes)
+                        (setf (car left-form) codes)))
                    (:@@ ; concentrate codes to `form'.
-                    (let ((code-block-name (second (car left-form))))
-                      (multiple-value-bind (codes present-p)
-                          (gethash code-block-name named-code-blocks)
-                        (unless present-p
-                          (error "Can't find code block:~a" code-block-name))
-                        (unless codes
-                          (error "code block ~a is null for syntax :@@" code-block-name))
-                        (let* ((copied-codes (copy-list codes))
-                               (last-codes (last copied-codes)))
-                          ;; update next form
-                          (setf (cdr (last copied-codes)) (cadr left-form))
-                          ;; update left-form
-                          (setf left-form last-codes)
-                          (if previous-form
-                            (setf (cdr previous-form) (car codes))
-                            (setf form copied-codes))))))
+                    (with-code-block ((second (car left-form)) codes)
+                      (unless codes
+                        (error "code block ~a is null for syntax :@@" (second (car left-form))))
+                      (let* ((copied-codes (copy-list codes))
+                             (last-codes (last copied-codes)))
+                        ;; update next form
+                        (setf (cdr last-codes) (cdr left-form))
+                        ;; update left-form
+                        (setf left-form last-codes)
+                        (if previous-form
+                          (setf (cdr previous-form) copied-codes)
+                          (setf form copied-codes)))))
                    (t (setf (car left-form) (expand-web-form (car left-form)))))
             finally (return form)))))
 #+END_SRC
@@ -482,7 +493,7 @@ label:test-read-org-code-block-header-arguments
 define local variables
 #+BEGIN_SRC lisp :load test
 (@= |local variables for test1|
-    ((x 1) (y 2)))
+    (x 1) (y 2))
 #+END_SRC
 
 define a function
