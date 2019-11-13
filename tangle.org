@@ -351,17 +351,17 @@ In Common Lisp, we will use a macro to record named code block, then use a macro
 
 *** CWEB Specification
 There are several syntax to recognize:
-- (@= |code block name| &body code-block)
+- (@= |code block name| &body code-block) \\
   This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
-- (@+= |code block name| &body code-block)
+- (@+= |code block name| &body code-block) \\
   This is a macro to append ~code-block~ to exist code block with name ~|code block name|~.
-- (with-web-syntax &body body)
+- (with-web-syntax &body body) \\
   A macro to recognize all WEB syntax codes and replace them to their actual codes.
-- (defun-literate name arguments &body body)
+- (defun-literate name arguments &body body) \\
   A macro to enable web syntax in original ~defun~.
-- (:@ |code block name|)
+- (:@ |code block name|) \\
   The codes for ~|code block name|~ will replace above list, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,~.
-- (:@@ |code block name|)
+- (:@@ |code block name|) \\
   The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,@~.
 
 *** implementation
