@@ -22,6 +22,7 @@
   - [[#tangle-an-org-file][tangle an org file]]
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
+  - [[#cweb-syntax][CWEB syntax]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
   - [[#preparation-1][Preparation]]
@@ -88,7 +89,8 @@ Firstly a new lisp package for this library is defined.
 (in-package :common-lisp-user)
 (defpackage :literate-lisp
   (:use :cl)
-  (:export :tangle-org-file :with-literate-syntax)
+  (:nicknames :lp)
+  (:export :tangle-org-file :with-literate-syntax :@= :@+= :with-web-syntax :defun-literate)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -139,7 +141,7 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
 ** function to handle reader syntax for "# "(# + Space)
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 
-We have to check whether current line is a ~#+begin src lisp~. 
+We have to check whether current line is a ~#+begin src lisp~.
 Additionally, we will ignore space characters in the beginning of line,let's find the position of it by a function.
 #+BEGIN_SRC lisp
 (defun start-position-after-space-characters (line)
@@ -149,12 +151,9 @@ Additionally, we will ignore space characters in the beginning of line,let's fin
         finally (return i)))
 #+END_SRC
 
-#+BEGIN_SRC lisp
-(defvar org-lisp-begin-src-id "#+begin_src lisp")
-#+END_SRC
-
 the reader syntax is simple, ignore all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
 #+BEGIN_SRC lisp
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
 (defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
@@ -342,6 +341,99 @@ this facility to make function ~load~ can handle org file correctly.
 #+END_SRC
 
 
+** CWEB syntax
+The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writting structured documentation.
+In Common Lisp, we will use a macro to record named code block, then use a macro to insert them later in compiler time.
+
+There are several syntax to recognize:
+- (@= |code block name| &body code-block)
+  This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
+- (@+= |code block name| &body code-block)
+  This is a macro to append ~code-block~ to exist code block with name ~|code block name|~.
+- (with-web-syntax &body body)
+  A macro to recognize all WEB syntax codes and replace them to their actual codes.
+- (defun-literate name arguments &body body)
+  A macro to enable web syntax in original ~defun~.
+- (:@ |code block name|)
+  The codes for ~|code block name|~ will replace above list, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,~.
+- (:@@ |code block name|)
+  The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax ~,@~.
+
+*** implementation
+Let's store all named code blocks in a hash table.
+#+BEGIN_SRC lisp
+(defvar named-code-blocks (make-hash-table))
+#+END_SRC
+
+Let's implemente macro ~@=~ to record a code block.
+#+BEGIN_SRC lisp
+(defmacro @= (name &body body)
+  (setf (gethash name named-code-blocks) body)
+  `',name)
+#+END_SRC
+
+Let's implemente macro ~@+=~ to append to an existing code block.
+#+BEGIN_SRC lisp
+(defmacro @+= (name &body body)
+  (setf (gethash name named-code-blocks)
+          (append (gethash name named-code-blocks)
+                  body)))
+#+END_SRC
+
+We walk through the lisp form and replace all WEB forms to their actual code block.
+#+BEGIN_SRC lisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun expand-web-form (form)
+    (if (atom form)
+      form
+      (loop for previous-form = nil then left-form
+            for left-form = form then (cdr left-form)
+            until (null left-form)
+            when (listp (car left-form))
+              do (case (caar left-form)
+                   (quote nil); ignore a quote list.
+                   (:@ ; replace item as its actual codes
+                    (let ((code-block-name (second (car left-form))))
+                      (multiple-value-bind (codes present-p)
+                          (gethash code-block-name named-code-blocks)
+                        (unless present-p
+                          (error "Can't find code block:~a" code-block-name))
+                        (setf (car left-form) codes))))
+                   (:@@ ; concentrate codes to `form'.
+                    (let ((code-block-name (second (car left-form))))
+                      (multiple-value-bind (codes present-p)
+                          (gethash code-block-name named-code-blocks)
+                        (unless present-p
+                          (error "Can't find code block:~a" code-block-name))
+                        (unless codes
+                          (error "code block ~a is null for syntax :@@" code-block-name))
+                        (let* ((copied-codes (copy-list codes))
+                               (last-codes (last copied-codes)))
+                          ;; update next form
+                          (setf (cdr (last copied-codes)) (cadr left-form))
+                          ;; update left-form
+                          (setf left-form last-codes)
+                          (if previous-form
+                            (setf (cdr previous-form) (car codes))
+                            (setf form copied-codes))))))
+                   (t (setf (car left-form) (expand-web-form (car left-form)))))
+            finally (return form)))))
+#+END_SRC
+
+The macro to expand one named code block
+#+BEGIN_SRC lisp
+(defmacro with-web-syntax (&rest form)
+  `(progn ,@(expand-web-form form)))
+#+END_SRC
+
+The macro to expand defun
+#+BEGIN_SRC lisp
+(defmacro defun-literate (name arguments &body body)
+  `(defun ,name ,arguments
+     ,@(expand-web-form body)))
+#+END_SRC
+Please have a look of section [[*test for web syntax][test for web syntax]] for a simple test of it.
+
 * Release this file
 When a new version of [[./tangle.lisp]] can release from this file,
 the following code should execute.
@@ -354,6 +446,9 @@ the following code should execute.
 #+END_SRC
 
 * Test cases
+:PROPERTIES:
+:literate-load: test
+:END:
 ** Preparation
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
@@ -374,6 +469,29 @@ label:test-read-org-code-block-header-arguments
   (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
+#+END_SRC
+
+*** test for web syntax
+**** a simple test
+
+define local variables
+#+BEGIN_SRC lisp :load test
+(@= |local variables for test1|
+    ((x 1) (y 2)))
+#+END_SRC
+
+define a function
+#+BEGIN_SRC lisp :load test
+(defun-literate web-syntax-test1 ()
+  (let ((a 1)
+        (:@@ |local variables for test1|))
+    (list a x y)))
+#+END_SRC
+
+Let's test this function
+#+BEGIN_SRC lisp :load test
+(5am:test web-syntax-case1
+  (5am:is (equal '(1 1 2) (web-syntax-test1))))
 #+END_SRC
 
 ** run all tests in this library

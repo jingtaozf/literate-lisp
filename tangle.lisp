@@ -6,7 +6,8 @@
 (in-package :common-lisp-user)
 (defpackage :literate-lisp
   (:use :cl)
-  (:export :tangle-org-file :with-literate-syntax)
+  (:nicknames :lp)
+  (:export :tangle-org-file :with-literate-syntax :@= :@+= :with-web-syntax :defun-literate)
   (:documentation "a literate programming tool to write common lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -37,7 +38,6 @@
         finally (return i)))
 
 (defvar org-lisp-begin-src-id "#+begin_src lisp")
-
 (defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
@@ -157,4 +157,59 @@
 (lw:defadvice (cl:load literate-load :around) (&rest args)
   (literate-lisp:with-literate-syntax
     (apply #'lw:call-next-advice args)))
+
+(defvar named-code-blocks (make-hash-table))
+
+(defmacro @= (name &body body)
+  (setf (gethash name named-code-blocks) body)
+  `',name)
+
+(defmacro @+= (name &body body)
+  (setf (gethash name named-code-blocks)
+          (append (gethash name named-code-blocks)
+                  body)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun expand-web-form (form)
+    (if (atom form)
+      form
+      (loop for previous-form = nil then left-form
+            for left-form = form then (cdr left-form)
+            until (null left-form)
+            when (listp (car left-form))
+              do (case (caar left-form)
+                   (quote nil); ignore a quote list.
+                   (:@ ; replace item as its actual codes
+                    (let ((code-block-name (second (car left-form))))
+                      (multiple-value-bind (codes present-p)
+                          (gethash code-block-name named-code-blocks)
+                        (unless present-p
+                          (error "Can't find code block:~a" code-block-name))
+                        (setf (car left-form) codes))))
+                   (:@@ ; concentrate codes to `form'.
+                    (let ((code-block-name (second (car left-form))))
+                      (multiple-value-bind (codes present-p)
+                          (gethash code-block-name named-code-blocks)
+                        (unless present-p
+                          (error "Can't find code block:~a" code-block-name))
+                        (unless codes
+                          (error "code block ~a is null for syntax :@@" code-block-name))
+                        (let* ((copied-codes (copy-list codes))
+                               (last-codes (last copied-codes)))
+                          ;; update next form
+                          (setf (cdr (last copied-codes)) (cadr left-form))
+                          ;; update left-form
+                          (setf left-form last-codes)
+                          (if previous-form
+                            (setf (cdr previous-form) (car codes))
+                            (setf form copied-codes))))))
+                   (t (setf (car left-form) (expand-web-form (car left-form)))))
+            finally (return form)))))
+
+(defmacro with-web-syntax (&rest form)
+  `(progn ,@(expand-web-form form)))
+
+(defmacro defun-literate (name arguments &body body)
+  `(defun ,name ,arguments
+     ,@(expand-web-form body)))
 
