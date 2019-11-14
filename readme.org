@@ -58,7 +58,7 @@ The following elisp scripts in .emacs will install it.
     :ensure t)
 #+END_SRC
 ** how to insert code block quickly
-Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-lisp]].
+Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 ** a new code block header argument ~load~
 Please have a look of the section [[./tangle.org#new-defined-header-argument-load][new defined header argument load]] in [[./tangle.org]].
 ** A demo lisp package
@@ -132,6 +132,15 @@ which is ~:a~ part of the original list.
 #+END_SRC
 ** WEB syntax
 There is only a [[./tangle.org#CWEB-Specification][simple specification]] and a [[./tangle.org#test-for-web-syntax][simple case]] for it.
+
+If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
+#+BEGIN_SRC elisp :load no
+(font-lock-add-keywords
+ 'lisp-mode
+ `(("\\(defun-literate\\|@=\\|:@@\\||:@\\)"
+    . font-lock-keyword-face)))
+#+END_SRC
+
 ** Test cases for this demo project
 *** Preparation
 Now it's time to validate some functions.
