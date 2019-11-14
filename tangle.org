@@ -373,7 +373,7 @@ The key is ~|code block name|~, it can be any lisp object only if they can compa
 (defvar named-code-blocks (make-hash-table :test #'equalp))
 #+END_SRC
 
-Let's implemente macro ~@=~ to record a code block.
+Let's implement macro ~@=~ to record a code block.
 #+BEGIN_SRC lisp
 (defmacro @= (name &body body)
   (if (nth-value 1 (gethash name named-code-blocks))
@@ -385,7 +385,7 @@ Let's implemente macro ~@=~ to record a code block.
      ',name))
 #+END_SRC
 
-Let's implemente macro ~@+=~ to append to an existing code block.
+Let's implement macro ~@+=~ to append to an existing code block.
 #+BEGIN_SRC lisp
 (defmacro @+= (name &body body)
   (setf (gethash name named-code-blocks)
