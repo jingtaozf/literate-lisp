@@ -131,7 +131,7 @@ which is ~:a~ part of the original list.
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
 ** WEB syntax
-There is only a [[./tangle.org#CWEB-Specification][simple specification]] and a [[./tangle.org#test-for-web-syntax][simple case]] for it.
+There is only a [[./tangle.org#WEB-Specification][simple specification]] and a [[./tangle.org#test-for-web-syntax][simple case]] for it.
 
 If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
 #+BEGIN_SRC elisp :load no
