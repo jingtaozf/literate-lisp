@@ -17,6 +17,7 @@
     - [[#package-definition][package definition]]
     - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
   - [[#web-syntax][WEB syntax]]
+  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
   - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
     - [[#preparation][Preparation]]
     - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
@@ -139,6 +140,15 @@ If you want to highlight WEB syntax in Emacs lisp mode, please add the following
  'lisp-mode
  `(("\\(defun-literate\\|@=\\|:@@\\||:@\\)"
     . font-lock-keyword-face)))
+#+END_SRC
+
+** How to debug org file in LispWorks IDE
+You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
+#+BEGIN_SRC lisp :load no
+(defun check-org-mode (buffer truename)
+  (when (and truename (equal (pathname-type truename) "org"))
+    (setf (editor:buffer-major-mode buffer) "Lisp")))
+(editor:add-global-hook editor::read-file-hook 'check-org-mode)
 #+END_SRC
 
 ** Test cases for this demo project
