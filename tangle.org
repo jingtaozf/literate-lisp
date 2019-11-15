@@ -1,7 +1,7 @@
 # -*- Mode: POLY-ORG;  -*- ---
 #+Title: A literate programming tool to write Common Lisp codes in ORG mode.
 #+Startup: noindent
-#+SubTitle: a literate programming tool to write common lisp codes in org mode.
+#+SubTitle: Just in one file without tangle.
 #+OPTIONS: tex:t toc:2 \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+STARTUP: latexpreview
 #+STARTUP: noindent
