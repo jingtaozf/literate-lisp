@@ -456,12 +456,12 @@ The macro to expand defun
 Please have a look of section [[*test for web syntax][test for web syntax]] for a simple test of it.
 
 * Release this file
-When a new version of [[./tangle.lisp]] can release from this file,
+When a new version of [[./literate-lisp.lisp]] can release from this file,
 the following code should execute.
 #+caption: a demo code to tangle current org file.
 #+BEGIN_SRC lisp :load no
 (tangle-org-file
- (format nil "~a/tangle.org"
+ (format nil "~a/literate-lisp.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp))))
 #+END_SRC
 

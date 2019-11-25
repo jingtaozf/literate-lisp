@@ -32,15 +32,15 @@ By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lis
 literate programming can be very easy in one org file containing both documentation and source codes,
 and this org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
 
-The implementation detail of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] is in file [[./tangle.org]] ([[./tangle.pdf][pdf version]]).
+The implementation detail of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] is in file [[./literate-lisp.org]] ([[./literate-lisp.pdf][pdf version]]).
 
 This library contains the following files:
-- [[./tangle.org]] \\
+- [[./literate-lisp.org]] \\
   The implementation and documentation of literate lisp reader.
-- [[./tangle.lisp]] \\
-  The tangled codes of literate lisp reader, generated from [[./tangle.org]]
-- [[./tangle.pdf]] \\
-  The weaved documentation, generated from [[./tangle.org]] by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
+- [[./literate-lisp.lisp]] \\
+  The tangled codes of literate lisp reader, generated from [[./literate-lisp.org]]
+- [[./literate-lisp.pdf]] \\
+  The weaved documentation, generated from [[./literate-lisp.org]] by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
 - [[./readme.org]] \\
   This file contains introduction and demo codes for how to do literate lisp in an org file.
 - [[./.github/workflows/continuous-integration.yml][continuous-integration.yml]] \\
@@ -61,11 +61,11 @@ The following elisp scripts in .emacs will install it.
 ** how to insert code block quickly
 Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 ** a new code block header argument ~load~
-Please have a look of the section [[./tangle.org#new-defined-header-argument-load][new defined header argument load]] in [[./tangle.org]].
+Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
 ** A demo lisp package
 *** Prepare the ASD definition file
 
-We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/tangle.org#make-asdf-handle-org-file-correctly][tangle.org]]).
+We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/literate-lsp.org#make-asdf-handle-org-file-correctly][literate-lisp.org]]).
 
 In a short word,we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and
 declare the org source file with new ASDF keyword ~:org~.
@@ -132,7 +132,7 @@ which is ~:a~ part of the original list.
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
 ** WEB syntax
-There is only a [[./tangle.org#WEB-Specification][simple specification]] and a [[./tangle.org#test-for-web-syntax][simple case]] for it.
+There is only a [[./literate-lisp.org#WEB-Specification][simple specification]] and a [[./literate-lisp.org#test-for-web-syntax][simple case]] for it.
 
 If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
 #+BEGIN_SRC elisp :load no
