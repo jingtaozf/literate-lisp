@@ -19,7 +19,8 @@
   (case feature
     ((nil :yes) t)
     (:no nil)
-    (:test (find :literate-test *features* :test #'eq))))
+    (:test (find :literate-test *features* :test #'eq))
+    (t (find feature *features* :test #'eq))))
 
 (defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
   (with-input-from-string (stream string :start begin-position-of-header-arguments)

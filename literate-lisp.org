@@ -121,12 +121,16 @@ read them or not should define,and it has three meanings:
   It means that current code block should ignore by lisp reader.
 - test \\
   It means that current code block should load only when feature ~literate-test~ exist.
+  This keyword is kept just for a compatiblity for previous releases of ~literate-lisp~
+- other feature keyword registered in global variable ~*features*~ \\
+  So you can take advantage of ~*features*~ to load your codes by various purposes.
 #+BEGIN_SRC lisp
 (defun load-p (feature)
   (case feature
     ((nil :yes) t)
     (:no nil)
-    (:test (find :literate-test *features* :test #'eq))))
+    (:test (find :literate-test *features* :test #'eq))
+    (t (find feature *features* :test #'eq))))
 #+END_SRC
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
 and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-header-arguments).
