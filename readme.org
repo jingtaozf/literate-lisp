@@ -134,6 +134,8 @@ which is ~:a~ part of the original list.
 ** WEB syntax
 There is only a [[./literate-lisp.org#WEB-Specification][simple specification]] and a [[./literate-lisp.org#test-for-web-syntax][simple case]] for it.
 
+~This part is still in the experimental stage~.
+
 If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
 #+BEGIN_SRC elisp :load no
 (font-lock-add-keywords
@@ -150,7 +152,7 @@ You have to add the following codes in your ~.lispworks~ to enable the debug fac
     (setf (editor:buffer-major-mode buffer) "Lisp")))
 (editor:add-global-hook editor::read-file-hook 'check-org-mode)
 #+END_SRC
-
+Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
 ** Test cases for this demo project
 *** Preparation
 Now it's time to validate some functions.
