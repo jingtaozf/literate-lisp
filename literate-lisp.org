@@ -1,5 +1,6 @@
 # -*- Mode: POLY-ORG;  -*- ---
 #+Title: A literate programming tool to write Common Lisp codes in ORG mode
+#+Author: Jingtao Xu and Alan Ruttenberg
 #+Startup: noindent
 #+SubTitle: Just in one file without tangle
 #+OPTIONS: tex:t toc:2 \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
@@ -23,17 +24,22 @@
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
   - [[#web-syntax][WEB syntax]]
-    - [[#web-specification][WEB Specification]]
-    - [[#implementation-1][implementation]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
   - [[#preparation-1][Preparation]]
   - [[#test-groups][test groups]]
-    - [[#test-for-reading-org-code-block-header-arguments][test for reading org code block header-arguments]]
-    - [[#test-for-web-syntax][test for web syntax]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
   - [[#run-all-tests-in-demo-project][run all tests in demo project]]
 - [[#references][References]]
+- [[#new-sections-from-alanr][New sections from alanr]]
+  - [[#terminology][Terminology]]
+  - [[#working-with-strings-representing-code][Working with strings representing code]]
+  - [[#working-with-source-blocks-and-code-chunks][Working with source blocks and code chunks]]
+  - [[#redefined-functions][Redefined functions]]
+  - [[#compiling-and-loading][Compiling and loading]]
+  - [[#modifying-with-code-block---with-code-chunk][Modifying with-code-block -> with-code-chunk]]
+  - [[#no-longer-needed][No longer needed]]
+  - [[#and-for-the-grand-finale][And for the grand finale]]
 
 * Introduction
 This is a Common Lisp project to show a way how to use [[http://www.literateprogramming.com/][literate programming]] in Common Lisp.
@@ -100,6 +106,12 @@ Firstly a new lisp package for this library is defined.
 (in-package :literate-lisp)
 #+END_SRC
 
+Define globals
+#+begin_src lisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (:@@ |defvars|))
+#+end_src
+
 There is a debug variable to switch on/off the log messages.
 #+BEGIN_SRC lisp
 (defvar debug-literate-lisp-p nil)
@@ -108,6 +120,7 @@ There is a debug variable to switch on/off the log messages.
 
 And let's define the org code block identifier.
 #+BEGIN_SRC lisp
+(defvar org-lisp-begin-src-id "#+begin_src lisp")
 #+END_SRC
 
 ** new defined header argument load
@@ -161,7 +174,6 @@ Additionally, we will ignore space characters in the beginning of line,let's fin
 
 the reader syntax is simple, ignore all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
 #+BEGIN_SRC lisp
-(defvar org-lisp-begin-src-id "#+begin_src lisp")
 (defun sharp-space (stream a b)
   (declare (ignore a b))
   (loop for line = (read-line stream nil nil)
@@ -251,8 +263,7 @@ Let's use a new read table to hold the reader for org syntax.
 #+END_SRC
 Now install the reader function to this read table.
 #+BEGIN_SRC lisp
-(set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
-(set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*)
+  (:@@ |set read table dispatch functions|)
 #+END_SRC
 ** tangle an org file
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
@@ -314,10 +325,10 @@ Now let's add literate support to ASDF system.
 
 Firstly a new source file class for org files should define in ASDF package.
 #+BEGIN_SRC lisp
-(defclass asdf::org (asdf:cl-source-file)
-  ((asdf::type :initform "org")))
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(asdf::org) :asdf))
+  (defclass asdf::org (asdf:cl-source-file)
+  ((asdf::type :initform "org")))  
+  (export (list (intern "ORG" 'asdf)) :asdf))
 #+END_SRC
 So a new ASDF source file type ~:org~ can define an org file like this
 #+caption: a demo code to show how to include org file in ASDF.
@@ -354,9 +365,9 @@ In Common Lisp, we will use a macro to record named code block, then use a macro
 
 *** WEB Specification
 There are several syntax to recognize:
-- (@= |code block name| &body code-block) \\
+- (:@= |code block name| &body code-block) \\
   This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
-- (@+= |code block name| &body code-block) \\
+- (:@+= |code block name| &body code-block) \\
   This is a macro to append ~code-block~ to exist code block with name ~|code block name|~.
 - (with-web-syntax &body body) \\
   A macro to recognize all WEB syntax codes and replace them to their actual codes.
@@ -396,8 +407,13 @@ Let's implement macro ~@+=~ to append to an existing code block.
                   body)))
 #+END_SRC
 
+New definitions
+#+begin_src lisp
+(:@@ |chunk definition macros|)
+#+end_src
+
 And an internal macro to get codes from a code block name
-#+BEGIN_SRC lisp
+#+BEGIN_SRC lisp :load no
 (defmacro with-code-block ((name codes) &body body)
   (let ((present-p (gensym "PRESENT-P"))
         (code-block-name (gensym "NAME")))
@@ -409,9 +425,13 @@ And an internal macro to get codes from a code block name
          ,@body))))
 #+END_SRC
 
+#+BEGIN_SRC lisp
+(:@@ |new definition of with-code-chunk|)
+#+END_SRC
+
 **** expand form with WEB syntax
 We walk through the lisp form and replace all WEB forms to their actual code block.
-#+BEGIN_SRC lisp
+#+BEGIN_SRC lisp :load no
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-web-form (form)
     (if (atom form)
@@ -444,6 +464,11 @@ We walk through the lisp form and replace all WEB forms to their actual code blo
                    (t (setf (car left-form) (expand-web-form (car left-form)))))
             finally (return form)))))
 #+END_SRC
+
+#+begin_src lisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (:@@ |new definition of expand-web-form|))
+#+end_src
 
 The macro to expand one named code block
 #+BEGIN_SRC lisp
@@ -500,13 +525,13 @@ label:test-read-org-code-block-header-arguments
 
 define local variables 1
 #+BEGIN_SRC lisp :load test
-(@= |local variables part 1 for test1|
+(:@= |local variables part 1 for test1|
     (x 1))
 #+END_SRC
 
 a code block contains other code block name.
 #+BEGIN_SRC lisp :load test
-(@= |local variables for test1|
+(:@= |local variables for test1|
     (:@@ |local variables part 1 for test1|)
     (y 2))
 #+END_SRC
@@ -531,6 +556,10 @@ Let's test this function
   (5am:is (equal '(a . b) (expand-web-form '(a . b)))))
 #+END_SRC
 
+*** Other tests
+#+begin_src lisp :load test
+ (:@@ |tests|)
+#+end_src
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :load test
@@ -547,3 +576,670 @@ To run all tests in demo project ~literate-demo~, please load it by yourself.
 - [[https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming][literate programming in org babel]]
 - [[https://github.com/limist/literate-programming-examples][A collection of literate programming examples using Emacs Org mode]]
 - [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] A Common Lisp Literate Programming Tool in markdown file
+
+* New sections from alanr
+** Terminology
+
+A [[https://orgmode.org/worg/org-contrib/babel/intro.html#source-code-blocks-org][*source block*]] is a section in the org file delimited by /#+begin_src/ and
+/#+end_src/, but not within and org [[https://orgmode.org/manual/Comment-lines.html][comment]] or [[https://orgmode.org/manual/Literal-examples.html][example]].
+
+A *lisp source block* is a common lisp source block.
+
+A *code chunk* is a form, typically a code fragment, within a lisp source block
+which has a name and can be substituted in to a lisp source block.
+
+A *code chunk reference* is a way to specify by name what code chunks should be
+substituted in it's place.  Code chunk references are of the form
+(:@[@] |name|).
+
+A *form* is a lisp sexp
+
+To *tangle* an org file is to transform it in to a lisp source code file that can be loaded by
+a lisp implementation unaware of org syntax.
+
+*NOTE*: In the original the term /code block/ was used for what we call here
+/code chunk/. I changed the term so it would be easier to distinguish from
+source code blocks, and to match the terminology I've seen elsewhere. 
+
+** Working with strings representing code
+*** Parsing
+When tangling the org file, and when working with code chunks, we will
+mostly use and manipulate strings rather than sexps.
+
+read-forms-from-string takes a string as input, and reads each form in
+the string, returning a list of forms.
+
+#+begin_src lisp
+(defun read-forms-from-string (string)
+  (with-input-from-string (s string)
+    (loop for form = (read s nil :eof)
+	  until (eq form :eof)
+	  collect form)))
+#+end_src
+
+get-forms-as-strings takes a string with a number of forms and returns
+a list of strings, each the string representation of one of the forms.
+We use read *read-suppress* in order to avoid side-effects, and in
+order to group feature expressions with their subsequent form.
+However, due to a [[https://github.com/armedbear/abcl/issues/123][bug in ABCL]], we use file-position to detect when we've hit end of
+file. Fix this when Roswell's ABCL implementation is updated.
+
+#+begin_src lisp
+(defun get-forms-as-strings (string)
+  (loop for lastpos = 0 then pos
+	with stream = (make-string-input-stream string)
+	for pos = (if (= (file-position stream) (length string))
+		      :eof
+		      (let ((*read-suppress* t))
+			(read stream nil nil) ; need this because you might have "#+nil foo" in a src block
+			(file-position stream)))
+	until (eq pos :eof)
+	collect (subseq string lastpos pos)))
+#+end_src
+
+** Working with source blocks and code chunks
+*** Iterating over source blocks as strings
+each-source-block-as-string calls fn on each lisp source block, as
+string, in the org file. We will use it when tangling the code.
+
+#+begin_src lisp
+(defun each-source-block-as-string (org-file fn)
+  "Call fn on each source code block string in the org file"
+    (with-open-file (input org-file)
+      (block read-org-files
+	(loop for nil = (sharp-space input nil nil)
+	      until (eq (peek-char nil input nil :eof) :eof)
+	      ;; read codes in code block until reach `#+end_src'
+	      do (loop with output = (make-string-output-stream)
+		       for line = (read-line input nil nil)
+		       do
+			  (cond ((null line)
+				 (error "End of file while in source block '~a'" (get-output-stream-string output)))
+				((string-equal "#+end_src" (string-trim '(#\Tab #\Space) line))
+				 (when debug-literate-lisp-p
+				   (format t "reach end of source code block.~%"))
+				 (funcall fn (get-output-stream-string output))
+				 (return t))
+				(t (when debug-literate-lisp-p
+				     (format t "read code line:~s~%" line))
+				   (write-line line output))))))))
+#+end_src
+
+A source block might have several forms, either lisp definitions, or code chunks.
+each-source-form-as-string calls *fn* on each separate form in each lisp src block.
+We'll use this when gathering code chunks.
+
+#+begin_src lisp
+(defun each-source-form-as-string (org-file fn)
+  (each-source-block-as-string
+   org-file
+   (lambda (block) (map nil fn (get-forms-as-strings block)))))
+#+end_src
+
+*** Collecting code chunks
+    In order to handle cases where the code blocks are defined after they
+are used, a separate pass is used to collect the code blocks which will
+subsequently be used to substitute for the code chunk references.
+Code chunks have the form (:@= |name| code) or (:@+= |name| code). The former
+defines the first (and possibly only) code for the chunk. The latter
+adds to an already defined code chunk.
+
+gather-code-chunks returns a hash table with the keys being names of
+code chunk and the values being a list of strings comprising the code chunk.
+We check to make sure we aren't redefining a code chunk, and that
+when we are adding the code chunk there's already one there to add to.
+
+#+begin_src lisp
+(defun gather-code-chunks (org-file)
+  (let ((code-blocks (make-hash-table :test 'equalp)))
+    (each-source-form-as-string
+     org-file
+     (lambda(block)
+       (cl-ppcre::register-groups-bind (directive name body)
+	   ("(?s)^\\s*\\((:?@[+]{0,1}=)\\s+\\|([^|]+)\\|\\s*(.*)\\)" block)
+	 (if (equal directive ":@+=")
+	     (progn
+	       (if *error-if-adding-to-unknown-block*
+		   (assert (gethash name code-blocks) () "@+= ~a but that block hasn't been seen before" name))
+	       (push body (gethash name code-blocks)))
+	     (progn
+	       (assert (not (gethash name code-blocks)) () "@= ~a found but there's already a code block by that name" name)
+	       (setf (gethash (string name) code-blocks) (list body)))))))
+    code-blocks))
+#+end_src
+
+*Note*: Maybe we don't need to have two forms - we could just have :@=
+which either creates or adds to a chunk. To play set *error-if-adding-to-unknown-block* 
+to nil and only use :@+=.  I'm thinking this is the way to go, and to have a single ':@+' marker.
+On the same subject we could also deprecate :@ in favor of always using :@@, since :@ == (:@@).
+If we only use one then we can rename :@@ to :@.
+
+#+begin_src lisp
+(:@= |defvars|
+  (defvar *error-if-adding-to-unknown-block* t))
+#+end_src
+
+*Note*: named-code-blocks is only used dynamically so it might as well be initialized to nil.
+
+#+begin_src lisp
+(:@+= |defvars| 
+  (defvar named-code-blocks nil))
+#+end_src
+
+*** Substituting code chunks in source blocks when tangling
+Code chunks can be substituted into source blocks or other code chunks.
+Substitution is done recursively. If a reference to a code chunk is found, and
+the code chunk refers to another code chunk, that is also substituted.
+
+First define a helper /replace-all/, using [[https://edicl.github.io/cl-ppcre/][cl-ppcre]].
+- string is source which will be modified
+- regex matches pieces that will be substituted
+- which specifies the groups that will be passed to function
+- function is called with the specified groups and returns a string replacement.
+
+Note that when there are nested groups, the string being replaced
+will be that of the outermost group.
+
+#+begin_src lisp
+(defun replace-all (string regex function &rest which)
+  (cl-ppcre::regex-replace-all
+   regex string
+   (lambda (target-string start end match-start match-end reg-starts reg-ends)
+     (declare (ignore target-string start end ))
+     (apply function
+	    (loop for group in which
+		  if (= group 0)
+		    collect (subseq string match-start match-end)
+		  else
+		    collect (subseq string (aref reg-starts (1- group)) (aref reg-ends (1- group))))))))
+#+end_src
+
+The test shows an example where numbers are translated into their english words.
+#+begin_src lisp :load test
+(:@= |tests|
+ (5am:test replace-all
+  (5am:is (equal "one two three"
+		 (replace-all "1 2 3" "(\\d+)"
+			      (lambda(e) (format nil "~r" (parse-integer e)))
+			      1)))))
+#+end_src
+
+In order to avoid an infinite loop because of circular use of code chunk
+references, we keep track of what we are substituting, recurively, with the
+variable *trace-substitutions*
+
+#+begin_src lisp
+(:@+= |defvars|
+     (defvar *trace-substitution* nil))
+#+end_src
+
+The input argument to maybe-substitute-code-block is the form (as string) for
+which substitution should be done. code-chunks is the hash created by
+gather-source-chunks.
+
+We make some make some effort here to present the substituted chunks reasonably.
+
+#+BEGIN_SRC lisp
+(defun maybe-substitute-code-block (input code-chunks)
+  ;; looking for :@, :@@
+  (replace-all input "(?s)(\\(:(@{1,2})\\s*\\|([^|]+)\\|\\s*\\))"
+	       (lambda(whole op name)
+		 (let* ((:@@ |figure out indentation|))
+		   (assert (gethash name code-chunks) () "Code block '~a' called for, but not defined" name)
+		   (if (member name *trace-substitution* :test 'equalp)
+		       (error "Circularity in code blocks: |~a| uses ~{|~a|~^ uses~}"
+			      name (reverse *trace-substitution*))
+		       (let ((*trace-substitution* (cons name *trace-substitution*)))
+			 (let ((sub (:@@ |compute string to insert|)))
+			   (if (equal op "@@")
+			       sub
+			       (format nil "(~a)" sub)))))))
+	       1 2 3))
+#+end_src
+
+To find the indentation, we split the source block into lines, find the first
+line containing the chunk reference, and use the position in that line to
+determine indentation of the chunk.
+
+#+begin_src lisp
+(:@= |figure out indentation|
+     (pos (some (lambda(e) (search whole e :test 'char=))
+		(cl-ppcre::split "\\n" input)))
+     (indent (subseq (load-time-value (format nil "~80:a" " ")) 0 pos)))
+#+end_src
+
+For the insertion, first, we leave a comment naming the chunk when we insert the
+chunk. Second, We try to indent properly by splitting the chunk into separate forms,
+trimming leading spaces, and prepending by the computed indentation.
+
+/This doesn't work well - fix/
+
+#+begin_src lisp
+(:@= |compute string to insert|
+     (format nil ";; Using |~a|~%~{~a~}" name
+	     (mapcar (lambda(e)
+		       (format nil "~a"
+			       (ppcre::regex-replace-all
+				"(?m)(^\\s*)"
+				(maybe-substitute-code-block e code-chunks)
+				indent)))
+		     (gethash name code-chunks))))
+#+END_SRC
+
+** Redefined functions
+
+*** sharp-space
+
+The main changes here are that while sharp-space is responsible for skipping
+over everything that isn't lisp code to export, it now also writes out,
+optionally, the org mode content (except for directives and comments) to the
+tangled file, as lisp comments.
+
+Three globals control this behavior.
+
+*tangling-to-stream* is bound to a stream when we want to also output org mode
+text to the tangled file.
+
+*tangling-keep-org-text* controls whether to copy to the org mode text, as
+lisp comments, to the tangled file.
+
+*tangling-verbatim* if non-nil has the org mode text copied, verbatim, to the
+tangled file. Mostly for debugging. Sort of recreates the original file, but
+with the substitutions done.
+
+#+begin_src lisp
+(:@+= |defvars|
+  (defvar *tangling-to-stream* nil)
+  (defvar *tangle-keep-org-text* nil)
+  (defvar *tangling-verbatim* nil)
+  )
+#+end_src
+
+The logic remains the same, but with writing code incorporated appropriately.
+
+#+begin_src lisp
+(defun sharp-space (stream a b)
+  (declare (ignore a b))
+  (when (and *tangling-to-stream* *tangle-keep-org-text*)
+    (terpri *tangling-to-stream*))
+  (loop for line = (read-line stream nil nil)
+        until (null line)
+        for start1 = (start-position-after-space-characters line)
+        do (when debug-literate-lisp-p
+             (format t "ignore line ~a~%" line))
+	   (when *tangling-to-stream*
+	     (if *tangling-verbatim*
+		 (write-line line *tangling-to-stream*)
+		 (unless (or (eql 0 (position #\# line :test 'char=))
+			     (ppcre::scan "^\\s*$" line)
+			     (not *tangle-keep-org-text*))
+		   (write-string ";; " *tangling-to-stream*)
+		   (write-line line *tangling-to-stream*))))
+        until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                     (load-p (getf header-arguments :load :yes)))))
+  (when (and *tangling-to-stream* *tangle-keep-org-text*)
+    (terpri *tangling-to-stream*))
+  (values))
+#+end_src
+
+*** tangle-org-file
+
+Major rewrite. First to incorporate the options to include the org mode text in
+the tangled file, either as it was or as a lisp comment, as well as do the
+substitutions of code chunks, so that literate-lisp runtime is not required to load it.
+
+#+begin_src lisp
+(defun tangle-org-file (org-file &key
+				   (keep-test-codes nil)
+				   (output-file (make-pathname :defaults org-file
+							       :type "lisp"))
+				   verbatim
+				   (keep-org-text t))
+  (let ((*features* (if keep-test-codes
+			*features*
+			(remove :literate-test *features* :test 'eq)))
+	(code-blocks (gather-code-chunks org-file))
+	(*tangling-verbatim* verbatim)
+	(*tangle-keep-org-text*  keep-org-text))
+    (with-open-file (output output-file :direction :output
+					:if-does-not-exist :create
+					:if-exists :supersede)
+      (:@@ |write header|)
+      (let ((*tangling-to-stream* output))
+	(each-source-block-as-string
+	 org-file
+	 (lambda(block)
+	   (:@@ |write out block with code chunks substituted|)))
+	(when *tangling-verbatim*
+	  (format *tangling-to-stream* "#+END_SRC~%"))))
+	)) 
+#+end_src
+
+Checks to see whether this block is a code chunk reference, and if so, substitutes the
+code chunk.
+
+#+begin_src lisp
+(:@= |write out block with code chunks substituted|
+  (if (ppcre::scan "^\\s*\\(:@\\+?=" block)
+      ;; comment out @+=, @=
+      (format *tangling-to-stream* "~{;; ~a~%~}" (cl-ppcre::split "\\n" block))
+      (write-string (maybe-substitute-code-block block code-blocks) output)))
+#+end_src
+
+Write a header to the beginning of the tangled file. Explain that it's a generated
+file. Then, if we're including the org text, say so, and if not warn that you probably
+need to read the org file to understand it.
+
+#+begin_src lisp
+(:@= |write header|
+  (unless *tangling-verbatim*
+	(format output ";;; This file is automatically generated from the literate-lisp file '~a.~a'.~%"
+		(pathname-name org-file) (pathname-type org-file))
+	(format output ";;; It is meant to be loaded by a common lisp directly, without depending on literate-lisp.~%"))
+      (if *tangle-keep-org-text*
+	  (format output "~{~a~%~}~%"
+		  '(";;; This file keeps all text in the original file as lisp comments, except"
+		    ";;; for the org-mode comments and directives."))
+	  (format output "~{~a~%~}~%"
+		  '(";;; The file is not intended to be read directly as it omits all non-code text from the source."
+		    ";;; See the source for full usage and documentation")))
+  )
+#+end_src
+
+*** expand-web-form
+
+Two minor changes here. First is to make sure it works if the form is directly
+(:@@ ...).  The second is to change the case form to a cond, so we don't have
+the (:@@ clause be candidate for an (error causing) substitution. So instead of
+"(case head (:@@ .. " we use "(cond ((eq head :@@))".
+    
+#+begin_src lisp
+(:@= |new definition of expand-web-form|
+  (defun expand-web-form (form)
+    (if (atom form)
+	form
+	(if (eq (car form) :@@)
+	    (expand-web-form `(progn ,form))
+	    (loop for previous-form = nil then left-form
+		  for left-form = form then (cdr left-form)
+		  until (or (null left-form)
+			    ;; to a dotted list, its `cdr' may be an atom.
+			    (atom left-form))
+		  when (listp (car left-form))
+		    do (let ((head (caar left-form)))
+			 (cond ((eq head 'quote) nil) ; ignore a quote list.
+			       ((eq head :@)
+				(with-code-chunk ((second (car left-form)) codes)
+				  (setf (car left-form) codes)))
+			       ((eq head :@@) 
+				(with-code-chunk ((second (car left-form)) codes)
+				  (unless codes
+				    (error "code block ~a is null for syntax :@@" (second (car left-form))))
+				  ;; support recursive web syntax in a code block by expanding the defined code block
+				  (let* ((copied-codes (expand-web-form (copy-tree codes)))
+					 (last-codes (last copied-codes)))
+				    ;; update next form
+				    (setf (cdr last-codes) (cdr left-form))
+				    ;; update left-form
+				    (setf left-form last-codes)
+				    (if previous-form
+					(setf (cdr previous-form) copied-codes)
+					(setf form copied-codes)))))
+			       (t (setf (car left-form) (expand-web-form (car left-form))))))
+		  finally (return form))))))
+#+end_src
+
+Set up the dispatch table at the end, so that it can use the redefined functions.
+
+#+begin_src lisp
+(:@= |set read table dispatch functions|
+  (set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
+  (set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*))
+#+end_src
+
+** Compiling and loading
+
+When loading, we use expand-web-form and a modified with-code-chunk to do the
+substitutions when they are needed.
+
+There are two aspects making loading and compile work. First, we need to hook
+common lisp's load and compile-file to first build the hash table
+named-code-blocks. Then we need to modify defun in to transform its arguments
+and body using expand-web-form. Finally, we need to modify
+with-code-block to read the strings that have been recorded with
+gather-code-chunks so the resultant forms can be included.
+
+*** Modifying the Common Lisp functions
+
+The main obstacle is that many of the lisps have distinct mechanisms for
+protecting against accidental modification of the bases system.  This code
+provides a macro within which we can change something in the common-lisp
+package. It has been tested using Roswell for abcl-bin, ccl-bin, sbcl-bin, ecl,
+cmu-bin, and allegro.
+
+#+begin_src lisp
+(:@= |let common-lisp package be modified|
+      (defmacro without-cl-locked (&body body)
+  `(#-(or SBCL CCL CMU ECL ALLEGRO) progn
+     #+SBCL sb-ext::without-package-locks
+     #+CCL let #+CCL ((CCL:*WARN-IF-REDEFINE-KERNEL* nil))
+     #+CMU extensions::without-package-locks
+     #+ECL let #+ECL ((SI:*IGNORE-PACKAGE-LOCKS* t))
+     #+ALLEGRO  EXCL:WITHOUT-PACKAGE-LOCKS
+     ,@body)))
+#+end_src 
+
+We want to change defun dynamically, only when we are loading or compiling an
+org file. This uses unwind-protect to do that for any lisp /place/.
+
+#+begin_src lisp
+(:@= |left dynamically binds any place|
+  (defmacro letf-without-cl-lockeds (bindings &body body)
+    (if (null bindings)
+      `(progn ,@body)
+      (let ((save (gensym)))
+	`(let ((,save ,(caar bindings)))
+	   (letf-without-cl-lockeds ,(cdr bindings)
+	     (unwind-protect (progn
+			       (without-cl-locked
+				   (setf ,(caar bindings) ,(second (car bindings))))
+			       ,@body)
+	       (without-cl-locked
+		   (setf ,(caar bindings) ,save)))))))))
+#+end_src 
+
+We'll need to save the values of the original functions to restore them 
+after we've changed them. While most of the lisps expand defun when compiling,
+ABCL doesn't and so we need to hook a compiler function: jvm::compile-defun.
+
+#+begin_src lisp
+(:@+= |defvars|
+  (defvar *save-load* #'load)
+  (defvar *save-defun* (macro-function 'defun))
+  (defvar *save-compile-file* #'compile-file)
+  #+ABCL
+  (defvar *save-compile-defun* #'jvm::compile-defun)
+)
+#+end_src
+
+Define a macro to shadow defun when working with org files. We can do that
+because macro functions are accessible and can be called. We just have
+to make sure the lexical environment is intact by getting it in our macro
+using &environment and passing it as the second argument to the macro function.
+The first argument to the macro function is the whole form, which we reconstruct,
+first expanding using expand-web-form.
+
+#+begin_src lisp
+(:@= |defun for use in org files|
+  (defmacro shadow-defun (name args &body body &environment env)
+    ;; SBCL needs this decl - does something that makes it
+    ;; thing named-code-blocks is lexical
+    (declare (special named-code-blocks))
+    (funcall *save-defun*
+	     `(defun ,name ,(expand-web-form args)
+		,@(expand-web-form body)) env)))
+#+end_src
+
+The ABCL compiler function is modified to check whether we're working with an org file,
+and, if so, first call expand-web-form on the body, which is it's second argument.
+
+#+begin_src lisp
+(:@= |hook abcl's compile-defun|
+  (progn #+ABCL
+  (defun jvm::compile-defun (&rest args)
+    (if (or (and *load-truename* (equal (pathname-type *load-truename*) "ORG"))
+	    (and *compile-file-pathname* (equal (pathname-type  *compile-file-pathname*) "ORG")))
+	(apply *save-compile-defun*
+	       (first args) (expand-web-form (second args))
+	       (cddr args))
+	(apply *save-compile-defun* args)
+	))))
+#+end_src
+
+During loading we want to gather the code chunks to make them available for our
+shadow-defun, and rebind defun to be our shadow defun. We only do this if we are
+loading an org file. Note the declaration of named-code-blocks as special. We
+shouldn't need that, as it is defined using defvar however, SBCL does something
+funny and will consider it lexical unless we explicitly say not to.
+
+#+begin_src lisp
+(defmacro :@@ (&whole whole name)
+  (declare (ignore name))
+  (lp::expand-web-form `(progn ,whole)))
+(defmacro with-literate-syntax (&body body)
+  `(let ((*readtable* *org-readtable*))
+       ,@body))
+#+end_src
+
+#+begin_src lisp
+(:@= |hook load|
+  (without-cl-locked
+      (defun load (path &rest args)
+	(if (equal (pathname-type path) "org")
+	    (letf-without-cl-lockeds (((macro-function 'defun) (macro-function 'shadow-defun)))
+	      (let ((named-code-blocks (gather-code-chunks path )))
+		(declare (special named-code-blocks))
+		(with-literate-syntax
+		  (apply *save-load* path args))))
+	    (apply *save-load* path args)))))
+#+end_src
+
+compile-file is hooked in exactly the same way.
+
+#+begin_src lisp
+(:@= |hook compile-file|
+  (without-cl-locked
+      (defun compile-file (path &rest args)
+	(if (equal (pathname-type path) "org")
+	    (letf-without-cl-lockeds (((macro-function 'defun) (macro-function 'shadow-defun)))
+	      (let ((named-code-blocks (gather-code-chunks path )))
+		(declare (special named-code-blocks))
+		(with-literate-syntax
+		  (apply *save-compile-file* path args))))
+	    (apply *save-compile-file* path args)))))
+#+end_src
+
+All of the patching needs to be done inside an eval-when.
+
+#+begin_src lisp
+#+(or abcl sbcl ccl cmu ecl allegro)
+(eval-when (:load-toplevel :execute :compile-toplevel)
+  (:@@ |let common-lisp package be modified|)
+  (:@@ |left dynamically binds any place|)
+  (:@@ |defun for use in org files|)
+  (:@@ |hook abcl's compile-defun|)
+  (:@@ |hook load|)
+  (:@@ |hook compile-file|)
+)
+#-(or abcl sbcl ccl cmu ecl allegro lispworks)
+(warn "Didn't know how to patch a common lisp defined defun or defmacro, so load and compile of org files won't work. Use the tangled file")
+#+end_src
+
+We need a function, for testing, that unhooks everything
+
+#+begin_src lisp
+(defun unhook ()
+  (without-cl-locked
+    (setf (symbol-function 'load) *save-load*)
+    (setf (symbol-function 'compile-file) *save-compile-file*)
+    #+ABCL
+    (setf (symbol-function 'jvm::compile-defun) *save-compile-defun*))) 
+#+end_src
+
+** Modifying with-code-block -> with-code-chunk
+
+In the original version the values of named-code-blocks were a list of forms.
+Here they are strings, each of which could have several forms. To construct
+the old version we use append the result of calling read-forms-from-string on each
+string.
+   
+#+begin_src lisp
+(:@= |new definition of with-code-chunk|
+(defmacro with-code-chunk ((name codes) &body body)
+  (let ((present-p (gensym "PRESENT-P"))
+        (code-block-name (gensym "NAME")))
+    `(let ((,code-block-name ,name))
+       (let* ((,present-p (gethash (string ,code-block-name) named-code-blocks))
+	      (,codes (mapcan 'read-forms-from-string ,present-p)))
+         (unless ,present-p
+	   (inspect named-code-blocks)
+           (error "Can't find code block:~a" ,code-block-name))
+           ,@body)))))
+#+end_src
+
+Finally, because we are using expand-web-form before the form
+even makes it to be in the body of a function, the :@= :@+= 
+need to just ignore their arguments, as far as lisp is concerned.
+
+Note: These were previously in the lp package, but making them 
+keywords let's us not worry about package mixups.
+
+#+begin_src lisp
+(:@= |chunk definition macros|
+ (defmacro :@= (name &body body)
+  (declare (ignore name body)))
+
+ (defmacro :@+= (name &body body)
+  (declare (ignore name body))))
+#+end_src
+
+#+begin_src lisp
+(:@= |bootstrap|
+ (defmacro :@@ (&rest form)
+  `(progn ,@(expand-web-form form))))
+#+end_src
+	   
+
+** No longer needed 
+
+- defun-literate
+
+old definitions of
+- @=
+- @+=
+
+None of the above in the initial export.
+
+** And for the grand finale
+
+Test that we can re-generate literate-lisp
+
+#+begin_src lisp :load test
+(:@+= |tests|
+  (5am:test tangle-ok?
+	    (5am:is 
+	     (let ((org-path (asdf/system::system-relative-pathname 'literate-lisp "literate-lisp.org")))
+	       (pushnew :literate-test *features*)
+	       (tangle-org-file org-path  :output-file "/tmp/literate-1.lisp" :keep-test-codes t)
+	       (unhook)
+	       (rename-package "LITERATE-LISP" (gensym))
+	       (load "/tmp/literate-1.lisp") 
+	       (funcall (intern "TANGLE-ORG-FILE" 'lp)  org-path  :output-file "/tmp/literate-2.lisp" :keep-test-codes t)
+	       (equal "" (with-output-to-string (s)
+			   (uiop/run-program:run-program
+			    "diff /tmp/literate-2.lisp /tmp/literate-1.lisp"
+			    :output s)))))))
+#+end_src
+
+
