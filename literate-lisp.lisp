@@ -20,7 +20,7 @@
     ((nil :yes) t)
     (:no nil)
     (t (or (find feature *features* :test #'eq)
-           (when (eq :test *features*)
+           (when (eq :test feature)
              (find :literate-test *features* :test #'eq))))))
 
 (defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)

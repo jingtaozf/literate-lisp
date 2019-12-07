@@ -130,7 +130,7 @@ read them or not should define,and it has three meanings:
     ((nil :yes) t)
     (:no nil)
     (t (or (find feature *features* :test #'eq)
-           (when (eq :test *features*)
+           (when (eq :test feature)
              (find :literate-test *features* :test #'eq))))))
 #+END_SRC
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
