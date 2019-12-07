@@ -8,11 +8,6 @@ jobs:
         LISP: [abcl-bin, ccl-bin, cmu-bin, ecl, sbcl-bin]
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/cache@v1
-      with:
-        path: ~/.roswell
-        key: roswell
-        restore-keys: roswell
     - name: install Lisp
       env:
         LISP: ${{matrix.LISP}}
