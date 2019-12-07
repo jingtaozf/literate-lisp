@@ -21,6 +21,8 @@ jobs:
         export ROSWELL_INSTALL_DIR=$HOME/.roswell
         curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
     - name: run test
+      env:
+        LISP: ${{matrix.LISP}}
       run: |
         export PATH=~/.roswell/bin:$PATH
         ros run -e '(pushnew :literate-test *features*)' \
