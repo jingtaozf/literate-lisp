@@ -4,3 +4,4 @@ auto/
 *.toc
 *.aux
 *.tex.*
+*.bbl
