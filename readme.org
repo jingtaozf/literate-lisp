@@ -18,6 +18,7 @@
     - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
   - [[#web-syntax][WEB syntax]]
   - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
+  - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
     - [[#preparation][Preparation]]
     - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
@@ -153,6 +154,18 @@ You have to add the following codes in your ~.lispworks~ to enable the debug fac
 (editor:add-global-hook editor::read-file-hook 'check-org-mode)
 #+END_SRC
 Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
+** How to write user initialization file with literate programming style
+You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
+For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
+#+BEGIN_SRC lisp
+(require :asdf)
+(load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
+(asdf:oos 'asdf:load-op :literate-lisp)
+(let ((*readtable* literate-lisp::*org-readtable*))
+  (load "~/projects/common-lisp/config/init-lisp.org"))
+#+END_SRC
+I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
+
 ** Test cases for this demo project
 *** Preparation
 Now it's time to validate some functions.
