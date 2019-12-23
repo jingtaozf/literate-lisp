@@ -12,13 +12,13 @@
   - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
+  - [[#web-syntax][WEB syntax]]
+  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
+  - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#a-demo-lisp-package][A demo lisp package]]
     - [[#prepare-the-asd-definition-file][Prepare the ASD definition file]]
     - [[#package-definition][package definition]]
     - [[#a-demo-function-to-a-recursive-assoc-implementation][a demo function to a recursive assoc implementation]]
-  - [[#web-syntax][WEB syntax]]
-  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
-  - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#test-cases-for-this-demo-project][Test cases for this demo project]]
     - [[#preparation][Preparation]]
     - [[#tests-for-recursive-assoc][tests for ~recursive-assoc~]]
@@ -63,6 +63,40 @@ The following elisp scripts in .emacs will install it.
 Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 ** a new code block header argument ~load~
 Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
+** WEB syntax
+There is only a [[./literate-lisp.org#WEB-Specification][simple specification]] and a [[./literate-lisp.org#test-for-web-syntax][simple case]] for it.
+
+~This part is still in the experimental stage~.
+
+If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
+#+BEGIN_SRC elisp :load no
+(font-lock-add-keywords
+ 'lisp-mode
+ `(("\\(defun-literate\\|@=\\|:@@\\||:@\\)"
+    . font-lock-keyword-face)))
+#+END_SRC
+
+** How to debug org file in LispWorks IDE
+You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
+#+BEGIN_SRC lisp :load no
+(defun check-org-mode (buffer truename)
+  (when (and truename (equal (pathname-type truename) "org"))
+    (setf (editor:buffer-major-mode buffer) "Lisp")))
+(editor:add-global-hook editor::read-file-hook 'check-org-mode)
+#+END_SRC
+Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
+** How to write user initialization file with literate programming style
+You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
+For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
+#+BEGIN_SRC lisp :load no
+(require :asdf)
+(load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
+(asdf:oos 'asdf:load-op :literate-lisp)
+(let ((*readtable* literate-lisp::*org-readtable*))
+  (load "~/projects/common-lisp/config/init-lisp.org"))
+#+END_SRC
+I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
+
 ** A demo lisp package
 *** Prepare the ASD definition file
 
@@ -132,40 +166,6 @@ which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :load test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
 #+END_SRC
-** WEB syntax
-There is only a [[./literate-lisp.org#WEB-Specification][simple specification]] and a [[./literate-lisp.org#test-for-web-syntax][simple case]] for it.
-
-~This part is still in the experimental stage~.
-
-If you want to highlight WEB syntax in Emacs lisp mode, please add the following code into your Emacs configuration file:
-#+BEGIN_SRC elisp :load no
-(font-lock-add-keywords
- 'lisp-mode
- `(("\\(defun-literate\\|@=\\|:@@\\||:@\\)"
-    . font-lock-keyword-face)))
-#+END_SRC
-
-** How to debug org file in LispWorks IDE
-You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
-#+BEGIN_SRC lisp :load no
-(defun check-org-mode (buffer truename)
-  (when (and truename (equal (pathname-type truename) "org"))
-    (setf (editor:buffer-major-mode buffer) "Lisp")))
-(editor:add-global-hook editor::read-file-hook 'check-org-mode)
-#+END_SRC
-Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
-** How to write user initialization file with literate programming style
-You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
-For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
-#+BEGIN_SRC lisp :load no
-(require :asdf)
-(load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
-(asdf:oos 'asdf:load-op :literate-lisp)
-(let ((*readtable* literate-lisp::*org-readtable*))
-  (load "~/projects/common-lisp/config/init-lisp.org"))
-#+END_SRC
-I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
-
 ** Test cases for this demo project
 *** Preparation
 Now it's time to validate some functions.
