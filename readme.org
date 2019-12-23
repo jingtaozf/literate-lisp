@@ -157,7 +157,7 @@ Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support
 ** How to write user initialization file with literate programming style
 You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
 For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
-#+BEGIN_SRC lisp
+#+BEGIN_SRC lisp :load no
 (require :asdf)
 (load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
 (asdf:oos 'asdf:load-op :literate-lisp)
