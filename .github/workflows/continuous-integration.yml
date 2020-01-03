@@ -12,9 +12,8 @@ jobs:
       env:
         LISP: ${{matrix.LISP}}
       run: |
-        export PATH=~/.roswell/bin:$PATH
-        export ROSWELL_INSTALL_DIR=$HOME/.roswell
-        curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+        sudo apt-get install -y build-essential automake libcurl4-openssl-dev
+        curl -L https://raw.githubusercontent.com/roswell/roswell/v19.3.10.97/scripts/install-for-ci.sh | sh
     - name: run test
       env:
         LISP: ${{matrix.LISP}}
