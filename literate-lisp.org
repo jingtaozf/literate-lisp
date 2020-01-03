@@ -11,9 +11,9 @@
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
 - [[#introduction][Introduction]]
-- [[#how-to-do-it][How to do it?]]
-- [[#implementation][Implementation]]
-  - [[#preparation][Preparation]]
+- [[#preparation][Preparation]]
+- [[#org-syntax][Org syntax]]
+  - [[#how-to-do-it][How to do it?]]
   - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
   - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
@@ -22,9 +22,11 @@
   - [[#tangle-an-org-file][tangle an org file]]
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
-  - [[#web-syntax][WEB syntax]]
-    - [[#web-specification][WEB Specification]]
-    - [[#implementation-1][implementation]]
+- [[#web-syntax][WEB syntax]]
+  - [[#web-specification][WEB Specification]]
+  - [[#implementation][implementation]]
+    - [[#the-storage-and-creation-of-code-blocks][The storage and creation of code blocks]]
+    - [[#expand-form-with-web-syntax][expand form with WEB syntax]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
   - [[#preparation-1][Preparation]]
@@ -48,7 +50,27 @@ By using Common Lisp package [[https://github.com/jingtaozf/literate-lisp][liter
 literate programming can be easy in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
-* How to do it?
+* Preparation
+Firstly a new lisp package for this library is defined.
+#+BEGIN_SRC lisp
+(in-package :common-lisp-user)
+(defpackage :literate-lisp
+  (:use :cl)
+  (:nicknames :lp)
+  (:export :tangle-org-file :with-literate-syntax :@= :@+= :with-web-syntax :defun-literate)
+  (:documentation "a literate programming tool to write Common Lisp codes in org file."))
+(pushnew :literate-lisp *features*)
+(in-package :literate-lisp)
+#+END_SRC
+
+There is a debug variable to switch on/off the log messages.
+#+BEGIN_SRC lisp
+(defvar debug-literate-lisp-p nil)
+(declaim (type boolean debug-literate-lisp-p))
+#+END_SRC
+
+* Org syntax
+** How to do it?
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ),
 and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
 (see [[https://orgmode.org/manual/Literal-examples.html][org manual]]).
@@ -84,32 +106,6 @@ for example I often put them in the first line of an org file:
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
 #+END_SRC
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
-
-* Implementation
-** Preparation
-
-Firstly a new lisp package for this library is defined.
-#+BEGIN_SRC lisp
-(in-package :common-lisp-user)
-(defpackage :literate-lisp
-  (:use :cl)
-  (:nicknames :lp)
-  (:export :tangle-org-file :with-literate-syntax :@= :@+= :with-web-syntax :defun-literate)
-  (:documentation "a literate programming tool to write Common Lisp codes in org file."))
-(pushnew :literate-lisp *features*)
-(in-package :literate-lisp)
-#+END_SRC
-
-There is a debug variable to switch on/off the log messages.
-#+BEGIN_SRC lisp
-(defvar debug-literate-lisp-p nil)
-(declaim (type boolean debug-literate-lisp-p))
-#+END_SRC
-
-And let's define the org code block identifier.
-#+BEGIN_SRC lisp
-#+END_SRC
-
 ** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
@@ -349,11 +345,16 @@ this facility to make function ~load~ can handle org file correctly.
 #+END_SRC
 
 
-** WEB syntax
-The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is strong because it can organize multiple code blocks flexiblely when writing structured documentation.
-In Common Lisp, we will use a macro to record named code block, then use a macro to insert them later in compiler time.
+* WEB syntax
+The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is very flexible to organize structured code blocks and it support forward reference by a two pass scanning.
 
-*** WEB Specification
+But most Common Lisp compilers are single pass, so it's hard to forward reference a code block especially it's a macro.
+
+Common Lisp can ba a fuctional language, if you don't use a macro, then it has been ready to be organized as structured code blocks.
+
+Sometimes we want to expand some
+
+** WEB Specification
 There are several syntax to recognize:
 - (@= |code block name| &body code-block) \\
   This is a macro to record ~code-block~ as a code block with name ~|code block name|~.
@@ -368,9 +369,9 @@ There are several syntax to recognize:
 - (:@@ |code block name|) \\
   The every item of code list for ~|code block name|~ will replaced into parent list place, just like [[http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm][Backquote]] syntax `(x1 x2 ,@x3).
 
-*** implementation
+** implementation
 
-**** The storage and creation of code blocks
+*** The storage and creation of code blocks
 Let's store all named code blocks in a hash table.
 The key is ~|code block name|~, it can be any lisp object only if they can compare with ~equalp~.
 #+BEGIN_SRC lisp
@@ -410,7 +411,7 @@ And an internal macro to get codes from a code block name
          ,@body))))
 #+END_SRC
 
-**** expand form with WEB syntax
+*** expand form with WEB syntax
 We walk through the lisp form and replace all WEB forms to their actual code block.
 #+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
