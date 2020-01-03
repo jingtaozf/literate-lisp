@@ -6,7 +6,7 @@
 (defpackage :literate-lisp
   (:use :cl)
   (:nicknames :lp)
-  (:export :tangle-org-file :with-literate-syntax :@= :@+= :with-web-syntax :defun-literate)
+  (:export :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write Common Lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -157,69 +157,4 @@
 (lw:defadvice (cl:load literate-load :around) (&rest args)
   (literate-lisp:with-literate-syntax
     (apply #'lw:call-next-advice args)))
-
-(defvar named-code-blocks (make-hash-table :test #'equalp))
-
-(defmacro @= (name &body body)
-  (if (nth-value 1 (gethash name named-code-blocks))
-    (warn "code block ~a has been updated" name))
-  (setf (gethash name named-code-blocks) body)
-  `(progn
-     #+lispworks
-     (dspec:def (type ,name))
-     ',name))
-
-(defmacro @+= (name &body body)
-  (setf (gethash name named-code-blocks)
-          (append (gethash name named-code-blocks)
-                  body)))
-
-(defmacro with-code-block ((name codes) &body body)
-  (let ((present-p (gensym "PRESENT-P"))
-        (code-block-name (gensym "NAME")))
-    `(let ((,code-block-name ,name))
-       (multiple-value-bind (,codes ,present-p)
-           (gethash ,code-block-name named-code-blocks)
-         (unless ,present-p
-           (error "Can't find code block:~a" ,code-block-name))
-         ,@body))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun expand-web-form (form)
-    (if (atom form)
-      form
-      (loop for previous-form = nil then left-form
-            for left-form = form then (cdr left-form)
-            until (or (null left-form)
-                      ;; to a dotted list, its `cdr' may be an atom.
-                      (atom left-form))
-            when (listp (car left-form))
-              do (case (caar left-form)
-                   (quote nil); ignore a quote list.
-                   (:@ ; replace item as its actual codes
-                    (with-code-block ((second (car left-form)) codes)
-                        (setf (car left-form) codes)))
-                   (:@@ ; concentrate codes to `form'.
-                    (with-code-block ((second (car left-form)) codes)
-                      (unless codes
-                        (error "code block ~a is null for syntax :@@" (second (car left-form))))
-                      ;; support recursive web syntax in a code block by expanding the defined code block
-                      (let* ((copied-codes (expand-web-form (copy-tree codes)))
-                             (last-codes (last copied-codes)))
-                        ;; update next form
-                        (setf (cdr last-codes) (cdr left-form))
-                        ;; update left-form
-                        (setf left-form last-codes)
-                        (if previous-form
-                          (setf (cdr previous-form) copied-codes)
-                          (setf form copied-codes)))))
-                   (t (setf (car left-form) (expand-web-form (car left-form)))))
-            finally (return form)))))
-
-(defmacro with-web-syntax (&rest form)
-  `(progn ,@(expand-web-form form)))
-
-(defmacro defun-literate (name arguments &body body)
-  `(defun ,name ,(expand-web-form arguments)
-    ,@(expand-web-form body)))
 

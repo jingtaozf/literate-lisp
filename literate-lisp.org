@@ -32,7 +32,6 @@
   - [[#preparation-1][Preparation]]
   - [[#test-groups][test groups]]
     - [[#test-for-reading-org-code-block-header-arguments][test for reading org code block header-arguments]]
-    - [[#test-for-web-syntax][test for web syntax]]
   - [[#run-all-tests-in-this-library][run all tests in this library]]
   - [[#run-all-tests-in-demo-project][run all tests in demo project]]
 - [[#references][References]]
@@ -495,42 +494,6 @@ label:test-read-org-code-block-header-arguments
   (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
-#+END_SRC
-
-*** test for web syntax
-**** a simple test
-
-define local variables 1
-#+BEGIN_SRC lisp :load test
-(@= |local variables part 1 for test1|
-    (x 1))
-#+END_SRC
-
-a code block contains other code block name.
-#+BEGIN_SRC lisp :load test
-(@= |local variables for test1|
-    (:@@ |local variables part 1 for test1|)
-    (y 2))
-#+END_SRC
-
-define a function
-#+BEGIN_SRC lisp :load test
-(defun-literate web-syntax-test1 ()
-  (let ((a 1)
-        (:@@ |local variables for test1|))
-    (list a x y)))
-#+END_SRC
-
-Let's test this function
-#+BEGIN_SRC lisp :load test
-(5am:test web-syntax-case1
-  (5am:is (equal '(1 1 2) (web-syntax-test1))))
-#+END_SRC
-**** special cases
-***** dotted list to expand
-#+BEGIN_SRC lisp :load test
-(5am:test web-syntax-special-case-for-dotted-list
-  (5am:is (equal '(a . b) (expand-web-form '(a . b)))))
 #+END_SRC
 
 ** run all tests in this library
