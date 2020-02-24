@@ -9,6 +9,7 @@
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
 - [[#tutorial][Tutorial]]
+  - [[#the-restriction-to-the-org-file][The restriction to the org file]]
   - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
@@ -51,6 +52,15 @@ This library contains the following files:
   The ASDF definition for literate demo project.
 
 * Tutorial
+** The restriction to the org file
+The org file should start with a comment character and a space character("# "), to drive lisp reader into ORG syntax.
+actually it can be a convenient way for us to specify some local variables,
+for example I often put them in the first line of an org file:
+#+BEGIN_SRC org
+# -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
+#+END_SRC
+Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
+
 ** install polymode in Emacs
 It's better to edit the org file with [[https://polymode.github.io/][polymode]],which will make code block use its native file mode.
 The following elisp scripts in .emacs will install it.

@@ -12,7 +12,7 @@
 * Table of Contents                                               :noexport:TOC:
 - [[#introduction][Introduction]]
 - [[#preparation][Preparation]]
-- [[#org-syntax][Org syntax]]
+- [[#read-org-source-file][Read Org source file]]
   - [[#how-to-do-it][How to do it?]]
   - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
@@ -68,7 +68,7 @@ There is a debug variable to switch on/off the log messages.
 (declaim (type boolean debug-literate-lisp-p))
 #+END_SRC
 
-* Org syntax
+* Read Org source file
 ** How to do it?
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ),
 and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
@@ -99,7 +99,7 @@ if it is, then lisp reader will switch back to org mode syntax,
 if it is not, lisp reader will continue to read subsequent stream as like the original lisp reader.
 
 This workflow restricts the org file starting with a comment character and a space character("# "),
-but it should not be a problem but indeed a convenient way for us to specify some local variables,
+actually it can be a convenient way for us to specify some local variables,
 for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
@@ -347,11 +347,10 @@ this facility to make function ~load~ can handle org file correctly.
 * WEB syntax
 The [[https://www-cs-faculty.stanford.edu/~knuth/cweb.html][CWEB]] syntax is very flexible to organize structured code blocks and it support forward reference by a two pass scanning.
 
-But most Common Lisp compilers are single pass, so it's hard to forward reference a code block especially it's a macro.
+But most Common Lisp compilers are single pass, so it's hard to forward reference a code block when it's a macro,
+so we will not support a forward reference for WEB syntax in Common Lisp.
 
-Common Lisp can ba a fuctional language, if you don't use a macro, then it has been ready to be organized as structured code blocks.
-
-Sometimes we want to expand some
+In Common Lisp, we will use a native macro to reference a code block which will expand to its real code block in compiling automatically.
 
 ** WEB Specification
 There are several syntax to recognize:
