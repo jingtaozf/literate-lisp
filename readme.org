@@ -60,7 +60,6 @@ for example I often put them in the first line of an org file:
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
 #+END_SRC
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
-
 ** install polymode in Emacs
 It's better to edit the org file with [[https://polymode.github.io/][polymode]],which will make code block use its native file mode.
 The following elisp scripts in .emacs will install it.
