@@ -99,10 +99,25 @@
           ((featurep feature)    (read-featurep-object stream))
           (t                     (read-unavailable-feature-object stream)))))
 
-(defvar *org-readtable* (copy-readtable))
+#+literate-global
+(progn
+  (set-dispatch-macro-character #\# #\space #'sharp-space)
+  (set-dispatch-macro-character #\# #\+ #'sharp-plus))
 
-(set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
-(set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*)
+(defmacro with-literate-syntax (&body body)
+  (let ((original-reader-for-sharp-space (gensym "READER-FUNCTION"))
+        (original-reader-for-sharp-plus (gensym "READER-FUNCTION")))
+    `(let ((,original-reader-for-sharp-space (get-dispatch-macro-character #\# #\Space))
+           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+)))
+       ;; install it in current readtable
+       (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
+       (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
+       ,@body
+       ;; restore our modifications to current readtable if necessary.
+       (when (eq #'literate-lisp::sharp-space (get-dispatch-macro-character #\# #\Space))
+         (set-dispatch-macro-character #\# #\Space ,original-reader-for-sharp-space))
+       (when (eq #'literate-lisp::sharp-plus (get-dispatch-macro-character #\# #\+))
+         (set-dispatch-macro-character #\# #\+ ,original-reader-for-sharp-plus)))))
 
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
@@ -110,7 +125,9 @@
                                                     :type "lisp")))
   (let ((*features* (if keep-test-codes
                       *features*
-                      (remove :literate-test *features* :test 'eq))))
+                      (remove-if #'(lambda (feature)
+                                     (find feature '(:literate-test :test)))
+                                 *features*))))
     (with-open-file (input org-file)
       (with-open-file (output output-file :direction :output
                               :if-does-not-exist :create
@@ -140,10 +157,6 @@
                         (format t "read code line:~s~%" line))
                       (write-line line output))))))))))
 
-(defmacro with-literate-syntax (&body body)
-  `(let ((*readtable* *org-readtable*))
-     ,@body))
-
 (defclass asdf::org (asdf:cl-source-file)
   ((asdf::type :initform "org")))
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -152,9 +165,4 @@
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
-
-#+lispworks
-(lw:defadvice (cl:load literate-load :around) (&rest args)
-  (literate-lisp:with-literate-syntax
-    (apply #'lw:call-next-advice args)))
 

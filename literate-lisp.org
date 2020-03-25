@@ -242,15 +242,35 @@ And the new logic to handle lisp syntax "#+":
           (t                     (read-unavailable-feature-object stream)))))
 #+END_SRC
 ** Install the new reader syntax.
-Let's use a new read table to hold the reader for org syntax.
+
+We will install the reader syntax globally if the feature ~literate-global~ presents.
 #+BEGIN_SRC lisp
-(defvar *org-readtable* (copy-readtable))
+#+literate-global
+(progn
+  (set-dispatch-macro-character #\# #\space #'sharp-space)
+  (set-dispatch-macro-character #\# #\+ #'sharp-plus))
 #+END_SRC
-Now install the reader function to this read table.
+
+Otherwise we will limit the scope of the the new reader syntax in a specified code body,
+by installing it before a code body and uninstalling it after this code body.
+This will respect global modifications to the readtable in loaded source files.
 #+BEGIN_SRC lisp
-(set-dispatch-macro-character #\# #\space #'sharp-space *org-readtable*)
-(set-dispatch-macro-character #\# #\+ #'sharp-plus *org-readtable*)
+(defmacro with-literate-syntax (&body body)
+  (let ((original-reader-for-sharp-space (gensym "READER-FUNCTION"))
+        (original-reader-for-sharp-plus (gensym "READER-FUNCTION")))
+    `(let ((,original-reader-for-sharp-space (get-dispatch-macro-character #\# #\Space))
+           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+)))
+       ;; install it in current readtable
+       (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
+       (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
+       ,@body
+       ;; restore our modifications to current readtable if necessary.
+       (when (eq #'literate-lisp::sharp-space (get-dispatch-macro-character #\# #\Space))
+         (set-dispatch-macro-character #\# #\Space ,original-reader-for-sharp-space))
+       (when (eq #'literate-lisp::sharp-plus (get-dispatch-macro-character #\# #\+))
+         (set-dispatch-macro-character #\# #\+ ,original-reader-for-sharp-plus)))))
 #+END_SRC
+
 ** tangle an org file
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
 
@@ -268,7 +288,9 @@ This mechanism is good enough because it will not damage any codes in org code b
                                                     :type "lisp")))
   (let ((*features* (if keep-test-codes
                       *features*
-                      (remove :literate-test *features* :test 'eq))))
+                      (remove-if #'(lambda (feature)
+                                     (find feature '(:literate-test :test)))
+                                 *features*))))
     (with-open-file (input org-file)
       (with-open-file (output output-file :direction :output
                               :if-does-not-exist :create
@@ -300,13 +322,6 @@ This mechanism is good enough because it will not damage any codes in org code b
 #+END_SRC
 ** make ASDF handle org file correctly
 
-Firstly, let's define a macro so org syntax codes can be compiled and loaded.
-#+BEGIN_SRC lisp
-(defmacro with-literate-syntax (&body body)
-  `(let ((*readtable* *org-readtable*))
-     ,@body))
-#+END_SRC
-
 Now let's add literate support to ASDF system.
 
 Firstly a new source file class for org files should define in ASDF package.
@@ -337,7 +352,7 @@ Then after loading this package, one org file can load by ASDF automatically.
 ** make Lispworks handle org file correctly
 LispWorks can add an [[http://www.lispworks.com/documentation/lw70/LW/html/lw-682.htm][advice]] to a function to change its default behavior, we can take advantage of
 this facility to make function ~load~ can handle org file correctly.
-#+BEGIN_SRC lisp
+#+BEGIN_SRC lisp :load no
 #+lispworks
 (lw:defadvice (cl:load literate-load :around) (&rest args)
   (literate-lisp:with-literate-syntax
