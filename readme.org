@@ -88,7 +88,7 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
 (require :asdf)
 (load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
 (asdf:oos 'asdf:load-op :literate-lisp)
-(let ((*readtable* literate-lisp::*org-readtable*))
+(literate-lisp:with-literate-syntax
   (load "~/projects/common-lisp/config/init-lisp.org"))
 #+END_SRC
 I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
