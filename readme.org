@@ -30,7 +30,7 @@
 It extends the Common Lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]]
 so a Common Lisp vendor can read org files as Common Lisp source files.
 
-By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), Emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]],
+By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), Emacs [[https://orgmode.org/][org mode]] and Emacs Lisp library [[https://polymode.github.io/][polymode]],
 literate programming can be very easy in one org file containing both documentation and source codes,
 and this org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
 
@@ -55,15 +55,15 @@ This library contains the following files:
 * Tutorial
 ** The restriction to the org file
 The org file should start with a comment character and a space character("# "), to drive lisp reader into ORG syntax.
-actually it can be a convenient way for us to specify some local variables,
+Actually it can be a convenient way for us to specify some local variables,
 for example I often put them in the first line of an org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
 #+END_SRC
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
 ** install polymode in Emacs
-It's better to edit the org file with [[https://polymode.github.io/][polymode]],which will make code block use its native file mode.
-The following elisp scripts in .emacs will install it.
+It's better to edit the org file with [[https://polymode.github.io/][polymode]], which will make code block use its native file mode.
+The following Emacs Lisp scripts in .emacs will install it.
 #+BEGIN_SRC elisp
 (use-package poly-org
     :ensure t)
@@ -100,7 +100,7 @@ I find it useful for various Lisp vendors so all initialization codes for them c
 
 We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/literate-lsp.org#make-asdf-handle-org-file-correctly][literate-lisp.org]]).
 
-In a short word,we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and
+In a short word, we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and
 declare the org source file with new ASDF keyword ~:org~.
 
 Now let's define the ASDF system file [[./literate-demo.asd]] for this demo package
@@ -159,7 +159,7 @@ Then the implementation macro is simple(test is here: ref:test-recursive-assoc)
     (expand-recursive-assoc alist recursive-properties)))
 #+END_SRC
 
-For example, you can use it like this,which get ~:b~ part of the sub association list
+For example, you can use it like this, which get ~:b~ part of the sub association list
 which is ~:a~ part of the original list.
 #+BEGIN_SRC lisp :load test
 (equal 'c (recursive-assoc '((:a . ((:b . c)))) :a :b))
