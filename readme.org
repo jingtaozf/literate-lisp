@@ -94,7 +94,7 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
 I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
 
 ** packages written by literate-lisp
-- [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] a S-expression presentation of GraphViz DOT Language
+- [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] an S-expression presentation of GraphViz DOT Language
 ** A demo lisp package
 *** Prepare the ASD definition file
 
