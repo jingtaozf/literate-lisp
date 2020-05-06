@@ -181,10 +181,12 @@ Let's also define some sample maps from the above question
                                                                 (0 0 0 0 0 8 3 5 0 0))))
 #+END_SRC
 
-What's the look of it?
 #+BEGIN_SRC lisp :load no
 (draw-the-islands *a-map-of-four-islands* :output-name "four-islands")
 #+END_SRC
+The look of it:
+
+What's the look of it?
 [[file:images/four-islands.png]]
 
 **** two oddly shaped islands
@@ -202,10 +204,10 @@ What's the look of it?
                                                                     (0 0 0 0 0 2 2 2 0 0))))
 
 #+END_SRC
-What's the look of it?
 #+BEGIN_SRC lisp :load no
 (draw-the-islands *a-map-of-two-oddly-shaped* :output-name "two-oddly-shaped")
 #+END_SRC
+The look of it:
 [[file:./images/two-oddly-shaped.png]]
 
 **** four total islands show how we define "contiguous"
@@ -223,10 +225,10 @@ What's the look of it?
                                                                    (0 0 0 0 4 4 4 4 0 0))))
 #+END_SRC
 
-What's the look of it?
 #+BEGIN_SRC lisp :load no
 (draw-the-islands *a-map-to-show-contiguous* :output-name "contiguous")
 #+END_SRC
+The look of it:
 [[file:./images/contiguous.png]]
 ** How to find islands
 *** the basic idea
