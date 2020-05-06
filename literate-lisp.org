@@ -38,9 +38,9 @@ It extends the Common Lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node
 so a Common Lisp vendor can read org files as Common Lisp source files.
 
 [[https://github.com/limist/literate-programming-examples][literate programming examples]] show the reason why use org mode,
-and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it use markdown file format.
+and there are also another lisp project [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] to do the similar thing but it uses markdown file format.
 
-By using Common Lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] , Emacs [[https://orgmode.org/][org mode]] and elisp library [[https://polymode.github.io/][polymode]],
+By using Common Lisp package [[https://github.com/jingtaozf/literate-lisp][literate-lisp]], Emacs [[https://orgmode.org/][org mode]] and Emacs Lisp library [[https://polymode.github.io/][polymode]],
 literate programming can be easy in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
@@ -58,7 +58,7 @@ and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
 So to let lisp can read an org file directly, all lines out of surrounding
 by ~#+begin_src lisp~ and ~#+end_src~ should mean nothing,
 and even codes surrounding by them should mean nothing
-if the [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]]  in a code block request such behavior.
+if the [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] in a code block request such behavior.
 
 Here is a trick, a new [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node192.html][lisp reader]] syntax for "# "([[http://clhs.lisp.se/Body/02_dhu.htm][Sharpsign Whitespace]]) will have a meaning
 to make lisp reader enter into org mode syntax,
@@ -67,8 +67,8 @@ then ignore all lines after that until it meet ~#+BEGIN_SRC lisp~.
 When ~#+begign_src lisp~ occurs, org [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] for this code block give us
 a chance to switch back to normal lisp reader or not.
 
-And if it switch back to normal lisp reader, the end line ~#+END_SRC~ should mean the end of current
-code block,so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]])will have an additional meaning
+And if it switches back to normal lisp reader, the end line ~#+END_SRC~ should mean the end of current
+code block, so the lisp reader syntax for "#+"([[http://clhs.lisp.se/Body/02_dhq.htm][Sharpsign Plus]])will have an additional meaning
 to determine if it is ~#+END_SRC~,
 if it is, then lisp reader will switch back to org mode syntax,
 if it is not, lisp reader will continue to read subsequent stream as like the original lisp reader.
@@ -109,7 +109,7 @@ And let's define the org code block identifier.
 ** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
-read them or not should define,and it has three meanings:
+read them or not should define, and it has three meanings:
 - yes \\
   It means that current code block should load normally,
   it is the default mode when the header argument ~load~ is not provided.
@@ -147,7 +147,7 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 
 We have to check whether current line is a ~#+begin src lisp~.
-Additionally, we will ignore space characters in the beginning of line,let's find the position of it by a function.
+Additionally, we will ignore space characters in the beginning of line, let's find the position of it by a function.
 #+BEGIN_SRC lisp
 (defun start-position-after-space-characters (line)
   (loop for c of-type character across line
@@ -173,7 +173,7 @@ the reader syntax is simple, ignore all lines until meet a ~#+begin_src lisp~ an
 #+END_SRC
 ** an implementation of original feature test.
 
-This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]] with some minor modifications.
+This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]] with some minor modifications.
 It implements how to do feature test.
 #+BEGIN_SRC lisp
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
@@ -199,7 +199,7 @@ It implements how to do feature test.
 #+END_SRC
 ** function to handle reader syntax for "#+"
 
-The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][sbcl source codes]].
+The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]].
 
 Let's read the ~feature value~ after ~#+~ as a keyword
 #+BEGIN_SRC lisp
@@ -223,7 +223,7 @@ if ~feature~ available, read the following object recursively normally.
   (read stream t nil t))
 #+END_SRC
 
-if the feature doesn't exist, read the following object recursively and ignore it.
+If the feature doesn't exist, read the following object recursively and ignore it.
 #+BEGIN_SRC lisp
 (defun read-unavailable-feature-object (stream)
   (let ((*read-suppress* t))
@@ -406,9 +406,9 @@ this function is the entry point to run all tests and return true if all test ca
 ** run all tests in demo project
 To run all tests in demo project ~literate-demo~, please load it by yourself.
 * References
-- [[http://www.literateprogramming.com/knuthweb.pdf][Literate. Programming.]] by [[https://www-cs-faculty.stanford.edu/~knuth/lp.html][Donald E. Knuth]]
-- [[http://www.literateprogramming.com/][Literate Programming]]  a site of literate programming
-- [[https://www.youtube.com/watch?v=Av0PQDVTP4A][Literate Programming in the Large]] a talk video from Timothy Daly,one of the original authors of [[https://en.wikipedia.org/wiki/Axiom_(computer_algebra_system)][Axiom]].
+- [[http://www.literateprogramming.com/knuthweb.pdf][Literate. Programming]] by [[https://www-cs-faculty.stanford.edu/~knuth/lp.html][Donald E. Knuth]]
+- [[http://www.literateprogramming.com/][Literate Programming]] a site of literate programming
+- [[https://www.youtube.com/watch?v=Av0PQDVTP4A][Literate Programming in the Large]] a talk video from Timothy Daly, one of the original authors of [[https://en.wikipedia.org/wiki/Axiom_(computer_algebra_system)][Axiom]].
 - [[https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming][literate programming in org babel]]
 - [[https://github.com/limist/literate-programming-examples][A collection of literate programming examples using Emacs Org mode]]
 - [[https://github.com/xtaniguchimasaya/papyrus][papyrus]] A Common Lisp Literate Programming Tool in markdown file
