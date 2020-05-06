@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        LISP: [abcl-bin, ccl-bin, cmu-bin, ecl, sbcl-bin]
+        LISP: [abcl-bin, cmu-bin, ecl, sbcl-bin]
     steps:
     - uses: actions/checkout@v1
     - name: install Lisp
