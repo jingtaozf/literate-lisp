@@ -90,7 +90,7 @@ Firstly a new lisp package for this library is defined.
 (defpackage :literate-lisp
   (:use :cl)
   (:nicknames :lp)
-  (:export :tangle-org-file :with-literate-syntax)
+  (:export :install-globally :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write Common Lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
@@ -245,10 +245,10 @@ And the new logic to handle lisp syntax "#+":
 
 We will install the reader syntax globally if the feature ~literate-global~ presents.
 #+BEGIN_SRC lisp
-#+literate-global
-(progn
+(defun install-globally ()
   (set-dispatch-macro-character #\# #\space #'sharp-space)
   (set-dispatch-macro-character #\# #\+ #'sharp-plus))
+#+literate-global(install-globally)
 #+END_SRC
 
 Otherwise we will limit the scope of the the new reader syntax in a specified code body,
