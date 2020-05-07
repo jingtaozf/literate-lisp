@@ -1,0 +1,393 @@
+# -*- Mode: POLY-ORG ;-*- ---
+#+Title: Islands puzzle
+#+OPTIONS: tex:t toc:2 \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+STARTUP: latexpreview
+#+STARTUP: noindent
+#+STARTUP: inlineimages
+#+PROPERTY: literate-lang lisp
+#+PROPERTY: literate-load yes
+#+STARTUP: entitiespretty
+* Table of Contents                                               :noexport:TOC:
+- [[#the-question][The question]]
+- [[#how-to-solve-it][How to solve it]]
+  - [[#preparation][Preparation]]
+    - [[#create-a-package-for-this-project][create a package for this project]]
+    - [[#the-representation-of-islands-map][the representation of islands map]]
+    - [[#how-to-plot-above-islands-map][how to plot above islands map]]
+    - [[#some-example-data][Some example data]]
+  - [[#how-to-find-islands][How to find islands]]
+    - [[#the-basic-idea][the basic idea]]
+    - [[#the-internal-variables][the internal variables]]
+    - [[#the-internal-stats][the internal stats]]
+    - [[#scan-map][scan map]]
+  - [[#return-a-list-of-the-total-volume-of-each-island][Return a list of the total volume of each island]]
+- [[#test-cases][Test cases]]
+  - [[#preparation-1][Preparation]]
+  - [[#the-number-of-islands][the number of islands]]
+  - [[#the-island-volumes][the island volumes]]
+  - [[#run-all-tests-in-this-library][run all tests in this library]]
+
+* The question
+The following two dimensional matrix represents a map of islands in an
+ocean.  Every zero represents sea level.  Every positive integer represents
+the volume of land above sea level at that location.  An island is
+represented by a contiguous block of positive integers.  Here are 3
+examples:
+
+In this map, there are four islands, all 3x3 squares:
+#+BEGIN_EXAMPLE
+  0 5 5 7 0 0 0 0 0 0
+  0 1 8 8 0 0 0 0 0 0
+  0 3 2 2 0 0 2 8 4 0
+  0 0 0 0 0 0 8 8 3 0
+  0 0 0 0 0 0 8 7 8 0
+  8 5 2 0 0 0 0 0 0 0
+  2 7 3 0 0 0 0 0 0 0
+  3 5 1 0 0 7 5 8 0 0
+  0 0 0 0 0 1 1 7 0 0
+  0 0 0 0 0 8 3 5 0 0
+#+END_EXAMPLE
+
+
+
+In this map, there are two oddly shaped islands:
+#+BEGIN_EXAMPLE
+  0 1 1 1 0 0 0 0 0 0
+  0 0 0 1 0 0 0 0 0 0
+  0 0 1 1 0 0 2 2 2 0
+  0 0 1 0 0 0 2 0 2 0
+  0 1 1 1 1 0 2 2 2 0
+  1 1 0 0 0 0 0 2 0 0
+  0 1 0 2 2 2 0 2 0 0
+  1 1 0 0 0 2 2 2 0 0
+  0 1 1 1 0 0 2 0 0 0
+  0 0 0 0 0 2 2 2 0 0
+#+END_EXAMPLE
+
+The following has four total islands, because of how we define "contiguous"
+(connecting) land:
+#+BEGIN_EXAMPLE
+  0 1 1 1 0 0 0 0 0 0
+  0 1 1 1 0 0 0 0 0 0
+  0 1 1 1 1 1 1 1 1 0   <-- horizontal and vertical neighbors are considered
+  0 0 0 0 0 0 1 1 1 0	    contiguous, so the bridge forms one big island.
+  0 0 0 0 0 0 1 1 1 0
+  2 2 2 0 0 0 0 0 0 0
+  2 2 2 0 0 0 0 0 0 0
+  2 2 2 0 0 4 4 4 0 0
+  0 0 0 3 0 4 4 4 0 0
+  0 0 0 0 4 4 4 4 0 0
+      	^
+	|
+	+----------------- land touching at corners is NOT contiguous,
+			   so this is treated as THREE land islands, the
+			   single '3' pointed at being the third island.
+
+#+END_EXAMPLE
+
+The challenge is to write whatever code you need to:
+
+1. Represent a map like the above.
+   - The map is a rectangle of arbitrary size.
+   - The zero or more islands can be of any shape and heights.
+
+2. Find all the islands, using the above definition of "contiguous".
+
+3. Return a list of the total volume of each island, in any order you like.
+   The volume of an island is the sum of all its values, each of which you
+   can assume to be positive.  For example, in the very first map, the top
+   left island is:
+   #+BEGIN_EXAMPLE
+   	  5 5 7
+	  1 8 8
+  	  3 2 2
+   #+END_EXAMPLE
+
+   and its volume is 41.
+
+
+Use whatever representation you think is best, and explain why.
+
+Use whatever method you think is best, and explain why you use it.
+
+Take the time to make the code and commenting the way *you* like to see it.
+
+This is tricky, so don't worry if your first approach isn't right -- that's
+why it's called a puzzle.
+* How to solve it
+** Preparation
+*** create a package for this project
+#+BEGIN_SRC lisp
+(defpackage :islands-puzzle
+  (:use :cl :iterate )
+  (:export ))
+(in-package :islands-puzzle)
+#+END_SRC
+*** the representation of islands map
+The islands map is actually a three dimensional array:
+- the row index and the column index reprent the geographical position, and
+- the value in above row/column index means the sea level
+
+Let's reprent it with just a two dimensional array and so
+- the row index is the value of x axis, and
+- column index is the value of y axis, and
+- the value in above row/column index is the value of z axis.
+*** how to plot above islands map
+:PROPERTIES:
+:literate-load: dev
+:END:
+Here we will use [[http://gnuplot.sourceforge.net][gnuplot]] and a common lisp library [[https://github.com/masatoi/clgplot][clgplot]] to have a visualization of islands,
+please ensure that you have installed both of them before the plot.
+
+It's just a simple gnuplot [[http://gnuplot.sourceforge.net/docs_4.2/node328.html][splot]] command to draw it out, but we provide two kind of visualization
+- a map when ~map-p~ is true
+- a three dimensional plot when ~map-p~ is false
+#+BEGIN_SRC lisp :load dev
+(defun draw-the-islands (map &key (map-p t) (output-path (format nil "~a/images/" (asdf:component-pathname (asdf:find-system :literate-demo))))
+                             output-name)
+  (let ((x-list (loop for i from 0 below (array-dimension map 0) collect i))
+        (y-list (loop for i from 0 below (array-dimension map 1) collect i)))
+    (if map-p
+      (clgp:splot-matrix map
+                         :output (when output-name
+                                   (format nil "~a~a.png" output-path output-name))
+                         :x-label "X axis"
+                         :y-label "Y axis"
+                         :z-label "Z axis")
+      (clgp:splot (lambda (x y) (aref map x y))
+                  x-list y-list
+                  :x-label "X axis"
+                  :y-label "Y axis"
+                  :z-label "Z axis"
+                  :view-point '(20 45) :z-scale 1))))
+#+END_SRC
+*** Some example data
+:PROPERTIES:
+:literate-load: test
+:END:
+Let's also define some sample maps from the above question
+**** four islands
+#+BEGIN_SRC lisp :load test
+(defvar *a-map-of-four-islands* (make-array '(10 10)
+                                            :initial-contents '((0 5 5 7 0 0 0 0 0 0)
+                                                                (0 1 8 8 0 0 0 0 0 0)
+                                                                (0 3 2 2 0 0 2 8 4 0)
+                                                                (0 0 0 0 0 0 8 8 3 0)
+                                                                (0 0 0 0 0 0 8 7 8 0)
+                                                                (8 5 2 0 0 0 0 0 0 0)
+                                                                (2 7 3 0 0 0 0 0 0 0)
+                                                                (3 5 1 0 0 7 5 8 0 0)
+                                                                (0 0 0 0 0 1 1 7 0 0)
+                                                                (0 0 0 0 0 8 3 5 0 0))))
+#+END_SRC
+
+#+BEGIN_SRC lisp :load no
+(draw-the-islands *a-map-of-four-islands* :output-name "four-islands")
+#+END_SRC
+The look of it:
+
+What's the look of it?
+[[file:images/four-islands.png]]
+
+**** two oddly shaped islands
+#+BEGIN_SRC lisp :load test
+(defvar *a-map-of-two-oddly-shaped* (make-array '(10 10)
+                                                :initial-contents '((0 1 1 1 0 0 0 0 0 0)
+                                                                    (0 0 0 1 0 0 0 0 0 0)
+                                                                    (0 0 1 1 0 0 2 2 2 0)
+                                                                    (0 0 1 0 0 0 2 0 2 0)
+                                                                    (0 1 1 1 1 0 2 2 2 0)
+                                                                    (1 1 0 0 0 0 0 2 0 0)
+                                                                    (0 1 0 2 2 2 0 2 0 0)
+                                                                    (1 1 0 0 0 2 2 2 0 0)
+                                                                    (0 1 1 1 0 0 2 0 0 0)
+                                                                    (0 0 0 0 0 2 2 2 0 0))))
+
+#+END_SRC
+#+BEGIN_SRC lisp :load no
+(draw-the-islands *a-map-of-two-oddly-shaped* :output-name "two-oddly-shaped")
+#+END_SRC
+The look of it:
+[[file:./images/two-oddly-shaped.png]]
+
+**** four total islands show how we define "contiguous"
+#+BEGIN_SRC lisp :load test
+(defvar *a-map-to-show-contiguous* (make-array '(10 10)
+                                               :initial-contents '((0 1 1 1 0 0 0 0 0 0)
+                                                                   (0 1 1 1 0 0 0 0 0 0)
+                                                                   (0 1 1 1 1 1 1 1 1 0)
+                                                                   (0 0 0 0 0 0 1 1 1 0)
+                                                                   (0 0 0 0 0 0 1 1 1 0)
+                                                                   (2 2 2 0 0 0 0 0 0 0)
+                                                                   (2 2 2 0 0 0 0 0 0 0)
+                                                                   (2 2 2 0 0 4 4 4 0 0)
+                                                                   (0 0 0 3 0 4 4 4 0 0)
+                                                                   (0 0 0 0 4 4 4 4 0 0))))
+#+END_SRC
+
+#+BEGIN_SRC lisp :load no
+(draw-the-islands *a-map-to-show-contiguous* :output-name "contiguous")
+#+END_SRC
+The look of it:
+[[file:./images/contiguous.png]]
+** How to find islands
+*** the basic idea
+For this first version, we will try to use a straightforward way.
+
+As the shape of an island can be very odd, if we scan the map line by line or row by row, we can't determine the contiguous
+between one node with its previous scanned nodes easily.
+
+So we will scan the ~island volume map~ line by line and use a recursive rapacious mode, that is,
+we store the ~island number~ of each node in a separated array,
+and if we find out one new island node, we will try to fill all of its contiguous neighbors as possible as we can,so we can finish
+this island completely once we reach any edge of it,
+after that, we will continue our line-by-line scan to finish any island node without an island number yet.
+
+*** the internal variables
+Let's name every island with an unique integer number, which start from zero for the first island and increase it progressively.
+#+BEGIN_SRC lisp
+;; we use `-1' here so the first island number will begin with `0'.
+(defvar *current-island-number* -1)
+#+END_SRC
+So we can rebind this variable in the beginning of search and in the end, this variable can convert to the amount of islands we have found.
+
+Let's create a two dimensional array with the same size of the ~islands volume map~, so we can fill it with ~island number~ it belongs later,
+of course, if it doesn't belong to any island, its value will be ~nil~,which is the initial value of it.
+#+BEGIN_SRC lisp
+(defun prepare-an-island-number-map (island-volume-map)
+  (make-array (list (array-dimension island-volume-map 0) (array-dimension island-volume-map 1)) :initial-element nil))
+#+END_SRC
+And store it in a dynamic global variable
+#+BEGIN_SRC lisp
+(defvar *current-island-number-map* nil)
+#+END_SRC
+
+Let's also store the current ~island volume map~ and their dimensions in dynamic global variables
+for an easy access in the progress of our calculation.
+#+BEGIN_SRC lisp
+(defvar *current-island-volume-map* nil)
+(defvar *current-map-x-dimension* nil)
+(defvar *current-map-y-dimension* nil)
+#+END_SRC
+*** the internal stats
+**** check if a node is on an island \\
+The answer is yes if it is beyond the sea level.
+#+BEGIN_SRC lisp
+(defun island-node-p (node-volume)
+  (> node-volume 0))
+#+END_SRC
+**** check if a node has been filled with an island number
+#+BEGIN_SRC lisp
+(defun island-node-filled-p (x y)
+  (aref *current-island-number-map* x y))
+#+END_SRC
+
+*** scan map
+Now let's try to scan the entire ~island volume map~ line by line and row by row.
+#+BEGIN_SRC lisp
+(defun scan-island-map (island-volume-map)
+  (iter (with *current-island-number* = -1)
+        (with *current-island-volume-map* = island-volume-map)
+        (with *current-map-x-dimension* = (array-dimension *current-island-volume-map* 0))
+        (with *current-map-y-dimension* = (array-dimension *current-island-volume-map* 1))
+        (with *current-island-number-map* = (prepare-an-island-number-map island-volume-map))
+        (for x from 0 below *current-map-x-dimension*)
+        (iter (for y from 0 below *current-map-y-dimension*)
+              (complete-an-island-from-a-node-if-possible x y))
+        (finally (return (values (1+ *current-island-number*)
+                                 *current-island-number-map*)))))
+#+END_SRC
+
+Now we can build an island by a recursive rapacious mode to finish all nodes in one island as possible as we can.
+We will check all neighbors here safely.
+#+BEGIN_SRC lisp
+(defun complete-an-island-from-a-node-if-possible (x y &optional (island-number nil))
+  (when (and (island-node-p (aref *current-island-volume-map* x y))
+             ;; ensure we have not filled it before.
+             (not (island-node-filled-p x y)))
+    (unless island-number
+      ;; We find out a new island never scanned before, let's assign a new island number for it.
+      (setf island-number (incf *current-island-number*)))
+    (setf (aref *current-island-number-map* x y) island-number)
+    (let ((left-x (1- x))
+          (right-x (1+ x))
+          (bottom-y (1- y))
+          (top-y (1+ y)))
+      ;; check the left neighbor node
+      (when (>= left-x 0)
+        (complete-an-island-from-a-node-if-possible left-x y island-number))
+
+      ;; check the right neighbor node
+      (when (< right-x *current-map-x-dimension*)
+        (complete-an-island-from-a-node-if-possible right-x y island-number))
+
+      ;; check the top neighbor node
+      (when (< top-y *current-map-y-dimension*)
+        (complete-an-island-from-a-node-if-possible x top-y island-number))
+
+      ;; check the top neighbor node
+      (when (>= bottom-y 0)
+        (complete-an-island-from-a-node-if-possible x bottom-y island-number)))))
+#+END_SRC
+
+** Return a list of the total volume of each island
+After ~island-number-map~ has been filled, we can calculate the total volume of each island by a simple loop of the map.
+We cache the calculated amount of each island in an array and the index means the corresponding ~island-number~.
+
+#+BEGIN_SRC lisp
+(defun calculate-volume-of-islands (count-of-islands island-volume-map island-number-map)
+  (iter (with volume-of-islands = (make-array count-of-islands :initial-element 0))
+        (for x from 0 below (array-dimension island-volume-map 0))
+        (iter (for y from 0 below (array-dimension island-volume-map 1))
+              (for node-volume = (aref island-volume-map x y))
+              (when (island-node-p node-volume)
+                (incf (aref volume-of-islands (aref island-number-map x y)) node-volume)))
+        (finally (return (iter (for volume in-sequence volume-of-islands)
+                               (collect volume))))))
+#+END_SRC
+* Test cases
+:PROPERTIES:
+:literate-load: test
+:END:
+** Preparation
+Now it's time to validate some functions.
+The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
+#+BEGIN_SRC lisp :load test
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package :fiveam)
+    #+quicklisp (ql:quickload :fiveam)
+    #-quicklisp (asdf:load-system :fiveam)))
+(5am:def-suite islands-suite :description "The test suite of islands.")
+(5am:in-suite islands-suite)
+#+END_SRC
+** the number of islands
+#+BEGIN_SRC lisp :load test
+(5am:test number-of-islands
+  (5am:is (equal 4 (scan-island-map *a-map-of-four-islands*)))
+  (5am:is (equal 2 (scan-island-map *a-map-of-two-oddly-shaped*)))
+  (5am:is (equal 4 (scan-island-map *a-map-to-show-contiguous*))))
+#+END_SRC
+** the island volumes
+
+Let's define a test function to simplify the test
+#+BEGIN_SRC lisp :load test
+(defun get-volume-of-islands-for-test (island-volume-map)
+  (multiple-value-bind (count-of-islands island-number-map)
+      (scan-island-map island-volume-map)
+    (calculate-volume-of-islands count-of-islands island-volume-map island-number-map)))
+#+END_SRC
+
+And the test cases.
+#+BEGIN_SRC lisp :load test
+(5am:test islands-volumes
+  (5am:is (equal '(41 56 36 45) (get-volume-of-islands-for-test *a-map-of-four-islands*)))
+  (5am:is (equal '(19 40) (get-volume-of-islands-for-test *a-map-of-two-oddly-shaped*)))
+  (5am:is (equal '(20 18 40 3) (get-volume-of-islands-for-test *a-map-to-show-contiguous*))))
+#+END_SRC
+
+** run all tests in this library
+this function is the entry point to run all tests and return true if all test cases pass.
+#+BEGIN_SRC lisp :load test
+(defun run-test ()
+  (5am:run! 'islands-suite))
+#+END_SRC
