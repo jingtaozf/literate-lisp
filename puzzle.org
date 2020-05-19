@@ -235,7 +235,7 @@ The look of it:
 *** the basic idea
 For this first version, we will try to use a straightforward way.
 
-As the shape of an island can be very odd, if we scan the map line by line or row by row, we can't determine the contiguous
+As the shape of an island can be very odd, if we scan the map line by line, we can't determine the contiguous
 between one node with its previous scanned nodes easily.
 
 So we will scan the ~island volume map~ line by line and use a recursive rapacious mode, that is,
@@ -284,7 +284,7 @@ The answer is yes if it is beyond the sea level.
 #+END_SRC
 
 *** scan map
-Now let's try to scan the entire ~island volume map~ line by line and row by row.
+Now let's try to scan the entire ~island volume map~ line by line.
 #+BEGIN_SRC lisp
 (defun scan-island-map (island-volume-map)
   (iter (with *current-island-number* = -1)
