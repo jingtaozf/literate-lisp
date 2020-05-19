@@ -38,6 +38,8 @@ This library contains the following files:
   The weaved documentation, generated from [[./literate-lisp.org]] by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
 - [[./readme.org]] \\
   This file contains introduction and demo codes for how to do literate lisp in an org file.
+- [[./puzzle.org]] \\
+  This file contains a puzzle solver to show how to do literate lisp in an org file.
 - [[./.github/workflows/continuous-integration.yml][continuous-integration.yml]] \\
   The config file used by Web service [[https://github.com/jingtaozf/literate-lisp/actions][github actions]] to test this library.
 - [[./literate-lisp.asd]] \\
