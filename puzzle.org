@@ -252,7 +252,7 @@ Let's name every island with an unique integer number, which start from zero for
 #+END_SRC
 So we can rebind this variable in the beginning of search and in the end, this variable can convert to the amount of islands we have found.
 
-Let's create a two dimensional array with the same size of the ~islands volume map~, so we can fill it with ~island number~ it belongs later,
+Let's create a two dimensional array with the same size of the ~islands volume map~, so we can fill it with ~island number~ it belongs,
 of course, if it doesn't belong to any island, its value will be ~nil~,which is the initial value of it.
 #+BEGIN_SRC lisp
 (defun prepare-an-island-number-map (island-volume-map)
