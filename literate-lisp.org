@@ -21,6 +21,9 @@
   - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
   - [[#tangle-an-org-file][tangle an org file]]
   - [[#make-asdf-handle-org-file-correctly][make ASDF handle org file correctly]]
+    - [[#source-file-class-for-org-files][source file class for org files]]
+    - [[#perform-asdf-actions-with-literate-syntax][perform ASDF actions with literate syntax.]]
+    - [[#the-support-for-the-asdf-package-inferred-system-extension][the support for the ASDF package-inferred-system extension]]
   - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
@@ -263,12 +266,13 @@ This will respect global modifications to the readtable in loaded source files.
        ;; install it in current readtable
        (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
        (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
-       ,@body
-       ;; restore our modifications to current readtable if necessary.
-       (when (eq #'literate-lisp::sharp-space (get-dispatch-macro-character #\# #\Space))
-         (set-dispatch-macro-character #\# #\Space ,original-reader-for-sharp-space))
-       (when (eq #'literate-lisp::sharp-plus (get-dispatch-macro-character #\# #\+))
-         (set-dispatch-macro-character #\# #\+ ,original-reader-for-sharp-plus)))))
+       (unwind-protect
+           (progn ,@body)
+         ;; restore our modifications to current readtable if necessary.
+         (when (eq #'literate-lisp::sharp-space (get-dispatch-macro-character #\# #\Space))
+           (set-dispatch-macro-character #\# #\Space ,original-reader-for-sharp-space))
+         (when (eq #'literate-lisp::sharp-plus (get-dispatch-macro-character #\# #\+))
+           (set-dispatch-macro-character #\# #\+ ,original-reader-for-sharp-plus))))))
 #+END_SRC
 
 ** tangle an org file
@@ -321,7 +325,7 @@ This mechanism is good enough because it will not damage any codes in org code b
                       (write-line line output))))))))))
 #+END_SRC
 ** make ASDF handle org file correctly
-
+*** source file class for org files
 Now let's add literate support to ASDF system.
 
 Firstly a new source file class for org files should define in ASDF package.
@@ -340,7 +344,7 @@ So a new ASDF source file type ~:org~ can define an org file like this
   :depends-on (:literate-lisp))
 #+END_SRC
 And file ~readme.org~ will load as a lisp source file by ASDF.
-
+*** perform ASDF actions with literate syntax.
 Then the new reader syntax for org file installs when ASDF actions perform to every org file.
 #+BEGIN_SRC lisp
 (defmethod asdf:perform :around (o (c asdf:org))
@@ -348,6 +352,26 @@ Then the new reader syntax for org file installs when ASDF actions perform to ev
     (call-next-method)))
 #+END_SRC
 Then after loading this package, one org file can load by ASDF automatically.
+
+*** the support for the ASDF package-inferred-system extension
+Additionally, the [[https://common-lisp.net/project/asdf/asdf.html#The-package_002dinferred_002dsystem-extension][ASDF package-inferred-system extension]] will try to define a system dynamically by
+reading package related forms in a source file,to make it can handle ORG syntax, we have to install it around it.
+The system is created in function *sysdef-package-inferred-system-search* in file [[https://gitlab.common-lisp.net/asdf/asdf/-/blob/master/package-inferred-system.lisp][package-inferred-system.lisp]].
+But we have to add our literate syntax in an parent method, here we choose the method *asdf/system:find-system*
+#+BEGIN_SRC lisp
+(defmethod asdf/system:find-system :around (name &optional (error-p t))
+  (literate-lisp:with-literate-syntax
+    (call-next-method)))
+#+END_SRC
+
+So to use org source files in an package inferred syste, we can write a ASD definition like this:
+#+BEGIN_SRC lisp :load no
+(asdf:defsystem literate-libraries
+  :serial t
+  :defsystem-depends-on (:literate-lisp)
+  :default-component-class :org
+  :class :package-inferred-system)
+#+END_SRC
 
 ** make Lispworks handle org file correctly
 LispWorks can add an [[http://www.lispworks.com/documentation/lw70/LW/html/lw-682.htm][advice]] to a function to change its default behavior, we can take advantage of
