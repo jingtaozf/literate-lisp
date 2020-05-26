@@ -186,7 +186,6 @@ Let's also define some sample maps from the above question
 #+END_SRC
 The look of it:
 
-What's the look of it?
 [[file:images/four-islands.png]]
 
 **** two oddly shaped islands
@@ -208,6 +207,7 @@ What's the look of it?
 (draw-the-islands *a-map-of-two-oddly-shaped* :output-name "two-oddly-shaped")
 #+END_SRC
 The look of it:
+
 [[file:./images/two-oddly-shaped.png]]
 
 **** four total islands show how we define "contiguous"
@@ -229,12 +229,13 @@ The look of it:
 (draw-the-islands *a-map-to-show-contiguous* :output-name "contiguous")
 #+END_SRC
 The look of it:
+
 [[file:./images/contiguous.png]]
 ** How to find islands
 *** the basic idea
 For this first version, we will try to use a straightforward way.
 
-As the shape of an island can be very odd, if we scan the map line by line or row by row, we can't determine the contiguous
+As the shape of an island can be very odd, if we scan the map line by line, we can't determine the contiguous
 between one node with its previous scanned nodes easily.
 
 So we will scan the ~island volume map~ line by line and use a recursive rapacious mode, that is,
@@ -251,7 +252,7 @@ Let's name every island with an unique integer number, which start from zero for
 #+END_SRC
 So we can rebind this variable in the beginning of search and in the end, this variable can convert to the amount of islands we have found.
 
-Let's create a two dimensional array with the same size of the ~islands volume map~, so we can fill it with ~island number~ it belongs later,
+Let's create a two dimensional array with the same size of the ~islands volume map~, so we can fill it with ~island number~ it belongs,
 of course, if it doesn't belong to any island, its value will be ~nil~,which is the initial value of it.
 #+BEGIN_SRC lisp
 (defun prepare-an-island-number-map (island-volume-map)
@@ -283,7 +284,7 @@ The answer is yes if it is beyond the sea level.
 #+END_SRC
 
 *** scan map
-Now let's try to scan the entire ~island volume map~ line by line and row by row.
+Now let's try to scan the entire ~island volume map~ line by line.
 #+BEGIN_SRC lisp
 (defun scan-island-map (island-volume-map)
   (iter (with *current-island-number* = -1)
