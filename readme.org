@@ -15,6 +15,9 @@
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
   - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
+  - [[#how-to-include-org-codes-when-using-asdf-package-inferred-system-extension][how to include org codes when using ASDF package-inferred-system extension]]
+- [[#create-a-package-for-this-package-inferred-system][Create a package for this package inferred system]]
+- [[#implementation][implementation]]
   - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
   - [[#a-demo-literate-application][A demo literate application]]
 
@@ -41,7 +44,7 @@ This library contains the following files:
 - [[./puzzle.org]] \\
   This file contains a puzzle solver to show how to do literate lisp in an org file.
 - [[./.github/workflows/continuous-integration.yml][continuous-integration.yml]] \\
-  The config file used by Web service [[https://github.com/jingtaozf/literate-lisp/actions][github actions]] to test this library.
+  The config file used by Web service [[https://github.com/jingtaozf/literate-lisp/actions][GitHub actions]] to test this library.
 - [[./literate-lisp.asd]] \\
   The ASDF definition for literate-lisp project.
 - [[./literate-demo.asd]] \\
@@ -87,6 +90,43 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
   (load "~/projects/common-lisp/config/init-lisp.org"))
 #+END_SRC
 I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
+
+** how to include org codes when using ASDF package-inferred-system extension
+The [[https://common-lisp.net/project/asdf/asdf.html#The-package_002dinferred_002dsystem-extension][ASDF package-inferred-system extension]] is wonderful, in which each file is its own system,
+and dependencies are deduced from the defpackage form or its variant, uiop:define-package.
+You can also use literate-lisp to make a package inferred system by writing an ASD definition like this:
+#+BEGIN_SRC lisp :load no
+(asdf:defsystem literate-libraries
+  :serial t
+  :defsystem-depends-on (:literate-lisp)
+  :default-component-class :org
+  :class :package-inferred-system)
+#+END_SRC
+Here *:class :package-inferred-system* enables the package-inferred-system extension, and *:default-component-class :org* means
+that ASDF will look for all org files to find out a system and load it.
+
+For example, you can create an org file in the same directory of above ASD definition file named as *utilities.org* and
+contains the following codes
+#+begin_example
+# -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
+* Create a package for this package inferred system
+,#+BEGIN_SRC lisp
+(defpackage literate-libraries/utilities
+  (:use :cl)
+  (:import-from :flexi-streams :octet :make-flexi-stream)
+  (:import-from :log4cl :log-config)
+  (:documentation "a utility module."))
+,#+END_SRC
+* implementation
+... ...
+#+end_example
+After loading the above ASD definition file, you can load system *literate-libraries/utilities* in your REPL.
+#+BEGIN_SRC lisp :load no
+(load "/some/path/literate-libraries.asd")
+(ql:quickload :literate-libraries/utilities)
+#+END_SRC
+
+Please upgrade to ASDF 3.3.4.5 or later, it is not supported in earlier ASDF versions.
 
 ** packages written by literate-lisp
 - [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] an S-expression presentation of GraphViz DOT Language

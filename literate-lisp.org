@@ -120,7 +120,7 @@ read them or not should define, and it has three meanings:
   It means that current code block should ignore by lisp reader.
 - test \\
   It means that current code block should load when feature ~test~ or ~literate-test~ exist.
-  The feature ~literate-test~ is kept just for a compatiblity for previous releases of ~literate-lisp~.
+  The feature ~literate-test~ is kept just for a compatibility for previous releases of ~literate-lisp~.
 - other feature keyword registered in global variable ~*features*~ \\
   So you can take advantage of ~*features*~ to load your codes by various purposes.
 #+BEGIN_SRC lisp
@@ -159,7 +159,7 @@ Additionally, we will ignore space characters in the beginning of line, let's fi
         finally (return i)))
 #+END_SRC
 
-the reader syntax is simple, ignore all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
+The reader syntax is simple by ignoring all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
 #+BEGIN_SRC lisp
 (defvar org-lisp-begin-src-id "#+begin_src lisp")
 (defun sharp-space (stream a b)
@@ -254,7 +254,7 @@ We will install the reader syntax globally if the feature ~literate-global~ pres
 #+literate-global(install-globally)
 #+END_SRC
 
-Otherwise we will limit the scope of the the new reader syntax in a specified code body,
+Otherwise, we will limit the scope of the new reader syntax in a specified code body,
 by installing it before a code body and uninstalling it after this code body.
 This will respect global modifications to the readtable in loaded source files.
 #+BEGIN_SRC lisp
@@ -364,7 +364,7 @@ But we have to add our literate syntax in an parent method, here we choose the m
     (call-next-method)))
 #+END_SRC
 
-So to use org source files in an package inferred syste, we can write a ASD definition like this:
+So to use org source files in a package inferred system, we can write an ASD definition like this:
 #+BEGIN_SRC lisp :load no
 (asdf:defsystem literate-libraries
   :serial t
