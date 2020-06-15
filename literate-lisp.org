@@ -50,7 +50,7 @@ and this org file works well with [[https://common-lisp.net/project/slime/][SLIM
 * How to do it?
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ),
 and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
-(see [[https://orgmode.org/manual/Literal-examples.html][org manual]]).
+(see [[https://orgmode.org/manual/Structure-of-Code-Blocks.html][org manual]], we will not support inline code block at this time).
 
 #+BEGIN_EXAMPLE
    ,#+BEGIN_SRC lisp :load no
