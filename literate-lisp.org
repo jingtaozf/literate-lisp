@@ -179,9 +179,9 @@ The reader syntax is simple by ignoring all lines until meet a ~#+begin_src lisp
 This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]] with some minor modifications.
 It implements how to do feature test.
 
-Allegro Lisp has extended the [[https://franz.com/support/documentation/10.0/doc/implementation.htm#reader-macros-2][syntax]] for feature test,
-and LispWorks has different behavior when test feature, for example it will not report an error
-when there are additional argument in feature expression
+Allegro Lisp has extended the [[https://franz.com/support/documentation/10.0/doc/implementation.htm#reader-macros-2][syntax]] for feature test, and
+LispWorks has different behavior, for example it will not report an error
+when there is additional argument in feature expression
 (for example =(not lispworks 6)=).
 For these two vendors, we will use their own feature test function.
 #+BEGIN_SRC lisp
