@@ -54,6 +54,9 @@
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
 ;;; handle arbitrary combinations of atoms using NOT, AND, OR.
 (defun featurep (x)
+  #+allegro(excl:featurep x)
+  #+lispworks(sys:featurep x)
+  #-(or allegro lispworks)
   (typecase x
     (cons
      (case (car x)
