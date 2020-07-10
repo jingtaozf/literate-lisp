@@ -108,7 +108,8 @@
   (let ((original-reader-for-sharp-space (gensym "READER-FUNCTION"))
         (original-reader-for-sharp-plus (gensym "READER-FUNCTION")))
     `(let ((,original-reader-for-sharp-space (get-dispatch-macro-character #\# #\Space))
-           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+)))
+           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+))
+           (*readtable* #-allegro *readtable* #+allegro(copy-readtable nil)))
        ;; install it in current readtable
        (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
        (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)

@@ -257,12 +257,16 @@ We will install the reader syntax globally if the feature ~literate-global~ pres
 Otherwise, we will limit the scope of the new reader syntax in a specified code body,
 by installing it before a code body and uninstalling it after this code body.
 This will respect global modifications to the readtable in loaded source files.
+
+Please note that in Allegro Lisp, the standard readtable is [[https://franz.com/support/documentation/current/doc/implementation.htm#readtable-2][read-only]].
+We have to update it before modifications.
 #+BEGIN_SRC lisp
 (defmacro with-literate-syntax (&body body)
   (let ((original-reader-for-sharp-space (gensym "READER-FUNCTION"))
         (original-reader-for-sharp-plus (gensym "READER-FUNCTION")))
     `(let ((,original-reader-for-sharp-space (get-dispatch-macro-character #\# #\Space))
-           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+)))
+           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+))
+           (*readtable* #-allegro *readtable* #+allegro(copy-readtable nil)))
        ;; install it in current readtable
        (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
        (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
