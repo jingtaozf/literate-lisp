@@ -298,6 +298,8 @@ The basic method is simple here, we use function ~sharp-space~ to ignore all lin
 then export all code lines until we reach ~#+end_src~, this process is repeated to end of org file.
 
 This mechanism is good enough because it will not damage any codes in org code blocks.
+
+This feature supports the additional header argument =load= comparing with the function [[https://orgmode.org/manual/Extracting-Source-Code.html][org-babel-tangle]] in org mode.
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
