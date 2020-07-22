@@ -24,7 +24,9 @@
     - [[#source-file-class-for-org-files][source file class for org files]]
     - [[#perform-asdf-actions-with-literate-syntax][perform ASDF actions with literate syntax.]]
     - [[#the-support-for-the-asdf-package-inferred-system-extension][the support for the ASDF package-inferred-system extension]]
-  - [[#make-lispworks-handle-org-file-correctly][make Lispworks handle org file correctly]]
+  - [[#add-support-to-load-function][add support to =load= function]]
+    - [[#lispworks][LispWorks]]
+    - [[#sbcl][sbcl]]
 - [[#release-this-file][Release this file]]
 - [[#test-cases][Test cases]]
   - [[#preparation-1][Preparation]]
@@ -388,7 +390,8 @@ So to use org source files in a package inferred system, we can write an ASD def
   :class :package-inferred-system)
 #+END_SRC
 
-** make Lispworks handle org file correctly
+** add support to =load= function
+*** LispWorks
 LispWorks can add an [[http://www.lispworks.com/documentation/lw70/LW/html/lw-682.htm][advice]] to a function to change its default behavior, we can take advantage of
 this facility to make function ~load~ can handle org file correctly.
 #+BEGIN_SRC lisp :load no
@@ -397,8 +400,15 @@ this facility to make function ~load~ can handle org file correctly.
   (literate-lisp:with-literate-syntax
     (apply #'lw:call-next-advice args)))
 #+END_SRC
-
-
+*** sbcl
+In sbcl, we can redefine the load function by [[https://gist.github.com/spacebat/46740966846623148c014ab261050bc0][this way]]:
+#+BEGIN_SRC lisp :load no
+(defvar original-load-function #'load)
+(defun literate-load (&rest args)
+  (literate-lisp:with-literate-syntax
+    (apply original-load-function args)))
+(setf (fdefinition 'load) #'literate-load)
+#+END_SRC
 * Release this file
 When a new version of [[./literate-lisp.lisp]] can release from this file,
 the following code should execute.
