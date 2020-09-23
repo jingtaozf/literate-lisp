@@ -387,7 +387,7 @@ And the test cases.
 #+END_SRC
 
 ** run all tests in this library
-this function is the entry point to run all tests and return true if all test cases pass.
+This function is the entry point to run all tests and return true if all test cases pass.
 #+BEGIN_SRC lisp :load test
 (defun run-test ()
   (5am:run! 'islands-suite))

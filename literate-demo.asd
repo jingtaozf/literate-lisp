@@ -4,8 +4,8 @@
 ;; Description:
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2020.05.06 16:31:22(+0800)
-;;     Update #: 67
+;; Last-Updated: 2020.09.23 20:22:40(+0800)
+;;     Update #: 68
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
@@ -27,5 +27,6 @@
   :defsystem-depends-on ("literate-lisp")
   :depends-on (:iterate #+dev :clgplot)
   :components ((:module :demo :pathname "./"
-                        :components ((:org "puzzle"))))
+                        :components ((:org "puzzle")
+                                     (:org "readme"))))
   :properties ((version "0.1")))

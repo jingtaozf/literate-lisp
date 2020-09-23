@@ -39,17 +39,61 @@
         finally (return i)))
 
 (defvar org-lisp-begin-src-id "#+begin_src lisp")
+(defvar org-name-property "#+NAME:")
+(defvar org-name-property-length (length org-name-property))
+(defvar org-block-begin-id "#+BEGIN_")
+(defvar org-block-begin-id-length (length org-block-begin-id))
 (defun sharp-space (stream a b)
   (declare (ignore a b))
-  (loop for line = (read-line stream nil nil)
-        until (null line)
-        for start1 = (start-position-after-space-characters line)
-        do (when debug-literate-lisp-p
-             (format t "ignore line ~a~%" line))
-        until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
-                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
-                     (load-p (getf header-arguments :load :yes)))))
-  (values))
+  (let ((named-code-blocks nil))
+    (loop with name-of-next-block = nil
+          for line = (read-line stream nil nil)
+          until (null line)
+          for start1 = (start-position-after-space-characters line)
+          do (when debug-literate-lisp-p
+               (format t "ignore line ~a~%" line))
+          until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                     (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                       (load-p (getf header-arguments :load :yes))))
+          do (cond ((equal 0 (search org-name-property line :test #'char-equal))
+                    ;; record a name.
+                    (setf name-of-next-block (string-trim '(#\Tab #\Space) (subseq line org-name-property-length))))
+                   ((equal 0 (search org-block-begin-id line :test #'char-equal))
+                    ;; record the context of a block.
+                    (if name-of-next-block
+                        ;; start to read text in current block until reach `#+END_'
+                        (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
+                               (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
+                               (block-stream (make-string-output-stream)))
+                          (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
+                            (setf named-code-blocks
+                                    (nconc named-code-blocks
+                                           (list (cons name-of-next-block
+                                                       (get-output-stream-string block-stream)))))))
+                        ;; reset name of code block if it's not sticking with a valid block.
+                        (setf name-of-next-block nil)))
+                   (t
+                    ;; reset name of code block if it's not sticking with a valid block.
+                    (setf name-of-next-block nil))))
+    (if named-code-blocks
+      `(progn
+         ,@(loop for (block-name . block-text) in named-code-blocks
+                 collect `(defvar ,(intern (string-upcase block-name)) ,block-text)))
+      ;; Can't return nil because ASDF will fail to find a form lik `defpackage'.
+      (values))))
+
+(defun read-block-context-to-stream (input-stream block-stream block-name end-block-id)
+  (loop for line = (read-line input-stream nil)
+        do (cond ((null line)
+                  (return nil))
+                 ((string-equal end-block-id (string-trim '(#\Tab #\Space) line))
+                  (when debug-literate-lisp-p
+                    (format t "reach end of block for '~a'.~%" block-name))
+                  (return t))
+                 (t
+                  (when debug-literate-lisp-p
+                    (format t "read line for block '~a':~s~%" block-name line))
+                  (write-line line block-stream)))))
 
 ;;; If X is a symbol, see whether it is present in *FEATURES*. Also
 ;;; handle arbitrary combinations of atoms using NOT, AND, OR.
@@ -147,20 +191,10 @@
           (loop do
             ;; ignore all lines of org syntax.
             (sharp-space input nil nil)
-            ;; start to read codes in code block until reach `#+end_src'
-            (loop for line = (read-line input nil nil)
-                  do
-               (cond ((null line)
-                      (return-from read-org-files))
-                     ((string-equal "#+end_src" (string-trim '(#\Tab #\Space) line))
-                      (when debug-literate-lisp-p
-                        (format t "reach end of source code block.~%"))
-                      (write-line "" output)
-                      (return))
-                     (t
-                      (when debug-literate-lisp-p
-                        (format t "read code line:~s~%" line))
-                      (write-line line output))))))))))
+            ;; start to read codes in code block until reach `#+END_SRC'
+            (if (read-block-context-to-stream input output "LISP" "#+END_SRC")
+                (write-line "" output)
+                (return))))))))
 
 (defclass asdf::org (asdf:cl-source-file)
   ((asdf::type :initform "org")))

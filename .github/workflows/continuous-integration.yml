@@ -26,4 +26,5 @@ jobs:
             -e '(format t "Run test in ~A ~A~%" (lisp-implementation-type) (lisp-implementation-version))' \
             -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))' \
             -e '(if (not (islands-puzzle::run-test)) (uiop:quit 1))' \
+            -e '(if (not (literate-demo::run-test)) (uiop:quit 1))' \
             -e '(uiop:quit 0)'

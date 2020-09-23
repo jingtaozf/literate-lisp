@@ -16,6 +16,7 @@
   - [[#preparation][Preparation]]
   - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
+  - [[#read-the-content-of-a-block][read the content of a block]]
   - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
   - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
   - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
@@ -161,21 +162,71 @@ Additionally, we will ignore space characters in the beginning of line, let's fi
         finally (return i)))
 #+END_SRC
 
-The reader syntax is simple by ignoring all lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
+The reader syntax will
+- record all named blocks except loadable lisp code blocks as global lisp varaibles.
+- ignore other lines until meet a ~#+begin_src lisp~ and header argument ~load~ is true.
+
 #+BEGIN_SRC lisp
 (defvar org-lisp-begin-src-id "#+begin_src lisp")
+(defvar org-name-property "#+NAME:")
+(defvar org-name-property-length (length org-name-property))
+(defvar org-block-begin-id "#+BEGIN_")
+(defvar org-block-begin-id-length (length org-block-begin-id))
 (defun sharp-space (stream a b)
   (declare (ignore a b))
-  (loop for line = (read-line stream nil nil)
-        until (null line)
-        for start1 = (start-position-after-space-characters line)
-        do (when debug-literate-lisp-p
-             (format t "ignore line ~a~%" line))
-        until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
-                   (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
-                     (load-p (getf header-arguments :load :yes)))))
-  (values))
+  (let ((named-code-blocks nil))
+    (loop with name-of-next-block = nil
+          for line = (read-line stream nil nil)
+          until (null line)
+          for start1 = (start-position-after-space-characters line)
+          do (when debug-literate-lisp-p
+               (format t "ignore line ~a~%" line))
+          until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                     (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                       (load-p (getf header-arguments :load :yes))))
+          do (cond ((equal 0 (search org-name-property line :test #'char-equal))
+                    ;; record a name.
+                    (setf name-of-next-block (string-trim '(#\Tab #\Space) (subseq line org-name-property-length))))
+                   ((equal 0 (search org-block-begin-id line :test #'char-equal))
+                    ;; record the context of a block.
+                    (if name-of-next-block
+                        ;; start to read text in current block until reach `#+END_'
+                        (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
+                               (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
+                               (block-stream (make-string-output-stream)))
+                          (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
+                            (setf named-code-blocks
+                                    (nconc named-code-blocks
+                                           (list (cons name-of-next-block
+                                                       (get-output-stream-string block-stream)))))))
+                        ;; reset name of code block if it's not sticking with a valid block.
+                        (setf name-of-next-block nil)))
+                   (t
+                    ;; reset name of code block if it's not sticking with a valid block.
+                    (setf name-of-next-block nil))))
+    (if named-code-blocks
+      `(progn
+         ,@(loop for (block-name . block-text) in named-code-blocks
+                 collect `(defvar ,(intern (string-upcase block-name)) ,block-text)))
+      ;; Can't return nil because ASDF will fail to find a form lik `defpackage'.
+      (values))))
 #+END_SRC
+** read the content of a block
+#+BEGIN_SRC lisp
+(defun read-block-context-to-stream (input-stream block-stream block-name end-block-id)
+  (loop for line = (read-line input-stream nil)
+        do (cond ((null line)
+                  (return nil))
+                 ((string-equal end-block-id (string-trim '(#\Tab #\Space) line))
+                  (when debug-literate-lisp-p
+                    (format t "reach end of block for '~a'.~%" block-name))
+                  (return t))
+                 (t
+                  (when debug-literate-lisp-p
+                    (format t "read line for block '~a':~s~%" block-name line))
+                  (write-line line block-stream)))))
+#+END_SRC
+
 ** an implementation of original feature test.
 
 This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]] with some minor modifications.
@@ -231,7 +282,7 @@ And if ~feature~ is ~END_SRC~, switch back to org mode syntax
     (format t "found #+END_SRC,start read org part...~%"))
   (funcall #'sharp-space stream sub-char numarg))
 #+END_SRC
-if ~feature~ available, read the following object recursively normally.
+if ~feature~ is available, read the following object recursively.
 #+BEGIN_SRC lisp
 (defun read-featurep-object (stream)
   (read stream t nil t))
@@ -267,9 +318,9 @@ We will install the reader syntax globally if the feature ~literate-global~ pres
 
 Otherwise, we will limit the scope of the new reader syntax in a specified code body,
 by installing it before a code body and uninstalling it after this code body.
-This will respect global modifications to the readtable in loaded source files.
+This will respect global modifications to the =readtable= in loaded source files.
 
-Please note that in Allegro Lisp, the standard readtable is [[https://franz.com/support/documentation/current/doc/implementation.htm#readtable-2][read-only]].
+Please note that in Allegro Lisp, the standard =readtable= is [[https://franz.com/support/documentation/current/doc/implementation.htm#readtable-2][read-only]].
 We have to update it before modifications.
 #+BEGIN_SRC lisp
 (defmacro with-literate-syntax (&body body)
@@ -326,20 +377,10 @@ This feature supports the additional header argument =load= comparing with the f
           (loop do
             ;; ignore all lines of org syntax.
             (sharp-space input nil nil)
-            ;; start to read codes in code block until reach `#+end_src'
-            (loop for line = (read-line input nil nil)
-                  do
-               (cond ((null line)
-                      (return-from read-org-files))
-                     ((string-equal "#+end_src" (string-trim '(#\Tab #\Space) line))
-                      (when debug-literate-lisp-p
-                        (format t "reach end of source code block.~%"))
-                      (write-line "" output)
-                      (return))
-                     (t
-                      (when debug-literate-lisp-p
-                        (format t "read code line:~s~%" line))
-                      (write-line line output))))))))))
+            ;; start to read codes in code block until reach `#+END_SRC'
+            (if (read-block-context-to-stream input output "LISP" "#+END_SRC")
+                (write-line "" output)
+                (return))))))))
 #+END_SRC
 ** make ASDF handle org file correctly
 *** source file class for org files

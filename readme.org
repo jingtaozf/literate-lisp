@@ -13,13 +13,15 @@
   - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
+  - [[#reference-named-blocks-as-global-variables][Reference named blocks as global variables]]
   - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
-  - [[#how-to-include-org-codes-when-using-asdf-package-inferred-system-extension][how to include org codes when using ASDF package-inferred-system extension]]
-- [[#create-a-package-for-this-package-inferred-system][Create a package for this package inferred system]]
-- [[#implementation][implementation]]
+  - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include org codes with ASDF package-inferred-system extension]]
   - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
   - [[#a-demo-literate-application][A demo literate application]]
+    - [[#the-asd-file][The ASD file]]
+    - [[#a-demo-package-for-this-file][a demo package for this file]]
+    - [[#test-cases][Test cases]]
 
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in Common Lisp language.
@@ -70,6 +72,18 @@ The following Emacs Lisp scripts in .emacs will install it.
 Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 ** a new code block header argument ~load~
 Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
+** Reference named blocks as global variables
+If a [[https://orgmode.org/manual/Blocks.html][block]] has a named for it, that is, with a =#+NAME:= before it like this:
+#+begin_example
+,#+NAME: js-demo-code
+,#+BEGIN_SRC js
+  document.getElementById("demo").innerHTML = "Hello JavaScript";
+,#+END_SRC
+#+end_example
+Then after loading, a global variable =js-demo-code= will contain the string in above block.
+
+It is more friendly than write this string in lisp directly,
+because =org mode= can provide syntax for it and =poly mode= can even enable us edit this code block in =js-mode=.
 ** How to debug org file in LispWorks IDE
 You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
 #+BEGIN_SRC lisp :load no
@@ -91,7 +105,7 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
 #+END_SRC
 I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
 
-** how to include org codes when using ASDF package-inferred-system extension
+** how to include org codes with ASDF package-inferred-system extension
 The [[https://common-lisp.net/project/asdf/asdf.html#The-package_002dinferred_002dsystem-extension][ASDF package-inferred-system extension]] is wonderful, in which each file is its own system,
 and dependencies are deduced from the defpackage form or its variant, uiop:define-package.
 You can also use literate-lisp to make a package inferred system by writing an ASD definition like this:
@@ -108,17 +122,17 @@ that ASDF will look for all org files to find out a system and load it.
 For example, you can create an org file in the same directory of above ASD definition file named as *utilities.org* and
 contains the following codes
 #+begin_example
-# -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
-* Create a package for this package inferred system
-,#+BEGIN_SRC lisp
-(defpackage literate-libraries/utilities
-  (:use :cl)
-  (:import-from :flexi-streams :octet :make-flexi-stream)
-  (:import-from :log4cl :log-config)
-  (:documentation "a utility module."))
-,#+END_SRC
-* implementation
-... ...
+  # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
+  * Create a package for this package inferred system
+  ,#+BEGIN_SRC lisp
+  (defpackage literate-libraries/utilities
+    (:use :cl)
+    (:import-from :flexi-streams :octet :make-flexi-stream)
+    (:import-from :log4cl :log-config)
+    (:documentation "a utility module."))
+  ,#+END_SRC
+  * implementation
+  ... ...
 #+end_example
 After loading the above ASD definition file, you can load system *literate-libraries/utilities* in your REPL.
 #+BEGIN_SRC lisp :load no
@@ -131,6 +145,7 @@ Please upgrade to ASDF 3.3.4.5 or later, it is not supported in earlier ASDF ver
 ** packages written by literate-lisp
 - [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] an S-expression presentation of GraphViz DOT Language
 ** A demo literate application
+*** The ASD file
 We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/literate-lsp.org#make-asdf-handle-org-file-correctly][literate-lisp.org]]).
 
 In a short word, we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and
@@ -147,9 +162,48 @@ Now let's define the ASDF system file [[./literate-demo.asd]] for this demo pack
   :defsystem-depends-on ("literate-lisp")
   :depends-on (:iterate #+dev :clgplot)
   :components ((:module :demo :pathname "./"
-                        :components ((:org "puzzle"))))
+                        :components ((:org "puzzle")
+                                     (:org "readme"))))
   :properties ((version "0.1")))
 #+END_SRC
-Which will load this [[./puzzle.org]] directly as a lisp source file.
+Which will load [[./puzzle.org]] and this file directly as a lisp source file.
 
 The whole content of ASDF definition file is in [[./literate-demo.asd]].
+*** a demo package for this file
+#+BEGIN_SRC lisp
+(defpackage :literate-demo
+  (:use :cl)
+  (:export ))
+(in-package :literate-demo)
+#+END_SRC
+*** Test cases
+**** Preparation
+The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
+#+BEGIN_SRC lisp :load test
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package :fiveam)
+    #+quicklisp (ql:quickload :fiveam)
+    #-quicklisp (asdf:load-system :fiveam)))
+(5am:def-suite literate-demo-suite :description "The test suite of literate-demo.")
+(5am:in-suite literate-demo-suite)
+#+END_SRC
+**** test case for named block
+Let's define a named code block for some javascript code:
+#+NAME: js-demo-code-1
+#+begin_src js
+{
+    console.log("Hello");
+}
+#+end_src
+Then try to read it in our test case
+#+BEGIN_SRC lisp
+(5am:test named-block
+  (5am:is (stringp js-demo-code-1))
+  (5am:is (not (null (position #\" js-demo-code-1 :test #'char=)))))
+#+END_SRC
+**** run all tests in this library
+This function is the entry point to run all tests and return true if all test cases pass.
+#+BEGIN_SRC lisp :load test
+(defun run-test ()
+  (5am:run! 'literate-demo-suite))
+#+END_SRC
