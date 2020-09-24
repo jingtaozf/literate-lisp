@@ -84,6 +84,19 @@ Then after loading, a global variable =js-demo-code= will contain the string in 
 
 It is more friendly than write this string in lisp directly,
 because =org mode= can provide syntax for it and =poly mode= can even enable us edit this code block in =js-mode=.
+
+You can visit these named blocks by Emacs Lisp function [[https://orgmode.org/worg/orgcard.html#org11fbe72][org-babel-goto-named-src-block]], or by hacking [[https://github.com/joaotavora/sly][sly]] like this:
+#+BEGIN_SRC elisp :load no
+(defun sly-edit-definition-of-named-block (&optional name method)
+  (when (string= "#+END_SRC" (buffer-substring (line-beginning-position) (line-end-position)))
+    (let ((case-fold-search t))
+      (search-forward-regexp (format "#\\+NAME:\s+%s" name))
+      (forward-line 2)
+      (goto-char (line-beginning-position)))))
+(eval-after-load "sly"
+  '(advice-add 'sly-edit-definition :after #'sly-edit-definition-of-named-block))
+#+END_SRC
+You can hack [[https://common-lisp.net/project/slime/][slime]] the same way.
 ** How to debug org file in LispWorks IDE
 You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
 #+BEGIN_SRC lisp :load no
