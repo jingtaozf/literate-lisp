@@ -13,7 +13,7 @@
   - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
-  - [[#reference-named-blocks-as-global-variables][Reference named blocks as global variables]]
+  - [[#reference-named-blocks-as-global-parameters][Reference named blocks as global parameters]]
   - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include org codes with ASDF package-inferred-system extension]]
@@ -72,7 +72,7 @@ The following Emacs Lisp scripts in .emacs will install it.
 Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 ** a new code block header argument ~load~
 Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
-** Reference named blocks as global variables
+** Reference named blocks as global parameters
 If a [[https://orgmode.org/manual/Blocks.html][block]] has a named for it, that is, with a =#+NAME:= before it like this:
 #+begin_example
 ,#+NAME: js-demo-code
@@ -80,7 +80,7 @@ If a [[https://orgmode.org/manual/Blocks.html][block]] has a named for it, that 
   document.getElementById("demo").innerHTML = "Hello JavaScript";
 ,#+END_SRC
 #+end_example
-Then after loading, a global variable =js-demo-code= will contain the string in above block.
+Then after loading, a global parameter =js-demo-code= will contain the string in above block.
 
 It is more friendly than write this string in lisp directly,
 because =org mode= can provide syntax for it and =poly mode= can even enable us edit this code block in =js-mode=.
