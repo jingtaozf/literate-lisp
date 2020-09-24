@@ -78,7 +78,7 @@
     (if named-code-blocks
       `(progn
          ,@(loop for (block-name . block-text) in named-code-blocks
-                 collect `(defvar ,(intern (string-upcase block-name)) ,block-text)))
+                 collect `(defparameter ,(intern (string-upcase block-name)) ,block-text)))
       ;; Can't return nil because ASDF will fail to find a form lik `defpackage'.
       (values))))
 
