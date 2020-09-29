@@ -88,7 +88,7 @@ because =org mode= can provide syntax for it and =poly mode= can even enable us 
 You can visit these named blocks by Emacs Lisp function [[https://orgmode.org/worg/orgcard.html#org11fbe72][org-babel-goto-named-src-block]], or by hacking [[https://github.com/joaotavora/sly][sly]] like this:
 #+BEGIN_SRC elisp :load no
 (defun sly-edit-definition-of-named-block (&optional name method)
-  (when (string= "#+END_SRC" (buffer-substring (line-beginning-position) (line-end-position)))
+  (when (string-prefix-p "#+END_" (string-trim (buffer-substring (line-beginning-position) (line-end-position))) t)
     (let ((case-fold-search t))
       (search-forward-regexp (format "#\\+NAME:\s+%s" name))
       (forward-line 2)
@@ -97,6 +97,12 @@ You can visit these named blocks by Emacs Lisp function [[https://orgmode.org/wo
   '(advice-add 'sly-edit-definition :after #'sly-edit-definition-of-named-block))
 #+END_SRC
 You can hack [[https://common-lisp.net/project/slime/][slime]] the same way.
+
+*NOTE* You have to install literate-lisp to global =*readtable*= in sbcl to make above patch work, because
+the sbcl backend in =sly= will [[https://github.com/joaotavora/sly/blob/master/slynk/backend/sbcl.lisp#L423][read the source code inside file]] when find definitions.
+#+BEGIN_SRC lisp :load no
+(literate-lisp:install-globally)
+#+END_SRC
 ** How to debug org file in LispWorks IDE
 You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
 #+BEGIN_SRC lisp :load no
