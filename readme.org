@@ -98,8 +98,8 @@ You can visit these named blocks by Emacs Lisp function [[https://orgmode.org/wo
 #+END_SRC
 You can hack [[https://common-lisp.net/project/slime/][slime]] the same way.
 
-*NOTE* You have to install literate-lisp to global =*readtable*= in sbcl to make above patch work, because
-the sbcl backend in =sly= will [[https://github.com/joaotavora/sly/blob/master/slynk/backend/sbcl.lisp#L423][read the source code inside file]] when find definitions.
+*NOTE* You have to install literate-lisp to active =*readtable*= in [[https://github.com/joaotavora/sly][sly]] when using SBCL to make above patch work, because
+the SBCL backend in =sly= will [[https://github.com/joaotavora/sly/blob/master/slynk/backend/sbcl.lisp#L423][read the source code inside file]] when find definitions.
 #+BEGIN_SRC lisp :load no
 (literate-lisp:install-globally)
 #+END_SRC
