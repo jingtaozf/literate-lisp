@@ -19,7 +19,7 @@ jobs:
         LISP: ${{matrix.LISP}}
       run: |
         export PATH=~/.roswell/bin:$PATH
-        ros run -e '(pushnew :literate-test *features*)' \
+        ros run -e '(pushnew :test *features*)' \
             -e '(ql:quickload :literate-lisp)' \
             -e '(literate-lisp:with-literate-syntax (load "./literate-lisp.org"))' \
             -e '(ql:quickload :literate-demo)' \
