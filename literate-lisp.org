@@ -328,6 +328,14 @@ by installing it before a code body and uninstalling it after this code body.
      ,@body))
 #+END_SRC
 
+Now you can use [[https://github.com/melisgl/named-readtables][named-readtables]] to define the syntax for literate-lisp
+#+BEGIN_SRC lisp :load named-readtables
+(named-readtables:defreadtable syntax
+  (:merge :standard)
+  (:dispatch-macro-char #\# #\space #'sharp-space)
+  (:dispatch-macro-char #\# #\+ #'sharp-plus))
+#+END_SRC
+
 ** tangle an org file
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
 
