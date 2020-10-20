@@ -152,21 +152,11 @@
 #+literate-global(install-globally)
 
 (defmacro with-literate-syntax (&body body)
-  (let ((original-reader-for-sharp-space (gensym "READER-FUNCTION"))
-        (original-reader-for-sharp-plus (gensym "READER-FUNCTION")))
-    `(let ((,original-reader-for-sharp-space (get-dispatch-macro-character #\# #\Space))
-           (,original-reader-for-sharp-plus (get-dispatch-macro-character #\# #\+))
-           (*readtable* #-allegro *readtable* #+allegro(copy-readtable nil)))
-       ;; install it in current readtable
-       (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
-       (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
-       (unwind-protect
-           (progn ,@body)
-         ;; restore our modifications to current readtable if necessary.
-         (when (eq #'literate-lisp::sharp-space (get-dispatch-macro-character #\# #\Space))
-           (set-dispatch-macro-character #\# #\Space ,original-reader-for-sharp-space))
-         (when (eq #'literate-lisp::sharp-plus (get-dispatch-macro-character #\# #\+))
-           (set-dispatch-macro-character #\# #\+ ,original-reader-for-sharp-plus))))))
+  `(let ((*readtable* (copy-readtable)))
+     ;; install it in current readtable
+     (set-dispatch-macro-character #\# #\space #'literate-lisp::sharp-space)
+     (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
+     ,@body))
 
 (defun tangle-org-file (org-file &key
                         (keep-test-codes nil)
