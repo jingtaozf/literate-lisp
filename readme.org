@@ -15,6 +15,7 @@
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
   - [[#reference-named-blocks-as-global-parameters][Reference named blocks as global parameters]]
   - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
+  - [[#how-to-integrate-with-namded-readtables][How to integrate with namded-readtables]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include org codes with ASDF package-inferred-system extension]]
   - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
@@ -112,6 +113,15 @@ You have to add the following codes in your ~.lispworks~ to enable the debug fac
 (editor:add-global-hook editor::read-file-hook 'check-org-mode)
 #+END_SRC
 Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
+** How to integrate with namded-readtables
+You may find that [[https://github.com/melisgl/named-readtables][named-readtables]] is friendly to define the syntax for literate-lisp in your codes [[https://github.com/jingtaozf/literate-lisp/issues/12#issuecomment-710256276][like this]]:
+#+BEGIN_SRC lisp :load no
+(named-readtables:defreadtable syntax
+  (:merge :standard)
+  (:dispatch-macro-char #\# #\space #'literate-lisp::sharp-space)
+  (:dispatch-macro-char #\# #\+ #'literate-lisp::sharp-plus))
+#+END_SRC
+
 ** How to write user initialization file with literate programming style
 You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
 For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
