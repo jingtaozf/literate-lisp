@@ -343,8 +343,7 @@ We cache the calculated amount of each island in an array and the index means th
               (for node-volume = (aref island-volume-map x y))
               (when (island-node-p node-volume)
                 (incf (aref volume-of-islands (aref island-number-map x y)) node-volume)))
-        (finally (return (iter (for volume in-sequence volume-of-islands)
-                               (collect volume))))))
+        (finally (return volume-of-islands))))
 #+END_SRC
 * Test cases
 :PROPERTIES:
@@ -381,9 +380,9 @@ Let's define a test function to simplify the test
 And the test cases.
 #+BEGIN_SRC lisp :load test
 (5am:test islands-volumes
-  (5am:is (equal '(41 56 36 45) (get-volume-of-islands-for-test *a-map-of-four-islands*)))
-  (5am:is (equal '(19 40) (get-volume-of-islands-for-test *a-map-of-two-oddly-shaped*)))
-  (5am:is (equal '(20 18 40 3) (get-volume-of-islands-for-test *a-map-to-show-contiguous*))))
+  (5am:is (equal #(41 56 36 45) (get-volume-of-islands-for-test *a-map-of-four-islands*)))
+  (5am:is (equal #(19 40) (get-volume-of-islands-for-test *a-map-of-two-oddly-shaped*)))
+  (5am:is (equal #(20 18 40 3) (get-volume-of-islands-for-test *a-map-to-show-contiguous*))))
 #+END_SRC
 
 ** run all tests in this library
