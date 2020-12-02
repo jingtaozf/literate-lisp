@@ -326,7 +326,7 @@ We will check all neighbors here safely.
       (when (< top-y *current-map-y-dimension*)
         (complete-an-island-from-a-node-if-possible x top-y island-number))
 
-      ;; check the top neighbor node
+      ;; check the bottom neighbor node
       (when (>= bottom-y 0)
         (complete-an-island-from-a-node-if-possible x bottom-y island-number)))))
 #+END_SRC
