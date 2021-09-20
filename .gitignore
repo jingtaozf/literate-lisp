@@ -5,3 +5,4 @@ auto/
 *.aux
 *.tex.*
 *.bbl
+/build/

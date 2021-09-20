@@ -11,9 +11,13 @@
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
 - [[#introduction][Introduction]]
-- [[#how-to-do-it][How to do it?]]
+- [[#the-basic-idea][The basic idea]]
+- [[#preparation][Preparation]]
+  - [[#a-new-lisp-package-for-this-library][a new lisp package for this library.]]
+  - [[#a-debug-variable-to-switch-onoff-the-log-messages][a debug variable to switch on/off the log messages.]]
+- [[#org-file-parser][Org file parser]]
+  - [[#introduction-1][Introduction]]
 - [[#implementation][Implementation]]
-  - [[#preparation][Preparation]]
   - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
   - [[#read-the-content-of-a-block][read the content of a block]]
@@ -53,7 +57,7 @@ By using Common Lisp package [[https://github.com/jingtaozf/literate-lisp][liter
 literate programming can be easy in one org file containing both documentation and source codes,
 and this org file works well with [[https://common-lisp.net/project/slime/][SLIME]].
 
-* How to do it?
+* The basic idea
 In org mode, the comment line start with character ~#~ (see [[https://orgmode.org/manual/Comment-lines.html][org manual]] ),
 and the lisp codes exists between ~#+begin_src lisp~ and ~#+end_src~
 (see [[https://orgmode.org/manual/Structure-of-Code-Blocks.html][org manual]], we will not support inline code block at this time).
@@ -90,22 +94,20 @@ for example I often put them in the first line of an org file:
 #+END_SRC
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
 
-* Implementation
-** Preparation
-
-Firstly a new lisp package for this library is defined.
+* Preparation
+** a new lisp package for this library.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
 (defpackage :literate-lisp
-  (:use :cl)
+  ;; `massung.lexer' is used to parse some elements in org files
+  (:use :cl :massung.lexer)
   (:nicknames :lp)
   (:export :install-globally :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write Common Lisp codes in org file."))
 (pushnew :literate-lisp *features*)
 (in-package :literate-lisp)
 #+END_SRC
-
-There is a debug variable to switch on/off the log messages.
+** a debug variable to switch on/off the log messages.
 #+BEGIN_SRC lisp
 (defvar debug-literate-lisp-p nil)
 (declaim (type boolean debug-literate-lisp-p))
@@ -114,7 +116,9 @@ There is a debug variable to switch on/off the log messages.
 And let's define the org code block identifier.
 #+BEGIN_SRC lisp
 #+END_SRC
-
+* Org file parser
+** Introduction
+* Implementation
 ** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
