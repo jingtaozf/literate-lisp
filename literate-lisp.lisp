@@ -133,8 +133,9 @@
 (define-lexer :property-in-properties "^\\s*:(\\S+):\\s*(\\S+.*)$"
   (key value)
   (when (org-context :in-properties)
-    (format t "Found property in level ~D, ~a:~a.~%"
-            (current-headline-level) key value)
+    (when debug-literate-lisp-p
+      (format t "Found property in level ~D, ~a:~a.~%"
+              (current-headline-level) key value))
     (setf (gethash key (headline-properties (current-headline))) value)))
 
 (defun org-property-value (key)
