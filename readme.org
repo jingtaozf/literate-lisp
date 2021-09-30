@@ -219,7 +219,7 @@ The whole content of ASDF definition file is in [[./literate-demo.asd]].
 :END:
 **** Preparation
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
     #+quicklisp (ql:quickload :fiveam)
@@ -236,14 +236,14 @@ Let's define a named code block for some javascript code:
 }
 #+end_src
 Then try to read it in our test case
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (5am:test named-block
   (5am:is (stringp js-demo-code-1))
   (5am:is (not (null (position #\" js-demo-code-1 :test #'char=)))))
 #+END_SRC
 **** run all tests in this library
 This function is the entry point to run all tests and return true if all test cases pass.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defun run-test ()
   (5am:run! 'literate-demo-suite))
 #+END_SRC
