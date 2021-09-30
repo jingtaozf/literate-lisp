@@ -8,6 +8,7 @@
 #+STARTUP: inlineimages
 #+PROPERTY: literate-lang lisp
 #+PROPERTY: literate-load yes
+#+PROPERTY: literate-insert-header no
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
 - [[#introduction][Introduction]]
@@ -17,6 +18,24 @@
   - [[#a-debug-variable-to-switch-onoff-the-log-messages][a debug variable to switch on/off the log messages.]]
 - [[#org-file-parser][Org file parser]]
   - [[#introduction-1][Introduction]]
+  - [[#the-global-variable-to-hold-org-information-for-current-file-in-current-point][the global variable to hold org information for current file in current point]]
+  - [[#how-to-add-a-tokenizer-for-an-org-syntax][how to add a tokenizer for an org syntax]]
+  - [[#how-to-run-all-patterns-over-each-line][how to run all patterns over each line]]
+  - [[#head-line][head line]]
+    - [[#data-structure][data structure]]
+    - [[#to-get-and-set-headline][To get and set headline]]
+    - [[#current-headline][current headline.]]
+    - [[#to-get-current-headline-content][To get current headline content.]]
+    - [[#pop-a-head-line][pop a head line]]
+    - [[#push-a-head-line][push a head line]]
+    - [[#root-headline][root headline]]
+    - [[#the-lexer][the lexer]]
+  - [[#property-in-a-single-line][property in a single line]]
+  - [[#property-in-a-properties-block][property in a properties block]]
+    - [[#detect-begin-of-properties-block][detect begin of properties block]]
+    - [[#detect-end-of-properties-block][detect end of properties block]]
+    - [[#detect-property][detect property]]
+  - [[#get-current-property-value][get current property value]]
 - [[#implementation][Implementation]]
   - [[#new-defined-header-argument-load][new defined header argument load]]
   - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
@@ -99,8 +118,7 @@ Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
 (defpackage :literate-lisp
-  ;; `massung.lexer' is used to parse some elements in org files
-  (:use :cl :massung.lexer)
+  (:use :cl :cl-ppcre :iterate)
   (:nicknames :lp)
   (:export :install-globally :tangle-org-file :with-literate-syntax)
   (:documentation "a literate programming tool to write Common Lisp codes in org file."))
@@ -118,10 +136,212 @@ And let's define the org code block identifier.
 #+END_SRC
 * Org file parser
 ** Introduction
+The main purpose of this org file parser is to determine the semantics value of some
+property values([[https://orgmode.org/manual/Property-Syntax.html][property syntax]]) in an org file.
+
+We will use library [[http://edicl.github.io/cl-ppcre/][cl-ppcre]] to parse each line of an org file.
+** the global variable to hold org information for current file in current point
+#+BEGIN_SRC lisp
+(defvar current-org-context (make-hash-table))
+#+END_SRC
+The context is based on current point in the parser.
+
+To get a category for current context
+#+BEGIN_SRC lisp
+(defun org-context (name)
+  (gethash name current-org-context nil))
+#+END_SRC
+To update a category for current context
+#+BEGIN_SRC lisp
+(defun set-org-context (name new-value)
+  (setf (gethash name current-org-context) new-value))
+(defsetf org-context set-org-context)
+#+END_SRC
+
+** how to add a tokenizer for an org syntax
+We will store a list of regex pattern in symbol =lexer='s property =patterns=.
+Each pattern will contain the following information in a list orderly:
+1. the name of the pattern
+2. the regex string to scan for each line in the org file except the source code block.
+3. the parameter list for registered groups in the regex string
+4. the handler logic codes for the pattern, it will accept parameters in section 3.
+#+BEGIN_SRC lisp
+(defmacro define-lexer (name regex-pattern parameters &rest body)
+  (let ((fun-name (intern (format nil "ORG-LEXER-FOR-~a" name))))
+    `(progn (defun ,fun-name ,parameters
+              ,@body)
+            (if (assoc ',name (get 'lexer 'patterns))
+                (setf (cdr (assoc ',name (get 'lexer 'patterns)))
+                        (list ',fun-name ,regex-pattern ,(length parameters)))
+                (push (list ',name ',fun-name ,regex-pattern ,(length parameters))
+                  (get 'lexer 'patterns))))))
+#+END_SRC
+** how to run all patterns over each line
+#+BEGIN_SRC lisp
+(defun run-patterns (line)
+  (iter (for (name fun-name regex-pattern parameters-count) in (get 'lexer 'patterns))
+        (multiple-value-bind (match-start match-end reg-starts reg-ends)
+            (scan regex-pattern line)
+          (declare (ignore match-end))
+          (when match-start
+            (iter (with arguments = nil)
+                  (for i from 0 below parameters-count)
+                  (for start-index = (aref reg-starts i))
+                  (setf arguments
+                          (nconc arguments
+                                 (list (if start-index
+                                           (subseq line start-index (aref reg-ends i))
+                                           nil))))
+                  (finally
+                   (when debug-literate-lisp-p
+                     (format t "apply pattern ~a with arguments ~a~%" name arguments))
+                   (apply fun-name arguments)))
+            (finish)))))
+#+END_SRC
+** head line
+*** data structure
+We will store headline in a stack, each item in this stack is a =structure=
+#+BEGIN_SRC lisp
+(defstruct headline 
+  ;; the level
+  (level 0 :type integer)
+  ;; the content
+  (content "" :type string)
+  ;; the property specified for this headline
+  (properties (make-hash-table :test #'equalp) :type hash-table))
+#+END_SRC
+*** To get and set headline
+#+BEGIN_SRC lisp
+(defun org-headlines ()
+  (org-context :headline))
+
+(defun set-org-headlines (new-value)
+  (setf (org-context :headline) new-value))
+(defsetf org-headlines set-org-headlines)
+#+END_SRC
+*** current headline.
+#+BEGIN_SRC lisp
+(defun current-headline ()
+  (first (org-headlines)))
+#+END_SRC
+#+BEGIN_SRC lisp
+(defun current-headline-level ()
+  (headline-level (first (org-headlines))))
+#+END_SRC
+*** To get current headline content.
+#+BEGIN_SRC lisp
+(defun current-headline-content ()
+  (headline-content (first (org-headlines))))
+#+END_SRC
+*** pop a head line
+#+BEGIN_SRC lisp
+(defun pop-org-headline ()
+  (pop (org-headlines)))
+#+END_SRC
+*** push a head line
+#+BEGIN_SRC lisp
+(defun push-org-headline (level content)
+  (push (make-headline :level level :content content) (org-headlines)))
+#+END_SRC
+*** root headline
+From the beginning we will construct a root head line so there will always be a headline to hold properties
+for the whole file.
+#+BEGIN_SRC lisp
+(defun setup-headline ()
+  (push-org-headline 0 ""))
+#+END_SRC
+*** the lexer
+#+BEGIN_SRC lisp
+(define-lexer :headline "^\\s*(\\*+)\\s+(.*)$"
+  (indicators content)
+  (let ((level (length indicators))
+        (previous-level (current-headline-level)))
+    (cond ((= previous-level level)
+           ;; meet a new headline with same level, pop the old one and push the new one
+           (pop-org-headline)
+           (push-org-headline level content))
+          ((> previous-level level) 
+           ;; meet a new headline with lower level, pop the old one until meet the same level. 
+           (iter (pop-org-headline)
+                 (until (< (current-headline-level) level)))
+           (push-org-headline level content))
+          (t
+           ;; meet a new headline with higher level. 
+           (push-org-headline level content)))
+    (when debug-literate-lisp-p
+      (format t "current headline, level:~D, content:~a~%"
+              (current-headline-level)
+              (current-headline-content)))))
+#+END_SRC
+** property in a single line
+For example in one line of the beginning of a file like =#+PROPERTY: NDisks_ALL 1 2 3 4=. 
+#+BEGIN_SRC lisp
+(define-lexer :property-in-a-line "^\\s*\\#\\+PROPERTY:\\s*(\\S+)\\s+(.*)$"
+  (key value)
+  (when debug-literate-lisp-p
+    (format t "Found property in level ~D, ~a:~a.~%"
+            (current-headline-level) key value))
+  (setf (gethash key (headline-properties (current-headline))) value))
+#+END_SRC
+** property in a properties block
+#+BEGIN_EXAMPLE
+    :PROPERTIES:
+    :Title:     Goldberg Variations
+    :Composer:  J.S. Bach
+    :Artist:    Glenn Gould
+    :Publisher: Deutsche Grammophon
+    :NDisks:    1
+    :END:
+#+END_EXAMPLE
+We need to define three lexer to detect properties in such block.
+*** detect begin of properties block 
+#+BEGIN_SRC lisp
+(define-lexer :begin-of-properties "^(\\s*:PROPERTIES:\\s*)$"
+  (line)
+  (declare (ignore line))
+  (when debug-literate-lisp-p
+    (format t "Found beginning of properties.~%"))
+  (setf (org-context :in-properties) t))
+#+END_SRC
+*** detect end of properties block
+#+BEGIN_SRC lisp
+(define-lexer :end-of-properties "(^\\s*:END:\\s*$)"
+  (line)
+  (declare (ignore line))
+  (when (org-context :in-properties)
+    (when debug-literate-lisp-p
+      (format t "Found end of properties.~%"))
+    (setf (org-context :in-properties) nil)))
+#+END_SRC
+*** detect property
+Please note that when detect =value= we use no white space class so it will
+not match the =:PROPERTIES:= and =:END:= which only have a key.
+So it will be a unique match to all cases.
+#+BEGIN_SRC lisp
+(define-lexer :property-in-properties "^\\s*:(\\S+):\\s*(\\S+.*)$"
+  (key value)
+  (when (org-context :in-properties)
+    (format t "Found property in level ~D, ~a:~a.~%"
+            (current-headline-level) key value)
+    (setf (gethash key (headline-properties (current-headline))) value)))
+#+END_SRC
+** get current property value
+#+BEGIN_SRC lisp
+(defun org-property-value (key)
+  ;; (when debug-literate-lisp-p
+  ;;   (format t "head lines:~a~%" (org-headlines)))
+  (iter (for headline in (org-headlines))
+        ;; (when debug-literate-lisp-p
+        ;;   (format t "Check head line:~D:~a~%" (headline-level headline)
+        ;;           (headline-content headline)))
+        (for value = (gethash key (headline-properties headline)))
+        (if value
+            (return value))))
+#+END_SRC
 * Implementation
 ** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
-some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]]  ~load~ to decide to
+some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]] ~load~ to decide to
 read them or not should define, and it has three meanings:
 - yes \\
   It means that current code block should load normally,
@@ -135,12 +355,21 @@ read them or not should define, and it has three meanings:
   So you can take advantage of ~*features*~ to load your codes by various purposes.
 #+BEGIN_SRC lisp
 (defun load-p (feature)
-  (case feature
-    ((nil :yes) t)
-    (:no nil)
-    (t (or (find feature *features* :test #'eq)
-           (when (eq :test feature)
-             (find :literate-test *features* :test #'eq))))))
+  (cond ((eq :yes feature)
+         t)
+        ((eq :no feature)
+         nil)
+        ((null feature)
+         ;; check current org property `literate-load'.
+         (let ((load (org-property-value "literate-load")))
+           (when debug-literate-lisp-p
+             (format t "get current property value of literate-load:~a~%" load))
+           (if load
+               (load-p (first (read-org-code-block-header-arguments load 0)))
+               t)))
+        (t (or (find feature *features* :test #'eq)
+             (when (eq :test feature)
+               (find :literate-test *features* :test #'eq))))))
 #+END_SRC
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
 and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-header-arguments).
@@ -151,9 +380,9 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
     (let ((*readtable* (copy-readtable nil))
           (*package* #.(find-package :keyword))
           (*read-suppress* nil))
-       (loop for elem = (read stream nil)
-                     while elem
-                     collect elem))))
+      (iter (for elem = (read stream nil))
+            (while elem)
+            (collect elem)))))
 #+END_SRC
 
 ** function to handle reader syntax for "# "(# + Space)
@@ -163,10 +392,10 @@ We have to check whether current line is a ~#+begin src lisp~.
 Additionally, we will ignore space characters in the beginning of line, let's find the position of it by a function.
 #+BEGIN_SRC lisp
 (defun start-position-after-space-characters (line)
-  (loop for c of-type character across line
-        for i of-type fixnum from 0
-        until (not (find c '(#\Tab #\Space)))
-        finally (return i)))
+  (iter (for c in-sequence line)
+        (for i from 0)
+        (until (not (find c '(#\Tab #\Space))))
+        (finally (return i))))
 #+END_SRC
 
 The reader syntax will
@@ -181,57 +410,65 @@ The reader syntax will
 (defvar org-block-begin-id-length (length org-block-begin-id))
 (defun sharp-space (stream a b)
   (declare (ignore a b))
+  ;; reset org content in the beginning of the file;
+  ;; here we assume sharp space meaning it.
+  (setf current-org-context (make-hash-table))
+  (setup-headline)
+  (sharp-org stream))
+
+(defun sharp-org (stream)
   (let ((named-code-blocks nil))
-    (loop with name-of-next-block = nil
-          for line = (read-line stream nil nil)
-          until (null line)
-          for start1 = (start-position-after-space-characters line)
-          do (when debug-literate-lisp-p
-               (format t "ignore line ~a~%" line))
-          until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
-                     (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
-                       (load-p (getf header-arguments :load :yes))))
-          do (cond ((equal 0 (search org-name-property line :test #'char-equal))
-                    ;; record a name.
-                    (setf name-of-next-block (string-trim '(#\Tab #\Space) (subseq line org-name-property-length))))
-                   ((equal 0 (search org-block-begin-id line :test #'char-equal))
-                    ;; record the context of a block.
-                    (if name-of-next-block
-                        ;; start to read text in current block until reach `#+END_'
-                        (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
-                               (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
-                               (block-stream (make-string-output-stream)))
-                          (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
-                            (setf named-code-blocks
-                                    (nconc named-code-blocks
-                                           (list (cons name-of-next-block
-                                                       (get-output-stream-string block-stream)))))))
-                        ;; reset name of code block if it's not sticking with a valid block.
-                        (setf name-of-next-block nil)))
-                   (t
-                    ;; reset name of code block if it's not sticking with a valid block.
-                    (setf name-of-next-block nil))))
+    (iter (with name-of-next-block = nil)
+          (for line = (read-line stream nil nil))
+          (until (null line))
+          (for start1 = (start-position-after-space-characters line))
+          (when debug-literate-lisp-p
+            (format t "ignore line ~a~%" line))
+          (run-patterns line)
+          (until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
+                      (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                        (load-p (getf header-arguments :load)))))
+          (cond ((equal 0 (search org-name-property line :test #'char-equal))
+                 ;; record a name.
+                 (setf name-of-next-block (string-trim '(#\Tab #\Space) (subseq line org-name-property-length))))
+                ((equal 0 (search org-block-begin-id line :test #'char-equal))
+                 ;; record the context of a block.
+                 (if name-of-next-block
+                     ;; start to read text in current block until reach `#+END_'
+                     (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
+                            (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
+                            (block-stream (make-string-output-stream)))
+                       (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
+                         (setf named-code-blocks
+                                 (nconc named-code-blocks
+                                        (list (cons name-of-next-block
+                                                    (get-output-stream-string block-stream)))))))
+                     ;; reset name of code block if it's not sticking with a valid block.
+                     (setf name-of-next-block nil)))
+                (t
+                 ;; reset name of code block if it's not sticking with a valid block.
+                 (setf name-of-next-block nil))))
     (if named-code-blocks
-      `(progn
-         ,@(loop for (block-name . block-text) in named-code-blocks
-                 collect `(defparameter ,(intern (string-upcase block-name)) ,block-text)))
-      ;; Can't return nil because ASDF will fail to find a form like `defpackage'.
-      (values))))
+        `(progn
+           ,@(iter (for (block-name . block-text) in named-code-blocks)
+                   (collect `(defparameter ,(intern (string-upcase block-name)) ,block-text))))
+        ;; Can't return nil because ASDF will fail to find a form like `defpackage'.
+        (values))))
 #+END_SRC
 ** read the content of a block
 #+BEGIN_SRC lisp
 (defun read-block-context-to-stream (input-stream block-stream block-name end-block-id)
-  (loop for line = (read-line input-stream nil)
-        do (cond ((null line)
-                  (return nil))
-                 ((string-equal end-block-id (string-trim '(#\Tab #\Space) line))
-                  (when debug-literate-lisp-p
-                    (format t "reach end of block for '~a'.~%" block-name))
-                  (return t))
-                 (t
-                  (when debug-literate-lisp-p
-                    (format t "read line for block '~a':~s~%" block-name line))
-                  (write-line line block-stream)))))
+  (iter (for line = (read-line input-stream nil))
+        (cond ((null line)
+               (return nil))
+              ((string-equal end-block-id (string-trim '(#\Tab #\Space) line))
+               (when debug-literate-lisp-p
+                 (format t "reach end of block for '~a'.~%" block-name))
+               (return t))
+              (t
+               (when debug-literate-lisp-p
+                 (format t "read line for block '~a':~s~%" block-name line))
+               (write-line line block-stream)))))
 #+END_SRC
 
 ** an implementation of original feature test.
@@ -285,9 +522,10 @@ Let's read the ~feature value~ after ~#+~ as a keyword
 And if ~feature~ is ~END_SRC~, switch back to org mode syntax
 #+BEGIN_SRC lisp
 (defun handle-feature-end-src (stream sub-char numarg)
+  (declare (ignore sub-char numarg))
   (when debug-literate-lisp-p
     (format t "found #+END_SRC,start read org part...~%"))
-  (funcall #'sharp-space stream sub-char numarg))
+  (funcall #'sharp-org stream))
 #+END_SRC
 if ~feature~ is available, read the following object recursively.
 #+BEGIN_SRC lisp
@@ -372,16 +610,19 @@ This feature supports the additional header argument =load= comparing with the f
                                    (output-file (make-pathname :defaults org-file :type "lisp")))
   (when (and (null force-tangle) (tangled-file-update-outside-p output-file))
     (error "The output file has been updated outside, please merge it into your org file before tangling!"))
-  (let ((*features* features))
+  (let ((*features* features)
+        ;; reset org context
+        (current-org-context (make-hash-table)))
+    (setup-headline)
     (with-open-file (input org-file)
       (with-open-file (output output-file :direction :output
                                           :if-does-not-exist :create
                                           :if-exists :supersede)
         (apply #'format output header header-args)
         (block read-org-files
-          (loop do
+          (iter
             ;; ignore all lines of org syntax.
-            (sharp-space input nil nil)
+            (sharp-org input)
             ;; start to read codes in code block until reach `#+END_SRC'
             (if (read-block-context-to-stream input output "LISP" "#+END_SRC")
                 (write-line "" output)
@@ -488,10 +729,13 @@ In sbcl, we can redefine the load function by [[https://gist.github.com/spacebat
 (setf (fdefinition 'load) #'literate-load)
 #+END_SRC
 * Release this file
+:PROPERTIES:
+:literate-load: no
+:END:
 When a new version of [[./literate-lisp.lisp]] can release from this file,
 the following code should execute.
 #+caption: a demo code to tangle current org file.
-#+BEGIN_SRC lisp :load no
+#+BEGIN_SRC lisp
 (tangle-org-file
  (format nil "~a/literate-lisp.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp)))
@@ -505,7 +749,7 @@ the following code should execute.
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
     #+quicklisp (ql:quickload :fiveam)
@@ -516,14 +760,14 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 ** test groups
 *** test for reading org code block header-arguments
 label:test-read-org-code-block-header-arguments
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (5am:test read-org-code-block-header-arguments
   (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
   (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
 #+END_SRC
 *** test for tangling file safely
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (5am:test protect-tangled-file
   (5am:signals (error "The form ~S is expected to signal an ~S"
                       '(error "an error") 'error)
@@ -537,13 +781,13 @@ label:test-read-org-code-block-header-arguments
 #+END_SRC
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defun run-test ()
   (5am:run! 'literate-lisp-suite))
 #+END_SRC
-
 ** run all tests in demo project
 To run all tests in demo project ~literate-demo~, please load it by yourself.
+
 * References
 - [[http://www.literateprogramming.com/knuthweb.pdf][Literate. Programming]] by [[https://www-cs-faculty.stanford.edu/~knuth/lp.html][Donald E. Knuth]]
 - [[http://www.literateprogramming.com/][Literate Programming]] a site of literate programming

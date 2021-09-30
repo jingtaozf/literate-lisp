@@ -2,6 +2,7 @@
 #+Startup: noindent
 #+PROPERTY: literate-lang lisp
 #+PROPERTY: literate-load yes
+#+PROPERTY: literate-insert-header no
 
 [[http://quickdocs.org/literate-lisp/][file:http://quickdocs.org/badge/literate-lisp.svg]]
 [[https://github.com/jingtaozf/literate-lisp/actions][file:https://github.com/jingtaozf/literate-lisp/workflows/Continous%20Integration/badge.svg]]
@@ -71,6 +72,13 @@ The following Emacs Lisp scripts in .emacs will install it.
 #+END_SRC
 ** how to insert code block quickly
 Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
+
+Please note that =literate-lisp= now support parsing org property values([[https://orgmode.org/manual/Property-Syntax.html][property syntax]]),
+so there is no need to insert =:load no= in header argument now, you can set them as
+org properties.
+
+To disable insertion of unnecessary header argument,
+you can set org property =literate-insert-header= to =no=.
 ** a new code block header argument ~load~
 Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
 ** Reference named blocks as global parameters
