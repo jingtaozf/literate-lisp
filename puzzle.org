@@ -142,7 +142,7 @@ please ensure that you have installed both of them before the plot.
 It's just a simple gnuplot [[http://gnuplot.sourceforge.net/docs_4.2/node328.html][splot]] command to draw it out, but we provide two kind of visualization
 - a map when ~map-p~ is true
 - a three dimensional plot when ~map-p~ is false
-#+BEGIN_SRC lisp :load dev
+#+BEGIN_SRC lisp
 (defun draw-the-islands (map &key (map-p t) (output-path (format nil "~a/images/" (asdf:component-pathname (asdf:find-system :literate-demo))))
                              output-name)
   (let ((x-list (loop for i from 0 below (array-dimension map 0) collect i))
@@ -167,7 +167,7 @@ It's just a simple gnuplot [[http://gnuplot.sourceforge.net/docs_4.2/node328.htm
 :END:
 Let's also define some sample maps from the above question
 **** four islands
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defvar *a-map-of-four-islands* (make-array '(10 10)
                                             :initial-contents '((0 5 5 7 0 0 0 0 0 0)
                                                                 (0 1 8 8 0 0 0 0 0 0)
@@ -189,7 +189,7 @@ The look of it:
 [[file:images/four-islands.png]]
 
 **** two oddly shaped islands
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defvar *a-map-of-two-oddly-shaped* (make-array '(10 10)
                                                 :initial-contents '((0 1 1 1 0 0 0 0 0 0)
                                                                     (0 0 0 1 0 0 0 0 0 0)
@@ -211,7 +211,7 @@ The look of it:
 [[file:./images/two-oddly-shaped.png]]
 
 **** four total islands show how we define "contiguous"
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defvar *a-map-to-show-contiguous* (make-array '(10 10)
                                                :initial-contents '((0 1 1 1 0 0 0 0 0 0)
                                                                    (0 1 1 1 0 0 0 0 0 0)
@@ -352,7 +352,7 @@ We cache the calculated amount of each island in an array and the index means th
 ** Preparation
 Now it's time to validate some functions.
 The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :fiveam)
     #+quicklisp (ql:quickload :fiveam)
@@ -361,7 +361,7 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 (5am:in-suite islands-suite)
 #+END_SRC
 ** the number of islands
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (5am:test number-of-islands
   (5am:is (equal 4 (scan-island-map *a-map-of-four-islands*)))
   (5am:is (equal 2 (scan-island-map *a-map-of-two-oddly-shaped*)))
@@ -370,7 +370,7 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 ** the island volumes
 
 Let's define a test function to simplify the test
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defun get-volume-of-islands-for-test (island-volume-map)
   (multiple-value-bind (count-of-islands island-number-map)
       (scan-island-map island-volume-map)
@@ -378,7 +378,7 @@ Let's define a test function to simplify the test
 #+END_SRC
 
 And the test cases.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (5am:test islands-volumes
   (5am:is (equalp #(41 56 36 45) (get-volume-of-islands-for-test *a-map-of-four-islands*)))
   (5am:is (equalp #(19 40) (get-volume-of-islands-for-test *a-map-of-two-oddly-shaped*)))
@@ -387,7 +387,7 @@ And the test cases.
 
 ** run all tests in this library
 This function is the entry point to run all tests and return true if all test cases pass.
-#+BEGIN_SRC lisp :load test
+#+BEGIN_SRC lisp
 (defun run-test ()
   (5am:run! 'islands-suite))
 #+END_SRC
