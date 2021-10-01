@@ -436,6 +436,12 @@ To get path for a name
   (cl-fad:merge-pathnames-as-file *tangle-org-file* name))
 #+END_SRC
 
+Because now we manage files streams in many place, so it is necessary as a global special variable.
+#+BEGIN_SRC lisp
+(defvar *check-outside-modification-p* nil)
+#+END_SRC
+
+
 To get a stream for a name
 #+BEGIN_SRC lisp
 (defun tangle-stream (name)
@@ -782,11 +788,6 @@ In this condition we will not tangle to this lisp file, in case overritting the 
 
 To detect such update, we will tangle the lisp file into local cache directory and only tangle to this file again
 if the target lisp file is the same one with the cached one.
-**** a special variable to indicate whether enable this feature
-Because now we manage files streams in many place, so it is necessary as a global special variable.
-#+BEGIN_SRC lisp
-(defvar *check-outside-modification-p* nil)
-#+END_SRC
 **** a routine to return the path of cached file, which reuse the mechanism of ASDF.
 #+BEGIN_SRC lisp
 (defun tangled-cached-file (path)

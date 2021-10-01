@@ -32,8 +32,6 @@
     (cleanup-tangle-streams)
     t))
 
-(defvar *check-outside-modification-p* nil)
-
 (defun tangled-cached-file (path)
   (translate-pathname (asdf/driver:resolve-absolute-location path)
                       #P"/**/*.*"

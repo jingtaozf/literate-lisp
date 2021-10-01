@@ -170,6 +170,8 @@
 (defun path-for-literate-name (name)
   (cl-fad:merge-pathnames-as-file *tangle-org-file* name))
 
+(defvar *check-outside-modification-p* nil)
+
 (defun tangle-stream (name)
   (or (gethash name *tangle-streams*)
     (let ((output-file (path-for-literate-name name)))
