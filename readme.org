@@ -19,6 +19,7 @@
   - [[#how-to-integrate-with-namded-readtables][How to integrate with namded-readtables]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
   - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include org codes with ASDF package-inferred-system extension]]
+  - [[#how-to-tangle-to-a-bundle-of-lisp-files-from-one-org-file][how to tangle to a bundle of lisp files from one org file]]
   - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
   - [[#a-demo-literate-application][A demo literate application]]
     - [[#the-asd-file][The ASD file]]
@@ -179,6 +180,12 @@ After loading the above ASD definition file, you can load system *literate-libra
 
 Please upgrade to ASDF 3.3.4.5 or later, it is not supported in earlier ASDF versions.
 
+** how to tangle to a bundle of lisp files from one org file
+Yes, now you can tangle one org file to a bundle of lisp files, so to share it to team members with more clear interface. 
+
+Please have a look of [[./literate-lisp.org#tangle-to-multiple-files-for-one-org-file][tangle to multiple files for one org file]]
+or the usage of org property =LITERATE_EXPORT_PACKAGE= and =LITERATE_EXPORT_NAME= in file [[./literate-lisp.org]].
+ 
 ** packages written by literate-lisp
 - [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] an S-expression presentation of GraphViz DOT Language
 ** A demo literate application

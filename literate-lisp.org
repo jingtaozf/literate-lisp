@@ -30,19 +30,31 @@
     - [[#push-a-head-line][push a head line]]
     - [[#root-headline][root headline]]
     - [[#the-lexer][the lexer]]
+  - [[#how-to-getset-org-property-value][how to get/set org property value]]
+    - [[#a-hook-when-update-org-property-value][a hook when update org property value]]
+    - [[#invoke-notifier-when-property-value-get-changed][invoke notifier when property value get changed]]
+    - [[#get-property-value-from-a-headline][get property value from a headline]]
+    - [[#set-property-value-for-current-head-line][set property value for current head line]]
   - [[#property-in-a-single-line][property in a single line]]
   - [[#property-in-a-properties-block][property in a properties block]]
     - [[#detect-begin-of-properties-block][detect begin of properties block]]
     - [[#detect-end-of-properties-block][detect end of properties block]]
     - [[#detect-property][detect property]]
   - [[#get-current-property-value][get current property value]]
+  - [[#tangle-to-multiple-files-for-one-org-file][tangle to multiple files for one org file]]
+    - [[#introduction-2][introduction]]
+    - [[#a-special-variable-to-indicate-source-file-to-tangle][a special variable to indicate source file to tangle]]
+    - [[#a-special-variable-to-hold-header-lines-for-tangled-file][a special variable to hold header lines for tangled file]]
+    - [[#how-to-manage-all-opened-file-streams][how to manage all opened file streams]]
+    - [[#handle-stream-for-new-file][handle stream for new file]]
 - [[#implementation][Implementation]]
-  - [[#new-defined-header-argument-load][new defined header argument load]]
-  - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
-  - [[#read-the-content-of-a-block][read the content of a block]]
-  - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
-  - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
-  - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
+  - [[#new-reader-syntax][new reader syntax]]
+    - [[#new-defined-header-argument-load][new defined header argument load]]
+    - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
+    - [[#read-the-content-of-a-block][read the content of a block]]
+    - [[#an-implementation-of-original-feature-test][an implementation of original feature test.]]
+    - [[#function-to-handle-reader-syntax-for-][function to handle reader syntax for "#+"]]
+    - [[#install-the-new-reader-syntax][Install the new reader syntax.]]
   - [[#tangle-an-org-file][tangle an org file]]
     - [[#entrance][entrance]]
     - [[#prevent-tangling-if-source-file-has-been-changed-outside][prevent tangling if source file has been changed outside]]
@@ -114,6 +126,9 @@ for example I often put them in the first line of an org file:
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
 
 * Preparation
+:PROPERTIES:
+:LITERATE_EXPORT_NAME: ./lisp/package.lisp
+:END:
 ** a new lisp package for this library.
 #+BEGIN_SRC lisp
 (in-package :common-lisp-user)
@@ -135,6 +150,10 @@ And let's define the org code block identifier.
 #+BEGIN_SRC lisp
 #+END_SRC
 * Org file parser
+:PROPERTIES:
+:LITERATE_EXPORT_PACKAGE: literate-lisp
+:LITERATE_EXPORT_NAME: ./lisp/parser.lisp
+:END:
 ** Introduction
 The main purpose of this org file parser is to determine the semantics value of some
 property values([[https://orgmode.org/manual/Property-Syntax.html][property syntax]]) in an org file.
@@ -173,8 +192,9 @@ Each pattern will contain the following information in a list orderly:
             (if (assoc ',name (get 'lexer 'patterns))
                 (setf (cdr (assoc ',name (get 'lexer 'patterns)))
                         (list ',fun-name ,regex-pattern ,(length parameters)))
-                (push (list ',name ',fun-name ,regex-pattern ,(length parameters))
-                  (get 'lexer 'patterns))))))
+                (setf (get 'lexer 'patterns)
+                        (nconc (get 'lexer 'patterns)
+                               (list (list ',name ',fun-name ,regex-pattern ,(length parameters)))))))))
 #+END_SRC
 ** how to run all patterns over each line
 #+BEGIN_SRC lisp
@@ -273,6 +293,44 @@ for the whole file.
               (current-headline-level)
               (current-headline-content)))))
 #+END_SRC
+** how to get/set org property value
+*** a hook when update org property value 
+We will add a hook when org property value gets changed, this is useful in some conditions,
+for example in the progress of tangle, we want to change the target lisp file.
+
+Please note that we only support one notifier for one property name for now.
+#+BEGIN_SRC lisp
+(defmacro define-org-property-value-notifier (name value-name &rest body)
+  (let ((fun-name (intern (format nil "ORG-PROPERTY-VALUE-NOTIFIER-FOR-~a" name))))
+    `(progn (defun ,fun-name (,value-name)
+              ,@body)
+            (if (assoc ',name (get 'org-property-value 'notifier) :test #'string=)
+                (setf (cdr (assoc ',name (get 'org-property-value 'notifier) :test #'string=))
+                        (list ',fun-name))
+                (setf (get 'org-property-value 'notifier)
+                        (nconc (get 'org-property-value 'notifier)
+                               (list (list ,name ',fun-name))))))))
+#+END_SRC
+*** invoke notifier when property value get changed
+#+BEGIN_SRC lisp
+(defun notify-property-value (name new-value)
+  (let ((hook (assoc name (get 'org-property-value 'notifier) :test #'string=)))
+    (when hook
+      (when debug-literate-lisp-p
+        (format t "Notify new property value ~a:~a~%" name new-value))
+      (funcall (second hook) new-value))))
+#+END_SRC
+*** get property value from a headline
+#+BEGIN_SRC lisp
+(defun property-for-headline (headline key)
+  (gethash key (headline-properties headline)))
+#+END_SRC
+*** set property value for current head line
+#+BEGIN_SRC lisp
+(defun update-property-value (key value)
+  (setf (gethash key (headline-properties (current-headline))) value)
+  (notify-property-value key value))
+#+END_SRC
 ** property in a single line
 For example in one line of the beginning of a file like =#+PROPERTY: NDisks_ALL 1 2 3 4=. 
 #+BEGIN_SRC lisp
@@ -281,7 +339,7 @@ For example in one line of the beginning of a file like =#+PROPERTY: NDisks_ALL 
   (when debug-literate-lisp-p
     (format t "Found property in level ~D, ~a:~a.~%"
             (current-headline-level) key value))
-  (setf (gethash key (headline-properties (current-headline))) value))
+  (update-property-value key value))
 #+END_SRC
 ** property in a properties block
 #+BEGIN_EXAMPLE
@@ -324,23 +382,107 @@ So it will be a unique match to all cases.
     (when debug-literate-lisp-p
       (format t "Found property in level ~D, ~a:~a.~%"
               (current-headline-level) key value))
-    (setf (gethash key (headline-properties (current-headline))) value)))
+    (update-property-value key value)))
 #+END_SRC
 ** get current property value
 #+BEGIN_SRC lisp
 (defun org-property-value (key)
-  ;; (when debug-literate-lisp-p
-  ;;   (format t "head lines:~a~%" (org-headlines)))
   (iter (for headline in (org-headlines))
-        ;; (when debug-literate-lisp-p
-        ;;   (format t "Check head line:~D:~a~%" (headline-level headline)
-        ;;           (headline-content headline)))
-        (for value = (gethash key (headline-properties headline)))
+        (for value = (property-for-headline headline key))
         (if value
             (return value))))
 #+END_SRC
+** tangle to multiple files for one org file 
+*** introduction
+If we develop a project totally depending on =literate-lisp=, there are no need to tangle it into lisp files,
+we can use org files as both document and codes as we already have did.
+
+But unfortunately this is not true in most conditions, especially in a lisp team.
+
+At this time, the =tangle= feature will become more important to us.
+
+If we can generate target lisp files just like a normal lisp project, for example a file =package.lisp= for package definition
+and each module as an individual lisp file, than the tangled files will be more clear to other people.
+
+To achieve such goal, we will use a new org property =LITERATE_EXPORT_NAME= to indicate target file to tangle for code block
+in point, and open target file when this property gets changed.
+
+We also introduce org property =LITERATE_EXPORT_PACKAGE= to add a =in=package= lisp form in the beginning of tangled file
+if it is specified. Please note that you have to put this property before =LITERATE_EXPORT_NAME=.
+
+*** a special variable to indicate source file to tangle
+#+BEGIN_SRC lisp
+(defvar *tangle-org-file* nil)
+#+END_SRC
+We will only open file as stream when it is in a tangle, so this variable is also useful for this purpose
+#+BEGIN_SRC lisp
+(defun tangle-p ()
+  *tangle-org-file*)
+#+END_SRC
+*** a special variable to hold header lines for tangled file
+#+BEGIN_SRC lisp
+(defvar *tangle-head-lines* nil)
+#+END_SRC
+
+*** how to manage all opened file streams
+We will store them in a global variable
+#+BEGIN_SRC lisp
+(defvar *tangle-streams* (make-hash-table :test #'equal))
+#+END_SRC
+
+To get path for a name
+#+BEGIN_SRC lisp
+(defun path-for-literate-name (name)
+  (cl-fad:merge-pathnames-as-file *tangle-org-file* name))
+#+END_SRC
+
+To get a stream for a name
+#+BEGIN_SRC lisp
+(defun tangle-stream (name)
+  (or (gethash name *tangle-streams*)
+    (let ((output-file (path-for-literate-name name)))
+      (when (and *check-outside-modification-p*
+                 (tangled-file-update-outside-p output-file))
+        (error "The output file has been updated outside, please merge it into your org file before tangling!"))
+      (let ((stream (open output-file
+                          :direction :output
+                          :if-does-not-exist :create
+                          :if-exists :supersede)))
+        (when *tangle-head-lines*
+          (write-string *tangle-head-lines* stream))
+        (let ((package (org-property-value "LITERATE_EXPORT_PACKAGE")))
+          (when package
+            (format stream "(in-package :~a)~%~%" package)))
+        (setf (gethash name *tangle-streams*) stream)))))
+#+END_SRC
+To close all open streams
+#+BEGIN_SRC lisp
+(defun cleanup-tangle-streams ()
+  (iter (for (name stream) in-hashtable *tangle-streams*)
+        (close stream)
+        (when *check-outside-modification-p*
+          (cache-tangled-file (path-for-literate-name name))))
+  (clrhash *tangle-streams*))
+#+END_SRC
+*** handle stream for new file
+We will store current file stream in a special variable
+#+BEGIN_SRC lisp
+(defvar *current-tangle-stream* nil)
+#+END_SRC
+And update it when a new value arrivals.
+#+BEGIN_SRC lisp
+(define-org-property-value-notifier "LITERATE_EXPORT_NAME" name
+  (setf *current-tangle-stream*
+          (tangle-stream name)))
+#+END_SRC
+
 * Implementation
-** new defined header argument load
+** new reader syntax
+:PROPERTIES:
+:LITERATE_EXPORT_PACKAGE: literate-lisp
+:LITERATE_EXPORT_NAME: ./lisp/new-syntax.lisp
+:END:
+*** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]] ~load~ to decide to
 read them or not should define, and it has three meanings:
@@ -386,7 +528,7 @@ and convert every key and value to a lisp keyword(Test in here: ref:test-read-or
             (collect elem)))))
 #+END_SRC
 
-** function to handle reader syntax for "# "(# + Space)
+*** function to handle reader syntax for "# "(# + Space)
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 
 We have to check whether current line is a ~#+begin src lisp~.
@@ -456,7 +598,7 @@ The reader syntax will
         ;; Can't return nil because ASDF will fail to find a form like `defpackage'.
         (values))))
 #+END_SRC
-** read the content of a block
+*** read the content of a block
 #+BEGIN_SRC lisp
 (defun read-block-context-to-stream (input-stream block-stream block-name end-block-id)
   (iter (for line = (read-line input-stream nil))
@@ -472,7 +614,7 @@ The reader syntax will
                (write-line line block-stream)))))
 #+END_SRC
 
-** an implementation of original feature test.
+*** an implementation of original feature test.
 
 This code block reference from the [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]] with some minor modifications.
 It implements how to do feature test.
@@ -507,7 +649,7 @@ For these two vendors, we will use their own feature test function.
     (t
       (error "invalid feature expression: ~S" x))))
 #+END_SRC
-** function to handle reader syntax for "#+"
+*** function to handle reader syntax for "#+"
 
 The mechanism to handle normal lisp syntax "#+" is also referenced from [[https://github.com/sbcl/sbcl/blob/master/src/code/sharpm.lisp][SBCL source codes]].
 
@@ -552,7 +694,7 @@ And the new logic to handle lisp syntax "#+":
           ((featurep feature)    (read-featurep-object stream))
           (t                     (read-unavailable-feature-object stream)))))
 #+END_SRC
-** Install the new reader syntax.
+*** Install the new reader syntax.
 
 We will install the reader syntax globally if the feature ~literate-global~ presents.
 #+BEGIN_SRC lisp
@@ -584,6 +726,10 @@ Now you can use [[https://github.com/melisgl/named-readtables][named-readtables]
 #+END_SRC
 
 ** tangle an org file
+:PROPERTIES:
+:LITERATE_EXPORT_PACKAGE: literate-lisp
+:LITERATE_EXPORT_NAME: ./lisp/tangle.lisp
+:END:
 *** entrance
 To build lisp file from an org file, we implement a function ~tangle-org-file~.
 
@@ -603,33 +749,32 @@ This feature supports the additional header argument =load= comparing with the f
 #+BEGIN_SRC lisp
 (defun tangle-org-file (org-file &key (features *features*)
                                    (header ";;; This file is automatically generated from file `~a.~a'.
-;;; It is not designed to be readable by a human.
 ;;; Please read file `~a.~a' to find out the usage and implementation detail of this source file.~%~%")
                                    (header-args (list (pathname-name org-file) (pathname-type org-file)
                                                       (pathname-name org-file) (pathname-type org-file)))
                                    (force-tangle nil)
-                                   (output-file (make-pathname :defaults org-file :type "lisp")))
-  (when (and (null force-tangle) (tangled-file-update-outside-p output-file))
-    (error "The output file has been updated outside, please merge it into your org file before tangling!"))
+                                   (output-name (format nil "~a.lisp" (pathname-name org-file))))
   (let ((*features* features)
+        (*tangle-org-file* org-file)
+        (*current-tangle-stream* nil)
+        (*tangle-head-lines* (apply #'format nil header header-args))
+        (*check-outside-modification-p* (not force-tangle))
         ;; reset org context
         (current-org-context (make-hash-table)))
     (setup-headline)
+    (when output-name
+      (setf *current-tangle-stream* (tangle-stream output-name)))
     (with-open-file (input org-file)
-      (with-open-file (output output-file :direction :output
-                                          :if-does-not-exist :create
-                                          :if-exists :supersede)
-        (apply #'format output header header-args)
-        (block read-org-files
-          (iter
-            ;; ignore all lines of org syntax.
-            (sharp-org input)
-            ;; start to read codes in code block until reach `#+END_SRC'
-            (if (read-block-context-to-stream input output "LISP" "#+END_SRC")
-                (write-line "" output)
-                (return)))))))
-  (cache-tangled-file output-file)
-  t)
+      (block read-org-files
+        (iter
+              ;; ignore all lines of org syntax.
+              (sharp-org input)
+              ;; start to read codes in code block until reach `#+END_SRC'
+              (if (read-block-context-to-stream input *current-tangle-stream* "LISP" "#+END_SRC")
+                  (write-line "" *current-tangle-stream*)
+                  (return)))))
+    (cleanup-tangle-streams)
+    t))
 #+END_SRC
 *** prevent tangling if source file has been changed outside
 Sometimes we delivered our org file to a lisp file and this lisp file may be updated outside.
@@ -637,6 +782,11 @@ In this condition we will not tangle to this lisp file, in case overritting the 
 
 To detect such update, we will tangle the lisp file into local cache directory and only tangle to this file again
 if the target lisp file is the same one with the cached one.
+**** a special variable to indicate whether enable this feature
+Because now we manage files streams in many place, so it is necessary as a global special variable.
+#+BEGIN_SRC lisp
+(defvar *check-outside-modification-p* nil)
+#+END_SRC
 **** a routine to return the path of cached file, which reuse the mechanism of ASDF.
 #+BEGIN_SRC lisp
 (defun tangled-cached-file (path)
@@ -662,6 +812,10 @@ if the target lisp file is the same one with the cached one.
 #+END_SRC
 
 ** make ASDF handle org file correctly
+:PROPERTIES:
+:LITERATE_EXPORT_PACKAGE: literate-lisp
+:LITERATE_EXPORT_NAME: ./lisp/asdf.lisp
+:END:
 *** source file class for org files
 Now let's add literate support to ASDF system.
 
@@ -740,11 +894,13 @@ the following code should execute.
 (tangle-org-file
  (format nil "~a/literate-lisp.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp)))
- :features (delete :test *features*))
+ :features (cons :test *features*))
 #+END_SRC
 * Test cases
 :PROPERTIES:
 :literate-load: test
+:LITERATE_EXPORT_PACKAGE: literate-lisp
+:LITERATE_EXPORT_NAME: ./lisp/test.lisp
 :END:
 ** Preparation
 Now it's time to validate some functions.

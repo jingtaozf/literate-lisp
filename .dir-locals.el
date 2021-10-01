@@ -5,5 +5,6 @@
          (org-link-file-path-type . relative)
          (dired-omit-extensions . (".bbl" ".toc" ".fdb_latexmk" ".aux" ".fls" ".out" ".log" ".tex"))
          (eval . (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))))
+ (org-mode . ((org-link-descriptive . t)))
  (dired-mode . ((dired-omit-extensions . (".fasl" ".bbl" ".toc" ".fdb_latexmk" ".aux" ".fls" ".out" ".tex"))
                 (dired-omit-files . ("*.tex")))))
