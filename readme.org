@@ -40,8 +40,8 @@ The implementation detail of [[https://github.com/jingtaozf/literate-lisp][liter
 This library contains the following files:
 - [[./literate-lisp.org]] \\
   The implementation and documentation of literate lisp reader.
-- [[./literate-lisp.lisp]] \\
-  The tangled codes of literate lisp reader, generated from [[./literate-lisp.org]]
+- [[./lisp]] \\
+  This directory contains the tangled codes of literate lisp reader, generated from [[./literate-lisp.org]]
 - [[./literate-lisp.pdf]] \\
   The weaved documentation, generated from [[./literate-lisp.org]] by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
 - [[./readme.org]] \\
