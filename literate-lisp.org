@@ -458,7 +458,7 @@ To get a stream for a name
           (write-string *tangle-head-lines* stream))
         (let ((package (org-property-value "LITERATE_EXPORT_PACKAGE")))
           (when package
-            (format stream "(in-package :~a)~%~%" package)))
+            (format stream "(in-package #:~a)~%~%" package)))
         (setf (gethash name *tangle-streams*) stream)))))
 #+END_SRC
 To close all open streams
