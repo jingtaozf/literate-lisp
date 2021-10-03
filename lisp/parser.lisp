@@ -180,6 +180,8 @@
         (error "The output file has been updated outside, please merge it into your org file before tangling!"))
       (let ((stream (open output-file
                           :direction :output
+                          :element-type uiop:*default-stream-element-type*
+                          :external-format uiop:*default-encoding*
                           :if-does-not-exist :create
                           :if-exists :supersede)))
         (when *tangle-head-lines*
@@ -192,13 +194,13 @@
 (defun cleanup-tangle-streams ()
   (iter (for (name stream) in-hashtable *tangle-streams*)
         (close stream)
-        (when *check-outside-modification-p*
-          (cache-tangled-file (path-for-literate-name name))))
+        (cache-tangled-file (path-for-literate-name name)))
   (clrhash *tangle-streams*))
 
 (defvar *current-tangle-stream* nil)
 
 (define-org-property-value-notifier "LITERATE_EXPORT_NAME" name
-  (setf *current-tangle-stream*
-          (tangle-stream name)))
+  (when (tangle-p)
+    (setf *current-tangle-stream*
+            (tangle-stream name))))
 

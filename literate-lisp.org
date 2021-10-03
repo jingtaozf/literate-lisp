@@ -430,6 +430,10 @@ We will store them in a global variable
 (defvar *tangle-streams* (make-hash-table :test #'equal))
 #+END_SRC
 
+Each stream will have a default external format and default element type, we will re-use the configuration
+from ASDF, which is =uiop:*default-encoding*= and =uiop:*default-stream-element-type*=.
+
+
 To get path for a name
 #+BEGIN_SRC lisp
 (defun path-for-literate-name (name)
@@ -452,6 +456,8 @@ To get a stream for a name
         (error "The output file has been updated outside, please merge it into your org file before tangling!"))
       (let ((stream (open output-file
                           :direction :output
+                          :element-type uiop:*default-stream-element-type*
+                          :external-format uiop:*default-encoding*
                           :if-does-not-exist :create
                           :if-exists :supersede)))
         (when *tangle-head-lines*
@@ -466,8 +472,7 @@ To close all open streams
 (defun cleanup-tangle-streams ()
   (iter (for (name stream) in-hashtable *tangle-streams*)
         (close stream)
-        (when *check-outside-modification-p*
-          (cache-tangled-file (path-for-literate-name name))))
+        (cache-tangled-file (path-for-literate-name name)))
   (clrhash *tangle-streams*))
 #+END_SRC
 *** handle stream for new file
@@ -478,8 +483,9 @@ We will store current file stream in a special variable
 And update it when a new value arrivals.
 #+BEGIN_SRC lisp
 (define-org-property-value-notifier "LITERATE_EXPORT_NAME" name
-  (setf *current-tangle-stream*
-          (tangle-stream name)))
+  (when (tangle-p)
+    (setf *current-tangle-stream*
+            (tangle-stream name))))
 #+END_SRC
 
 * Implementation
@@ -770,7 +776,9 @@ This feature supports the additional header argument =load= comparing with the f
     (setup-headline)
     (when output-name
       (setf *current-tangle-stream* (tangle-stream output-name)))
-    (with-open-file (input org-file)
+    (with-open-file (input org-file :direction :input
+                                    :element-type uiop:*default-stream-element-type*
+                                    :external-format uiop:*default-encoding*)
       (block read-org-files
         (iter
               ;; ignore all lines of org syntax.
@@ -895,6 +903,8 @@ the following code should execute.
 (tangle-org-file
  (format nil "~a/literate-lisp.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp)))
+ :output-name nil
+ ;; :force-tangle t
  :features (cons :test *features*))
 #+END_SRC
 * Test cases

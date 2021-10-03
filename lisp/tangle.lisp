@@ -20,7 +20,9 @@
     (setup-headline)
     (when output-name
       (setf *current-tangle-stream* (tangle-stream output-name)))
-    (with-open-file (input org-file)
+    (with-open-file (input org-file :direction :input
+                                    :element-type uiop:*default-stream-element-type*
+                                    :external-format uiop:*default-encoding*)
       (block read-org-files
         (iter
               ;; ignore all lines of org syntax.

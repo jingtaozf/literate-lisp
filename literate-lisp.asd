@@ -4,8 +4,8 @@
 ;; Description: package definition of literate-lisp.
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2021.10.01 08:33:15(+0800)
-;;     Update #: 77
+;; Last-Updated: 2021.10.03 10:31:40(+0800)
+;;     Update #: 78
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
