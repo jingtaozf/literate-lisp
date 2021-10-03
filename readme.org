@@ -136,6 +136,17 @@ You can put all initialization codes in an org source file, all you need is to l
 For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
 #+BEGIN_SRC lisp :load no
 (require :asdf)
+#-quicklisp
+(let ((quicklisp-init "~/quicklisp/setup.lisp")
+      (quicklisp-install "~/quicklisp.lisp"))
+  (cond ((probe-file quicklisp-init)
+         (format *terminal-io* "loading quicklisp...~%")
+         (load quicklisp-init)
+         (format *terminal-io* "loading quicklisp...done~%"))
+        ((probe-file quicklisp-install)
+         (load quicklisp-install)
+         (funcall (intern "INSTALL" :quicklisp-quickstart)))))
+
 (load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
 (asdf:oos 'asdf:load-op :literate-lisp)
 (literate-lisp:with-literate-syntax
