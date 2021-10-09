@@ -9,6 +9,7 @@
 #+PROPERTY: literate-lang lisp
 #+PROPERTY: literate-load yes
 #+PROPERTY: literate-insert-header no
+#+PROPERTY: LITERATE_EXPORT_PACKAGE literate-lisp
 #+STARTUP: entitiespretty
 * Table of Contents                                               :noexport:TOC:
 - [[#introduction][Introduction]]
@@ -127,11 +128,11 @@ Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode
 
 * Preparation
 :PROPERTIES:
+:LITERATE_EXPORT_PACKAGE: common-lisp-user
 :LITERATE_EXPORT_NAME: ./lisp/package.lisp
 :END:
 ** a new lisp package for this library.
 #+BEGIN_SRC lisp
-(in-package :common-lisp-user)
 (defpackage :literate-lisp
   (:use :cl :cl-ppcre :iterate)
   (:nicknames :lp)
@@ -151,7 +152,6 @@ And let's define the org code block identifier.
 #+END_SRC
 * Org file parser
 :PROPERTIES:
-:LITERATE_EXPORT_PACKAGE: literate-lisp
 :LITERATE_EXPORT_NAME: ./lisp/parser.lisp
 :END:
 ** Introduction
@@ -491,7 +491,6 @@ And update it when a new value arrivals.
 * Implementation
 ** new reader syntax
 :PROPERTIES:
-:LITERATE_EXPORT_PACKAGE: literate-lisp
 :LITERATE_EXPORT_NAME: ./lisp/new-syntax.lisp
 :END:
 *** new defined header argument load
@@ -739,7 +738,6 @@ Now you can use [[https://github.com/melisgl/named-readtables][named-readtables]
 
 ** tangle an org file
 :PROPERTIES:
-:LITERATE_EXPORT_PACKAGE: literate-lisp
 :LITERATE_EXPORT_NAME: ./lisp/tangle.lisp
 :END:
 *** entrance
@@ -822,7 +820,6 @@ if the target lisp file is the same one with the cached one.
 
 ** make ASDF handle org file correctly
 :PROPERTIES:
-:LITERATE_EXPORT_PACKAGE: literate-lisp
 :LITERATE_EXPORT_NAME: ./lisp/asdf.lisp
 :END:
 *** source file class for org files
@@ -910,7 +907,6 @@ the following code should execute.
 * Test cases
 :PROPERTIES:
 :literate-load: test
-:LITERATE_EXPORT_PACKAGE: literate-lisp
 :LITERATE_EXPORT_NAME: ./lisp/test.lisp
 :END:
 ** Preparation
