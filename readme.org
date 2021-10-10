@@ -125,7 +125,7 @@ Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support
 ** How to integrate with namded-readtables
 You may find that [[https://github.com/melisgl/named-readtables][named-readtables]] is friendly to define the syntax for literate-lisp in your codes [[https://github.com/jingtaozf/literate-lisp/issues/12#issuecomment-710256276][like this]]:
 #+BEGIN_SRC lisp :load no
-(named-readtables:defreadtable syntax
+(named-readtables:defreadtable literate-lisp
   (:merge :standard)
   (:dispatch-macro-char #\# #\space #'literate-lisp::sharp-space)
   (:dispatch-macro-char #\# #\+ #'literate-lisp::sharp-plus))

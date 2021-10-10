@@ -164,9 +164,3 @@
      (set-dispatch-macro-character #\# #\+ #'literate-lisp::sharp-plus)
      ,@body))
 
-#+named-readtables
-(named-readtables:defreadtable syntax
-  (:merge :standard)
-  (:dispatch-macro-char #\# #\space #'sharp-space)
-  (:dispatch-macro-char #\# #\+ #'sharp-plus))
-

@@ -728,9 +728,9 @@ by installing it before a code body and uninstalling it after this code body.
 #+END_SRC
 
 Now you can use [[https://github.com/melisgl/named-readtables][named-readtables]] to define the syntax for literate-lisp
-#+BEGIN_SRC lisp
+#+BEGIN_SRC lisp :load no
 #+named-readtables
-(named-readtables:defreadtable syntax
+(named-readtables:defreadtable literate-lisp
   (:merge :standard)
   (:dispatch-macro-char #\# #\space #'sharp-space)
   (:dispatch-macro-char #\# #\+ #'sharp-plus))
