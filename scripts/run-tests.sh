@@ -4,6 +4,7 @@ if [ -d "/github/workspace/" ]; then
     ln -s /github/workspace /root/.roswell/local-projects/literate-lisp
     echo "Install ${lisp}"
     ros install ${lisp}
+    ros use ${lisp}
 fi
 ros run -- --version
 ros run -e '(pushnew :test *features*)' \
