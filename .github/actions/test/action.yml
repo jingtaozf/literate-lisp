@@ -8,4 +8,4 @@ inputs:
 runs:
   using: docker
   image: eshamster/cl-base:2.5.1
-  args: [ "env", "lisp=${{ inputs.lisp }}", "/bin/sh", "-c", "/github/workspace/scripts/run-tests.sh" ]
+  args: [ "env", "lisp=${{ inputs.lisp }}", "/bin/sh", "-c", "sh", "./scripts/run-tests.sh" ]
