@@ -5,17 +5,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        LISP: [cmu-bin, cmubinsbcl-bin]
+        LISP: [ccl-bin, sbcl-bin]
     steps:
     - uses: actions/checkout@v1
-    - name: install roswell
-      env:
-        LISP: ${{matrix.LISP}}
-      run: |
-        curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh
-    - name: run test
-      env:
-        LISP: ${{matrix.LISP}}
+    - name: Test
+      uses: ./.github/actions/test
+      with:
+        lisp: ${{matrix.LISP}}
+
       run: |
         export PATH=~/.roswell/bin:$PATH
         ros run -e '(pushnew :test *features*)' \

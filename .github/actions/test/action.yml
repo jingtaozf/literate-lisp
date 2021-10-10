@@ -1,0 +1,11 @@
+name: Test
+inputs:
+  lisp:
+    description: 'the lisp vendor name'
+    required: true
+    default: 'sbcl-bin'
+    
+runs:
+  using: docker
+  image: eshamster/cl-base:2.5.1
+  args: [ "env", "lisp=${{ inputs.lisp }}", "bash", "-c", "./scripts/run-tests.sh" ]
