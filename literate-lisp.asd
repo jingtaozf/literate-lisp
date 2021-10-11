@@ -4,8 +4,8 @@
 ;; Description: package definition of literate-lisp.
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2021.10.03 10:31:40(+0800)
-;;     Update #: 78
+;; Last-Updated: 2021.10.11 14:48:08(+0800)
+;;     Update #: 79
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
@@ -21,7 +21,7 @@
 (asdf:defsystem literate-lisp
     :author "Xu Jingtao <jingtaozf@gmail.com>"
     :licence "MIT"
-    :version "0.5"
+    :version "0.6"
     :serial t
     :description "a literate programming tool to write common lisp codes in org file."
     :depends-on (#:cl-ppcre #:iterate #:cl-fad #+test #:fiveam)
