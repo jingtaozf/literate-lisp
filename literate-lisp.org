@@ -256,7 +256,11 @@ We will store headline in a stack, each item in this stack is a =structure=
 *** pop a head line
 #+BEGIN_SRC lisp
 (defun pop-org-headline ()
-  (pop (org-headlines)))
+  ;; any properties in old headline may change.
+  (let ((old-headline (pop (org-headlines))))
+    (iter (for (key) in-hashtable (headline-properties old-headline))
+          (notify-property-value key))
+    old-headline))
 #+END_SRC
 *** push a head line
 #+BEGIN_SRC lisp
@@ -313,12 +317,12 @@ Please note that we only support one notifier for one property name for now.
 #+END_SRC
 *** invoke notifier when property value get changed
 #+BEGIN_SRC lisp
-(defun notify-property-value (name new-value)
+(defun notify-property-value (name &optional new-value)
   (let ((hook (assoc name (get 'org-property-value 'notifier) :test #'string=)))
     (when hook
       (when debug-literate-lisp-p
         (format t "Notify new property value ~a:~a~%" name new-value))
-      (funcall (second hook) new-value))))
+      (funcall (second hook) (or new-value (org-property-value name))))))
 #+END_SRC
 *** get property value from a headline
 #+BEGIN_SRC lisp
@@ -483,7 +487,7 @@ We will store current file stream in a special variable
 And update it when a new value arrivals.
 #+BEGIN_SRC lisp
 (define-org-property-value-notifier "LITERATE_EXPORT_NAME" name
-  (when (tangle-p)
+  (when (and (tangle-p) name)
     (setf *current-tangle-stream*
             (tangle-stream name))))
 #+END_SRC
@@ -898,7 +902,7 @@ the following code should execute.
 #+caption: a demo code to tangle current org file.
 #+BEGIN_SRC lisp
 (tangle-org-file
- (format nil "~a/literate-lisp.org"
+ (format nil "~aliterate-lisp.org"
          (asdf:component-pathname (asdf:find-system :literate-lisp)))
  :output-name nil
  ;; :force-tangle t

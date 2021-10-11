@@ -68,7 +68,11 @@
   (headline-content (first (org-headlines))))
 
 (defun pop-org-headline ()
-  (pop (org-headlines)))
+  ;; any properties in old headline may change.
+  (let ((old-headline (pop (org-headlines))))
+    (iter (for (key) in-hashtable (headline-properties old-headline))
+          (notify-property-value key))
+    old-headline))
 
 (defun push-org-headline (level content)
   (push (make-headline :level level :content content) (org-headlines)))
@@ -108,12 +112,12 @@
                         (nconc (get 'org-property-value 'notifier)
                                (list (list ,name ',fun-name))))))))
 
-(defun notify-property-value (name new-value)
+(defun notify-property-value (name &optional new-value)
   (let ((hook (assoc name (get 'org-property-value 'notifier) :test #'string=)))
     (when hook
       (when debug-literate-lisp-p
         (format t "Notify new property value ~a:~a~%" name new-value))
-      (funcall (second hook) new-value))))
+      (funcall (second hook) (or new-value (org-property-value name))))))
 
 (defun property-for-headline (headline key)
   (gethash key (headline-properties headline)))
@@ -200,7 +204,7 @@
 (defvar *current-tangle-stream* nil)
 
 (define-org-property-value-notifier "LITERATE_EXPORT_NAME" name
-  (when (tangle-p)
+  (when (and (tangle-p) name)
     (setf *current-tangle-stream*
             (tangle-stream name))))
 
