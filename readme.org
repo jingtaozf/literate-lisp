@@ -148,7 +148,7 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
          (funcall (intern "INSTALL" :quicklisp-quickstart)))))
 
 (load "~/projects/common-lisp/literate-lisp/literate-lisp.asd")
-(asdf:oos 'asdf:load-op :literate-lisp)
+(ql:quickload :literate-lisp)
 (literate-lisp:with-literate-syntax
   (load "~/projects/common-lisp/config/init-lisp.org"))
 #+END_SRC
