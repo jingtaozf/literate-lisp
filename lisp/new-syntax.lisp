@@ -14,20 +14,27 @@
            (when debug-literate-lisp-p
              (format t "get current property value of literate-load:~a~%" load))
            (if load
-               (load-p (first (read-org-code-block-header-arguments load 0)))
+               (load-p (first (read-keywords-from-string load)))
                t)))
-        (t (or (find feature *features* :test #'eq)
-             (when (eq :test feature)
-               (find :literate-test *features* :test #'eq))))))
+        ((consp feature)
+         ;; the feature syntax is ` (feature . :not)'.
+         (if (eq :not (cdr feature))
+             (not (find (car feature) *features* :test #'eq))))
+        (t (find feature *features* :test #'eq))))
 
-(defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
-  (with-input-from-string (stream string :start begin-position-of-header-arguments)
+(defun read-keywords-from-string (string &key (start 0))
+  (with-input-from-string (stream string :start start)
     (let ((*readtable* (copy-readtable nil))
           (*package* #.(find-package :keyword))
           (*read-suppress* nil))
-      (iter (for elem = (read stream nil))
+      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
+                             (read-char stream)
+                             t))
+            (for elem = (read stream nil))
             (while elem)
-            (collect elem)))))
+            (collect (if minus-p
+                         (cons elem :not)
+                         elem))))))
 
 (defun start-position-after-space-characters (line)
   (iter (for c in-sequence line)
@@ -58,7 +65,7 @@
             (format t "ignore line ~a~%" line))
           (run-patterns line)
           (until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
-                      (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                      (let* ((header-arguments (read-keywords-from-string line :start (+ start1 (length org-lisp-begin-src-id)))))
                         (load-p (getf header-arguments :load)))))
           (cond ((equal 0 (search org-name-property line :test #'char-equal))
                  ;; record a name.

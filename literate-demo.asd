@@ -4,8 +4,8 @@
 ;; Description:
 ;; Author: Jingtao Xu <jingtaozf@gmail.com>
 ;; Created: 2018.02.02 19:34:18(+0800)
-;; Last-Updated: 2020.09.23 20:22:40(+0800)
-;;     Update #: 68
+;; Last-Updated: 2021.12.10 08:56:55(+0800)
+;;     Update #: 69
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
@@ -23,7 +23,7 @@
   :version "0.1"
   :licence "MIT"
   :serial t
-  :description "an demo project of literate-lisp"
+  :description "a demo project of literate-lisp"
   :defsystem-depends-on ("literate-lisp")
   :depends-on (:iterate #+dev :clgplot)
   :components ((:module :demo :pathname "./"

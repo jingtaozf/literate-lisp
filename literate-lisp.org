@@ -506,11 +506,9 @@ read them or not should define, and it has three meanings:
   it is the default mode when the header argument ~load~ is not provided.
 - no \\
   It means that current code block should ignore by lisp reader.
-- test \\
-  It means that current code block should load when feature ~test~ or ~literate-test~ exist.
-  The feature ~literate-test~ is kept just for a compatibility for previous releases of ~literate-lisp~.
 - other feature keyword registered in global variable ~*features*~ \\
   So you can take advantage of ~*features*~ to load your codes by various purposes.
+- If a feature keyword start with _-_, it will load if this feature is not in ~*features*~
 #+BEGIN_SRC lisp
 (defun load-p (feature)
   (cond ((eq :yes feature)
@@ -523,24 +521,34 @@ read them or not should define, and it has three meanings:
            (when debug-literate-lisp-p
              (format t "get current property value of literate-load:~a~%" load))
            (if load
-               (load-p (first (read-org-code-block-header-arguments load 0)))
+               (load-p (first (read-keywords-from-string load)))
                t)))
-        (t (or (find feature *features* :test #'eq)
-             (when (eq :test feature)
-               (find :literate-test *features* :test #'eq))))))
+        ((consp feature)
+         ;; the feature syntax is ` (feature . :not)'.
+         (if (eq :not (cdr feature))
+             (not (find (car feature) *features* :test #'eq))))
+        (t (find feature *features* :test #'eq))))
 #+END_SRC
 Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
-and convert every key and value to a lisp keyword(Test in here: ref:test-read-org-code-block-header-arguments).
+and convert every key and value to a lisp keyword(Test in here: ref:test-read-keywords-from-string).
 
+Please note that if a keyword starts with _-_, then it will return as =not feature=.
+This is trick to use =#-feature=, and we should design it with new syntax later, to fit with
+all possible feature expressions.
 #+BEGIN_SRC lisp
-(defun read-org-code-block-header-arguments (string begin-position-of-header-arguments)
-  (with-input-from-string (stream string :start begin-position-of-header-arguments)
+(defun read-keywords-from-string (string &key (start 0))
+  (with-input-from-string (stream string :start start)
     (let ((*readtable* (copy-readtable nil))
           (*package* #.(find-package :keyword))
           (*read-suppress* nil))
-      (iter (for elem = (read stream nil))
+      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
+                             (read-char stream)
+                             t))
+            (for elem = (read stream nil))
             (while elem)
-            (collect elem)))))
+            (collect (if minus-p
+                         (cons elem :not)
+                         elem))))))
 #+END_SRC
 
 *** function to handle reader syntax for "# "(# + Space)
@@ -584,7 +592,7 @@ The reader syntax will
             (format t "ignore line ~a~%" line))
           (run-patterns line)
           (until (and (equalp start1 (search org-lisp-begin-src-id line :test #'char-equal))
-                      (let* ((header-arguments (read-org-code-block-header-arguments line (+ start1 (length org-lisp-begin-src-id)))))
+                      (let* ((header-arguments (read-keywords-from-string line :start (+ start1 (length org-lisp-begin-src-id)))))
                         (load-p (getf header-arguments :load)))))
           (cond ((equal 0 (search org-name-property line :test #'char-equal))
                  ;; record a name.
@@ -927,12 +935,13 @@ The [[https://common-lisp.net/project/fiveam/][FiveAM]] library is used to test.
 #+END_SRC
 ** test groups
 *** test for reading org code block header-arguments
-label:test-read-org-code-block-header-arguments
+label:test-read-keywords-from-string
 #+BEGIN_SRC lisp
-(5am:test read-org-code-block-header-arguments
-  (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
+(5am:test read-keywords-from-string
+  (5am:is (equal nil (read-keywords-from-string "")))
+  (5am:is (equal '(:load :no) (read-keywords-from-string " :load no  ")))
+  (5am:is (equal '(:load (:no . :not)) (read-keywords-from-string " :load -no  ")))
+  (5am:is (equal '(:load :no) (read-keywords-from-string " :load no"))))
 #+END_SRC
 *** test for tangling file safely
 #+BEGIN_SRC lisp

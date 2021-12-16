@@ -213,7 +213,7 @@ Now let's define the ASDF system file [[./literate-demo.asd]] for this demo pack
   :version "0.1"
   :licence "MIT"
   :serial t
-  :description "an demo project of literate-lisp"
+  :description "a demo project of literate-lisp"
   :defsystem-depends-on ("literate-lisp")
   :depends-on (:iterate #+dev :clgplot)
   :components ((:module :demo :pathname "./"

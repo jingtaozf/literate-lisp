@@ -10,10 +10,11 @@
 (5am:def-suite literate-lisp-suite :description "The test suite of literate-lisp.")
 (5am:in-suite literate-lisp-suite)
 
-(5am:test read-org-code-block-header-arguments
-  (5am:is (equal nil (read-org-code-block-header-arguments "" 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no  " 0)))
-  (5am:is (equal '(:load :no) (read-org-code-block-header-arguments " :load no" 0))))
+(5am:test read-keywords-from-string
+  (5am:is (equal nil (read-keywords-from-string "")))
+  (5am:is (equal '(:load :no) (read-keywords-from-string " :load no  ")))
+  (5am:is (equal '(:load (:no . :not)) (read-keywords-from-string " :load -no  ")))
+  (5am:is (equal '(:load :no) (read-keywords-from-string " :load no"))))
 
 (5am:test protect-tangled-file
   (5am:signals (error "The form ~S is expected to signal an ~S"
