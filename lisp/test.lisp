@@ -22,10 +22,10 @@
     (let* ((org-file (format nil "~a/readme.org"
                              (asdf:component-pathname (asdf:find-system :literate-lisp))))
            (lisp-file (make-pathname :defaults org-file :type "lisp")))
-      (tangle-org-file org-file :output-file lisp-file)
+      (tangle-org-file org-file)
       (with-open-file (stream lisp-file :direction :output)
         (write-line ";; Update lisp file outside." stream))
-      (tangle-org-file org-file :output-file lisp-file))))
+      (tangle-org-file org-file))))
 
 (defun run-test ()
   (5am:run! 'literate-lisp-suite))

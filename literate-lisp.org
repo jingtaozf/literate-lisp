@@ -50,6 +50,7 @@
     - [[#handle-stream-for-new-file][handle stream for new file]]
 - [[#implementation][Implementation]]
   - [[#new-reader-syntax][new reader syntax]]
+    - [[#a-routine-to-read-feature-string-as-keywords][a routine to read feature string as keywords]]
     - [[#new-defined-header-argument-load][new defined header argument load]]
     - [[#function-to-handle-reader-syntax-for----space][function to handle reader syntax for "# "(# + Space)]]
     - [[#read-the-content-of-a-block][read the content of a block]]
@@ -497,6 +498,29 @@ And update it when a new value arrivals.
 :PROPERTIES:
 :LITERATE_EXPORT_NAME: ./lisp/new-syntax.lisp
 :END:
+*** a routine to read feature string as keywords
+Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
+and convert every key and value to a lisp keyword(Test in here: ref:test-read-keywords-from-string).
+
+Please note that if a keyword starts with _-_, then it will return as =not feature=.
+This is trick to use =#-feature=, and we should design it with new syntax later, to fit with
+all possible feature expressions.
+#+BEGIN_SRC lisp
+(defun read-keywords-from-string (string &key (start 0))
+  (with-input-from-string (stream string :start start)
+    (let ((*readtable* (copy-readtable nil))
+          (*package* #.(find-package :keyword))
+          (*read-suppress* nil))
+      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
+                             (read-char stream)
+                             t))
+            (for elem = (read stream nil))
+            (while elem)
+            (collect (if minus-p
+                         (cons elem :not)
+                         elem))))))
+#+END_SRC
+
 *** new defined header argument load
 There are a lot of different lisp codes occur in one org file, some for function implementation,
 some for demo, and some for test, so a new [[https://orgmode.org/manual/Structure-of-code-blocks.html][org code block]] [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header argument]] ~load~ to decide to
@@ -529,28 +553,6 @@ read them or not should define, and it has three meanings:
              (not (find (car feature) *features* :test #'eq))))
         (t (find feature *features* :test #'eq))))
 #+END_SRC
-Let's implement a function to read [[https://orgmode.org/manual/Code-block-specific-header-arguments.html#Code-block-specific-header-arguments][header arguments]] after ~#+BEGIN_SRC lisp~,
-and convert every key and value to a lisp keyword(Test in here: ref:test-read-keywords-from-string).
-
-Please note that if a keyword starts with _-_, then it will return as =not feature=.
-This is trick to use =#-feature=, and we should design it with new syntax later, to fit with
-all possible feature expressions.
-#+BEGIN_SRC lisp
-(defun read-keywords-from-string (string &key (start 0))
-  (with-input-from-string (stream string :start start)
-    (let ((*readtable* (copy-readtable nil))
-          (*package* #.(find-package :keyword))
-          (*read-suppress* nil))
-      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
-                             (read-char stream)
-                             t))
-            (for elem = (read stream nil))
-            (while elem)
-            (collect (if minus-p
-                         (cons elem :not)
-                         elem))))))
-#+END_SRC
-
 *** function to handle reader syntax for "# "(# + Space)
 Now it's time to implement the new reader function for syntax "# "(# + Space).
 
@@ -870,6 +872,7 @@ The system is created in function *sysdef-package-inferred-system-search* in fil
 But we have to add our literate syntax in an parent method, here we choose the method *asdf/system:find-system*
 #+BEGIN_SRC lisp
 (defmethod asdf/system:find-system :around (name &optional (error-p t))
+  (declare (ignore name error-p))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
 #+END_SRC
@@ -882,6 +885,8 @@ So to use org source files in a package inferred system, we can write an ASD def
   :default-component-class :org
   :class :package-inferred-system)
 #+END_SRC
+
+Switch back from =asdf= package to our package.
 #+BEGIN_SRC lisp
 (in-package :literate-lisp)
 #+END_SRC
@@ -955,10 +960,10 @@ label:test-read-keywords-from-string
     (let* ((org-file (format nil "~a/readme.org"
                              (asdf:component-pathname (asdf:find-system :literate-lisp))))
            (lisp-file (make-pathname :defaults org-file :type "lisp")))
-      (tangle-org-file org-file :output-file lisp-file)
+      (tangle-org-file org-file)
       (with-open-file (stream lisp-file :direction :output)
         (write-line ";; Update lisp file outside." stream))
-      (tangle-org-file org-file :output-file lisp-file))))
+      (tangle-org-file org-file))))
 #+END_SRC
 ** run all tests in this library
 this function is the entry point to run all tests and return true if all test cases pass.

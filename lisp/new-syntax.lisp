@@ -3,6 +3,20 @@
 
 (in-package #:literate-lisp)
 
+(defun read-keywords-from-string (string &key (start 0))
+  (with-input-from-string (stream string :start start)
+    (let ((*readtable* (copy-readtable nil))
+          (*package* #.(find-package :keyword))
+          (*read-suppress* nil))
+      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
+                             (read-char stream)
+                             t))
+            (for elem = (read stream nil))
+            (while elem)
+            (collect (if minus-p
+                         (cons elem :not)
+                         elem))))))
+
 (defun load-p (feature)
   (cond ((eq :yes feature)
          t)
@@ -21,20 +35,6 @@
          (if (eq :not (cdr feature))
              (not (find (car feature) *features* :test #'eq))))
         (t (find feature *features* :test #'eq))))
-
-(defun read-keywords-from-string (string &key (start 0))
-  (with-input-from-string (stream string :start start)
-    (let ((*readtable* (copy-readtable nil))
-          (*package* #.(find-package :keyword))
-          (*read-suppress* nil))
-      (iter (for minus-p = (when (char= #\- (peek-char t stream nil #\Space))
-                             (read-char stream)
-                             t))
-            (for elem = (read stream nil))
-            (while elem)
-            (collect (if minus-p
-                         (cons elem :not)
-                         elem))))))
 
 (defun start-position-after-space-characters (line)
   (iter (for c in-sequence line)

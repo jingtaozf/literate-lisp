@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        LISP: [sbcl,abcl,ecl]
+        LISP: [sbcl,abcl,ecl,ccl]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

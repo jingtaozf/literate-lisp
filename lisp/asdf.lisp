@@ -14,6 +14,7 @@
     (call-next-method)))
 
 (defmethod asdf/system:find-system :around (name &optional (error-p t))
+  (declare (ignore name error-p))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
 
