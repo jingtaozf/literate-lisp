@@ -3,9 +3,9 @@ inputs:
   lisp:
     description: 'the lisp vendor name'
     required: true
-    default: 'sbcl-bin'
+    default: 'sbcl'
     
 runs:
   using: docker
-  image: eshamster/cl-base:2.5.1
-  args: [ "env", "lisp=${{ inputs.lisp }}", "/bin/sh", "-c", ". ./scripts/run-tests.sh" ]
+  image: ghcr.io/jingtaozf/literate-lisp/cl-base:v20211219
+  args: [ "env", "LISP=${{ inputs.lisp }}", "/bin/sh", "-c", ". ./scripts/run-tests.sh" ]

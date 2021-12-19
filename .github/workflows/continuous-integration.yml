@@ -5,10 +5,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        LISP: [sbcl-bin]
+        LISP: [sbcl,abcl,ecl]
     steps:
-    - uses: actions/checkout@v1
-    - name: Test
-      uses: ./.github/actions/test
-      with:
-        lisp: ${{matrix.LISP}}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull image
+        run:  docker pull ghcr.io/jingtaozf/literate-lisp/cl-base:v20211219
+      - name: Test
+        uses: ./.github/actions/test
+        with:
+          lisp: ${{matrix.LISP}}

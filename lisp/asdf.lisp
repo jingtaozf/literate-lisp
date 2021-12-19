@@ -3,10 +3,11 @@
 
 (in-package #:literate-lisp)
 
-(defclass asdf::org (asdf:cl-source-file)
-  ((asdf::type :initform "org")))
+(in-package :asdf)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(asdf::org) :asdf))
+(defclass asdf::org (asdf:cl-source-file)
+  ((asdf::type :initform "org")))
 
 (defmethod asdf:perform :around (o (c asdf:org))
   (literate-lisp:with-literate-syntax
@@ -15,4 +16,6 @@
 (defmethod asdf/system:find-system :around (name &optional (error-p t))
   (literate-lisp:with-literate-syntax
     (call-next-method)))
+
+(in-package :literate-lisp)
 

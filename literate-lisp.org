@@ -839,10 +839,11 @@ Now let's add literate support to ASDF system.
 
 Firstly a new source file class for org files should define in ASDF package.
 #+BEGIN_SRC lisp
-(defclass asdf::org (asdf:cl-source-file)
-  ((asdf::type :initform "org")))
+(in-package :asdf)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(asdf::org) :asdf))
+(defclass asdf::org (asdf:cl-source-file)
+  ((asdf::type :initform "org")))
 #+END_SRC
 So a new ASDF source file type ~:org~ can define an org file like this
 #+caption: a demo code to show how to include org file in ASDF.
@@ -880,6 +881,9 @@ So to use org source files in a package inferred system, we can write an ASD def
   :defsystem-depends-on (:literate-lisp)
   :default-component-class :org
   :class :package-inferred-system)
+#+END_SRC
+#+BEGIN_SRC lisp
+(in-package :literate-lisp)
 #+END_SRC
 
 ** add support to =load= function

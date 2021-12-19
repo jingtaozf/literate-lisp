@@ -1,0 +1,11 @@
+;;; -*- encoding:utf-8 Mode: LISP; Syntax: COMMON-LISP; Base: 10  -*- ---
+#+sbcl(load "~/.sbclrc")
+(pushnew :test *features*)
+(ql:quickload :literate-lisp)
+(literate-lisp:with-literate-syntax (load "./literate-lisp.org"))
+(ql:quickload :literate-demo)
+(format t "Run test in ~A ~A~%" (lisp-implementation-type) (lisp-implementation-version))
+(if (not (literate-lisp::run-test)) (uiop:quit 1))
+(if (not (islands-puzzle::run-test)) (uiop:quit 1))
+(if (not (literate-demo::run-test)) (uiop:quit 1))
+(uiop:quit 0)

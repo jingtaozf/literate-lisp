@@ -1,18 +1,31 @@
 #!/bin/bash
+filepath=$(cd "$(dirname "$0")"; pwd)
+echo current path is ${filepath}
+
 set -e # exit on any failure
 if [ -d "/github/workspace/" ]; then
-    ln -s /github/workspace /root/.roswell/local-projects/literate-lisp
-    echo "Install ${lisp}"
-    ros install ${lisp}
-    ros use ${lisp}
+    ln -sf /github/workspace /root/quicklisp/local-projects/literate-lisp
+    export HOME=/root
 fi
-ros run -- --version
-ros run -e '(pushnew :test *features*)' \
-    -e '(ql:quickload :literate-lisp)' \
-    -e '(literate-lisp:with-literate-syntax (load "./literate-lisp.org"))' \
-    -e '(ql:quickload :literate-demo)' \
-    -e '(format t "Run test in ~A ~A~%" (lisp-implementation-type) (lisp-implementation-version))' \
-    -e '(if (not (literate-lisp::run-test)) (uiop:quit 1))' \
-    -e '(if (not (islands-puzzle::run-test)) (uiop:quit 1))' \
-    -e '(if (not (literate-demo::run-test)) (uiop:quit 1))' \
-    -e '(uiop:quit 0)'
+echo target lisp is $LISP
+case $LISP in
+    sbcl)
+    sbcl --non-interactive --load ${filepath}/run-tests.lisp
+
+    ;;
+    ccl)
+    ccl --load /root/ccl-init.lisp --load ${filepath}/run-tests.lisp
+
+    ;;
+    abcl)
+    abcl --load /root/.abclrc --load ${filepath}/run-tests.lisp
+
+    ;;
+    ecl)
+    ecl --load /root/.abclrc --load ${filepath}/run-tests.lisp
+
+    ;;
+    *)
+    sbcl --non-interactive --load /root/.sbclrc --load ${filepath}/run-tests.lisp
+    ;;
+esac
