@@ -8,4 +8,4 @@ inputs:
 runs:
   using: docker
   image: ghcr.io/jingtaozf/literate-lisp/cl-base:v20211219
-  args: [ "env", "LISP=${{ inputs.lisp }}", "/bin/sh", "-c", ". ./scripts/run-tests.sh" ]
+  args: [ "env", "LISP=${{ inputs.lisp }}", "bash", "-c", ". ./scripts/run-tests.sh" ]
