@@ -10,22 +10,22 @@ fi
 echo target lisp is $LISP
 case $LISP in
     sbcl)
-    sbcl --non-interactive --load ${filepath}/run-tests.lisp
+    sbcl --non-interactive --load ${filepath}/scripts/run-tests.lisp
 
     ;;
     ccl)
-    ccl --load /root/ccl-init.lisp --load ${filepath}/run-tests.lisp
+    ccl --load /root/ccl-init.lisp --load ${filepath}/scripts/run-tests.lisp
 
     ;;
     abcl)
-    abcl --load /root/.abclrc --load ${filepath}/run-tests.lisp
+    abcl --load /root/.abclrc --load ${filepath}/scripts/run-tests.lisp
 
     ;;
     ecl)
-    ecl --load /root/.abclrc --load ${filepath}/run-tests.lisp
+    ecl --load /root/.abclrc --load ${filepath}/scripts/run-tests.lisp
 
     ;;
     *)
-    sbcl --non-interactive --load /root/.sbclrc --load ${filepath}/run-tests.lisp
+    sbcl --non-interactive --load /root/.sbclrc --load ${filepath}/scripts/run-tests.lisp
     ;;
 esac
