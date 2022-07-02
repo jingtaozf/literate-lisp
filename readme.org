@@ -10,16 +10,16 @@
 * Table of Contents                                            :TOC:noexport:
 - [[#introduction][Introduction]]
 - [[#tutorial][Tutorial]]
-  - [[#the-restriction-to-the-org-file][The restriction to the org file]]
+  - [[#the-restriction-to-the-org-file][The restriction to the Org file]]
   - [[#install-polymode-in-emacs][install polymode in Emacs]]
   - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
   - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
   - [[#reference-named-blocks-as-global-parameters][Reference named blocks as global parameters]]
-  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug org file in LispWorks IDE]]
+  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug Org file in LispWorks IDE]]
   - [[#how-to-integrate-with-namded-readtables][How to integrate with namded-readtables]]
   - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
-  - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include org codes with ASDF package-inferred-system extension]]
-  - [[#how-to-tangle-to-a-bundle-of-lisp-files-from-one-org-file][how to tangle to a bundle of lisp files from one org file]]
+  - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include Org code with ASDF package-inferred-system extension]]
+  - [[#how-to-tangle-to-a-bundle-of-lisp-files-from-one-org-file][how to tangle to a bundle of lisp files from one Org file]]
   - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
   - [[#a-demo-literate-application][A demo literate application]]
     - [[#the-asd-file][The ASD file]]
@@ -29,11 +29,11 @@
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in Common Lisp language.
 It extends the Common Lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]]
-so a Common Lisp vendor can read org files as Common Lisp source files.
+so a Common Lisp vendor can read Org files as Common Lisp source files.
 
-By using this package([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), Emacs [[https://orgmode.org/][org mode]] and Emacs Lisp library [[https://polymode.github.io/][polymode]],
-literate programming can be very easy in one org file containing both documentation and source codes,
-and this org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
+By using this package ([[https://github.com/jingtaozf/literate-lisp][literate-lisp]]), Emacs [[https://orgmode.org/][Org mode]], and Emacs Lisp library [[https://polymode.github.io/][polymode]],
+literate programming can be very easy, with one Org file containing both documentation and source code,
+and this Org file can interact well with [[https://common-lisp.net/project/slime/][SLIME]].
 
 The implementation detail of [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] is in file [[./literate-lisp.org]] ([[./literate-lisp.pdf][pdf version]]).
 
@@ -41,13 +41,13 @@ This library contains the following files:
 - [[./literate-lisp.org]] \\
   The implementation and documentation of literate lisp reader.
 - [[./lisp]] \\
-  This directory contains the tangled codes of literate lisp reader, generated from [[./literate-lisp.org]]
+  This directory contains the tangled code of literate lisp reader, generated from [[./literate-lisp.org]]
 - [[./literate-lisp.pdf]] \\
-  The weaved documentation, generated from [[./literate-lisp.org]] by org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
+  The weaved documentation, generated from [[./literate-lisp.org]] by Org mode's [[https://orgmode.org/manual/Triggering-publication.html#Triggering-publication][publish feature]].
 - [[./readme.org]] \\
-  This file contains introduction and demo codes for how to do literate lisp in an org file.
+  This file contains introduction and demo code for how to do literate lisp in an Org file.
 - [[./puzzle.org]] \\
-  This file contains a puzzle solver to show how to do literate lisp in an org file.
+  This file contains a puzzle solver to show how to do literate lisp in an Org file.
 - [[./.github/workflows/continuous-integration.yml][continuous-integration.yml]] \\
   The config file used by Web service [[https://github.com/jingtaozf/literate-lisp/actions][GitHub actions]] to test this library.
 - [[./literate-lisp.asd]] \\
@@ -56,31 +56,31 @@ This library contains the following files:
   The ASDF definition for literate demo project.
 
 * Tutorial
-** The restriction to the org file
-The org file should start with a comment character and a space character("# "), to drive lisp reader into ORG syntax.
+** The restriction to the Org file
+The Org file should start with a comment character and a space character("# "), to drive lisp reader into Org syntax.
 Actually it can be a convenient way for us to specify some local variables,
-for example I often put them in the first line of an org file:
+for example I often put them in the first line of an Org file:
 #+BEGIN_SRC org
 # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
 #+END_SRC
 Which make Emacs open file with utf-8 encoding and [[https://github.com/polymode/poly-org][poly-org-mode]].
-** install polymode in Emacs
-It's better to edit the org file with [[https://polymode.github.io/][polymode]], which will make code block use its native file mode.
+** Installing polymode in Emacs
+It's better to edit the Org file with [[https://polymode.github.io/][polymode]], which will make code block use its native file mode.
 The following Emacs Lisp scripts in .emacs will install it.
 #+BEGIN_SRC elisp
 (use-package poly-org
     :ensure t)
 #+END_SRC
-** how to insert code block quickly
-Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
+** How to insert code block quickly
+Please have a look of the section [[https://github.com/jingtaozf/literate-elisp/blob/master/literate-elisp.org#how-to-insert-code-block-in-org-file][How to insert code block in Org file]] in library [[https://github.com/jingtaozf/literate-elisp][literate-elisp]].
 
-Please note that =literate-lisp= now support parsing org property values([[https://orgmode.org/manual/Property-Syntax.html][property syntax]]),
+Please note that =literate-lisp= now support parsing Org property values ([[https://orgmode.org/manual/Property-Syntax.html][property syntax]]),
 so there is no need to insert =:load no= in header argument now, you can set them as
-org properties.
+Org properties.
 
 To disable insertion of unnecessary header argument,
-you can set org property =literate-insert-header= to =no=.
-** a new code block header argument ~load~
+you can set Org property =literate-insert-header= to =no=.
+** The ~load~ code block header argument
 Please have a look of the section [[./literate-lisp.org#new-defined-header-argument-load][new defined header argument load]] in [[./literate-lisp.org]].
 ** Reference named blocks as global parameters
 If a [[https://orgmode.org/manual/Blocks.html][block]] has a named for it, that is, with a =#+NAME:= before it like this:
@@ -93,7 +93,7 @@ If a [[https://orgmode.org/manual/Blocks.html][block]] has a named for it, that 
 Then after loading, a global parameter =js-demo-code= will contain the string in above block.
 
 It is more friendly than write this string in lisp directly,
-because =org mode= can provide syntax for it and =poly mode= can even enable us edit this code block in =js-mode=.
+because =org-mode= can provide syntax for it and =poly-mode= can even enable us edit this code block in =js-mode=.
 
 You can visit these named blocks by Emacs Lisp function [[https://orgmode.org/worg/orgcard.html#org11fbe72][org-babel-goto-named-src-block]], or by hacking [[https://github.com/joaotavora/sly][sly]] like this:
 #+BEGIN_SRC elisp :load no
@@ -113,17 +113,17 @@ the SBCL backend in =sly= will [[https://github.com/joaotavora/sly/blob/master/s
 #+BEGIN_SRC lisp :load no
 (literate-lisp:install-globally)
 #+END_SRC
-** How to debug org file in LispWorks IDE
-You have to add the following codes in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
+** How to debug Org file in LispWorks IDE
+You have to add the following code in your ~.lispworks~ to enable the debug facility in Lispworks Editor.
 #+BEGIN_SRC lisp :load no
 (defun check-org-mode (buffer truename)
   (when (and truename (equal (pathname-type truename) "org"))
     (setf (editor:buffer-major-mode buffer) "Lisp")))
 (editor:add-global-hook editor::read-file-hook 'check-org-mode)
 #+END_SRC
-Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration codes.
+Thanks for Martin Simmons in [[http://www.lispworks.com/][LispWorks]] to support the above configuration code.
 ** How to integrate with namded-readtables
-You may find that [[https://github.com/melisgl/named-readtables][named-readtables]] is friendly to define the syntax for literate-lisp in your codes [[https://github.com/jingtaozf/literate-lisp/issues/12#issuecomment-710256276][like this]]:
+You may find that [[https://github.com/melisgl/named-readtables][named-readtables]] is friendly to define the syntax for literate-lisp in your code [[https://github.com/jingtaozf/literate-lisp/issues/12#issuecomment-710256276][like this]]:
 #+BEGIN_SRC lisp :load no
 (named-readtables:defreadtable literate-lisp
   (:merge :standard)
@@ -132,8 +132,8 @@ You may find that [[https://github.com/melisgl/named-readtables][named-readtable
 #+END_SRC
 
 ** How to write user initialization file with literate programming style
-You can put all initialization codes in an org source file, all you need is to load ~literate-lisp~ firstly.
-For example, you can put the following codes in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
+You can put all initialization code in an Org source file, all you need is to load ~literate-lisp~ firstly.
+For example, you can put the following code in file [[http://www.sbcl.org/manual/#Initialization-Files][~$HOME/.sbclrc~]] for SBCL.
 #+BEGIN_SRC lisp :load no
 (require :asdf)
 #-quicklisp
@@ -152,9 +152,9 @@ For example, you can put the following codes in file [[http://www.sbcl.org/manua
 (literate-lisp:with-literate-syntax
   (load "~/projects/common-lisp/config/init-lisp.org"))
 #+END_SRC
-I find it useful for various Lisp vendors so all initialization codes for them can be in just one file.
+I find it useful for various Lisp vendors so all initialization code for them can be in just one file.
 
-** how to include org codes with ASDF package-inferred-system extension
+** How to include Org code with ASDF package-inferred-system extension
 The [[https://common-lisp.net/project/asdf/asdf.html#The-package_002dinferred_002dsystem-extension][ASDF package-inferred-system extension]] is wonderful, in which each file is its own system,
 and dependencies are deduced from the defpackage form or its variant, uiop:define-package.
 You can also use literate-lisp to make a package inferred system by writing an ASD definition like this:
@@ -165,11 +165,11 @@ You can also use literate-lisp to make a package inferred system by writing an A
   :default-component-class :org
   :class :package-inferred-system)
 #+END_SRC
-Here *:class :package-inferred-system* enables the package-inferred-system extension, and *:default-component-class :org* means
-that ASDF will look for all org files to find out a system and load it.
+Here =*:class :package-inferred-system*= enables the package-inferred-system extension, and =*:default-component-class :org*= means
+that ASDF will look for all Org files to find out a system and load it.
 
-For example, you can create an org file in the same directory of above ASD definition file named as *utilities.org* and
-contains the following codes
+For example, you can create an Org file in the same directory of above ASD definition file named as *utilities.org* and
+contains the following code
 #+begin_example
   # -*- encoding:utf-8 Mode: POLY-ORG;  -*- ---
   * Create a package for this package inferred system
@@ -191,20 +191,20 @@ After loading the above ASD definition file, you can load system *literate-libra
 
 Please upgrade to ASDF 3.3.4.5 or later, it is not supported in earlier ASDF versions.
 
-** how to tangle to a bundle of lisp files from one org file
-Yes, now you can tangle one org file to a bundle of lisp files, so to share it to team members with more clear interface. 
+** How to tangle to a bundle of lisp files from one Org file
+Yes, now you can tangle one Org file to a bundle of lisp files, so to share it to team members with more clear interface.
 
-Please have a look of [[./literate-lisp.org#tangle-to-multiple-files-for-one-org-file][tangle to multiple files for one org file]]
-or the usage of org property =LITERATE_EXPORT_PACKAGE= and =LITERATE_EXPORT_NAME= in file [[./literate-lisp.org]].
- 
-** packages written by literate-lisp
+Please have a look of [[./literate-lisp.org#tangle-to-multiple-files-for-one-org-file][tangle to multiple files for one Org file]]
+or the usage of Org property =LITERATE_EXPORT_PACKAGE= and =LITERATE_EXPORT_NAME= in file [[./literate-lisp.org]].
+
+** Packages written by literate-lisp
 - [[https://github.com/jingtaozf/s-graphviz][s-graphviz]] an S-expression presentation of GraphViz DOT Language
 ** A demo literate application
 *** The ASD file
 We use the original ASD definition file, and extend the ASDF syntax(The documentation of extended ASDF syntax can be found in [[https://github.com/jingtaozf/literate-lisp/blob/master/literate-lsp.org#make-asdf-handle-org-file-correctly][literate-lisp.org]]).
 
 In a short word, we should load ~literate-lisp~ by ASDF keyword ~:defsystem-depends-on~ and
-declare the org source file with new ASDF keyword ~:org~.
+declare the Org source file with new ASDF keyword ~:org~.
 
 Now let's define the ASDF system file [[./literate-demo.asd]] for this demo package
 #+BEGIN_SRC elisp :load no
@@ -224,7 +224,7 @@ Now let's define the ASDF system file [[./literate-demo.asd]] for this demo pack
 Which will load [[./puzzle.org]] and this file directly as a lisp source file.
 
 The whole content of ASDF definition file is in [[./literate-demo.asd]].
-*** a demo package for this file
+*** A demo package for this file
 #+BEGIN_SRC lisp
 (defpackage :literate-demo
   (:use :cl)
