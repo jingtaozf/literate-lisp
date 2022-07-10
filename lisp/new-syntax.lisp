@@ -74,14 +74,15 @@
                  ;; record the context of a block.
                  (if name-of-next-block
                      ;; start to read text in current block until reach `#+END_'
-                     (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
-                            (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
-                            (block-stream (make-string-output-stream)))
-                       (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
-                         (setf named-code-blocks
-                                 (nconc named-code-blocks
-                                        (list (cons name-of-next-block
-                                                    (get-output-stream-string block-stream)))))))
+                     (when (load-p nil); check whether load this named code block based on `*features*'.
+                       (let* ((end-position-of-block-name (position #\Space line :start org-block-begin-id-length))
+                              (end-block-id (format nil "#+END_~a" (subseq line org-block-begin-id-length end-position-of-block-name)))
+                              (block-stream (make-string-output-stream)))
+                         (when (read-block-context-to-stream stream block-stream name-of-next-block end-block-id)
+                           (setf named-code-blocks
+                                   (nconc named-code-blocks
+                                          (list (cons name-of-next-block
+                                                      (get-output-stream-string block-stream))))))))
                      ;; reset name of code block if it's not sticking with a valid block.
                      (setf name-of-next-block nil)))
                 (t
@@ -90,7 +91,12 @@
     (if named-code-blocks
         `(progn
            ,@(iter (for (block-name . block-text) in named-code-blocks)
-                   (collect `(defparameter ,(intern (string-upcase block-name)) ,block-text))))
+                   (for code = `(defparameter ,(intern (string-upcase block-name)) ,block-text))
+                   (when *current-tangle-stream*
+                     (write-line "" *current-tangle-stream*)
+                     (write code :stream *current-tangle-stream*)
+                     (write-line "" *current-tangle-stream*))
+                   (collect code)))
         ;; Can't return nil because ASDF will fail to find a form like `defpackage'.
         (values))))
 
