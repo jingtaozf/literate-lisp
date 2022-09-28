@@ -181,7 +181,11 @@
     (let ((output-file (path-for-literate-name name)))
       (when (and *check-outside-modification-p*
                  (tangled-file-update-outside-p output-file))
-        (error "The output file has been updated outside, please merge it into your org file before tangling!"))
+        (restart-case 
+            (error "The output file ~a has been updated outside, please merge it into your org file before tangling!" output-file)
+          (override ()
+            :report (lambda (stream)
+                      (format stream "Override the file with name '~a'!" (pathname-name output-file))))))
       (let ((stream (open output-file
                           :direction :output
                           :element-type uiop:*default-stream-element-type*
