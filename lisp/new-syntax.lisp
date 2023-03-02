@@ -91,7 +91,9 @@
     (if named-code-blocks
         `(progn
            ,@(iter (for (block-name . block-text) in named-code-blocks)
-                   (for code = `(defparameter ,(intern (string-upcase block-name)) ,block-text))
+                   ;; evaluate this parameter earlier so we can use it in a macro in current file.
+                   (for code = `(eval-when (:compile-toplevel :load-toplevel :execute)
+                                  (defparameter ,(intern (string-upcase block-name)) ,block-text)))
                    (when *current-tangle-stream*
                      (write-line "" *current-tangle-stream*)
                      (write code :stream *current-tangle-stream*)
