@@ -65,6 +65,7 @@
     - [[#perform-asdf-actions-with-literate-syntax][perform ASDF actions with literate syntax.]]
     - [[#the-support-for-the-asdf-package-inferred-system-extension][the support for the ASDF package-inferred-system extension]]
   - [[#add-support-to-load-function][add support to =load= function]]
+    - [[#sly][sly]]
     - [[#lispworks][LispWorks]]
     - [[#sbcl][sbcl]]
 - [[#release-this-file][Release this file]]
@@ -904,6 +905,19 @@ Switch back from =asdf= package to our package.
 #+END_SRC
 
 ** add support to =load= function
+*** sly
+For [[https://github.com/joaotavora/sly][sly]], it allows registering a routine to compile and load files on the Lisp side like this.
+#+BEGIN_SRC lisp :load no
+(defun literate-compile-file-for-emacs (pathname &rest args)
+  (if (string= "st" (pathname-type pathname))
+      (funcall (intern "TALK-INTERPRET" :talk) (uiop:read-file-string (namestring pathname)))
+      (literate-lisp:with-literate-syntax
+        (apply 'slynk::slynk-compile-file* pathname args))))
+(pushnew 'literate-compile-file-for-emacs slynk::*compile-file-for-emacs-hook*)
+#+END_SRC
+This is most effective method for incorporating literate lisp because it does not alter the original compile and load routines in Common Lisp,
+thus maintaining their intended behavior.
+
 *** LispWorks
 LispWorks can add an [[http://www.lispworks.com/documentation/lw70/LW/html/lw-682.htm][advice]] to a function to change its default behavior, we can take advantage of
 this facility to make function ~load~ can handle org file correctly.
