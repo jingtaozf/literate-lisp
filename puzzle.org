@@ -7,26 +7,6 @@
 #+PROPERTY: literate-lang lisp
 #+PROPERTY: literate-load yes
 #+STARTUP: entitiespretty
-* Table of Contents                                               :noexport:TOC:
-- [[#the-question][The question]]
-- [[#how-to-solve-it][How to solve it]]
-  - [[#preparation][Preparation]]
-    - [[#create-a-package-for-this-project][create a package for this project]]
-    - [[#the-representation-of-islands-map][the representation of islands map]]
-    - [[#how-to-plot-above-islands-map][how to plot above islands map]]
-    - [[#some-example-data][Some example data]]
-  - [[#how-to-find-islands][How to find islands]]
-    - [[#the-basic-idea][the basic idea]]
-    - [[#the-internal-variables][the internal variables]]
-    - [[#the-internal-stats][the internal stats]]
-    - [[#scan-map][scan map]]
-  - [[#return-a-list-of-the-total-volume-of-each-island][Return a list of the total volume of each island]]
-- [[#test-cases][Test cases]]
-  - [[#preparation-1][Preparation]]
-  - [[#the-number-of-islands][the number of islands]]
-  - [[#the-island-volumes][the island volumes]]
-  - [[#run-all-tests-in-this-library][run all tests in this library]]
-
 * The question
 The following two dimensional matrix represents a map of islands in an
 ocean.  Every zero represents sea level.  Every positive integer represents

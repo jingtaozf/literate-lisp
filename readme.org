@@ -7,25 +7,6 @@
 [[http://quickdocs.org/literate-lisp/][file:http://quickdocs.org/badge/literate-lisp.svg]]
 [[https://github.com/jingtaozf/literate-lisp/actions][file:https://github.com/jingtaozf/literate-lisp/workflows/Continous%20Integration/badge.svg]]
 
-* Table of Contents                                            :TOC:noexport:
-- [[#introduction][Introduction]]
-- [[#tutorial][Tutorial]]
-  - [[#the-restriction-to-the-org-file][The restriction to the Org file]]
-  - [[#install-polymode-in-emacs][install polymode in Emacs]]
-  - [[#how-to-insert-code-block-quickly][how to insert code block quickly]]
-  - [[#a-new-code-block-header-argument-load][a new code block header argument ~load~]]
-  - [[#reference-named-blocks-as-global-parameters][Reference named blocks as global parameters]]
-  - [[#how-to-debug-org-file-in-lispworks-ide][How to debug Org file in LispWorks IDE]]
-  - [[#how-to-integrate-with-namded-readtables][How to integrate with namded-readtables]]
-  - [[#how-to-write-user-initialization-file-with-literate-programming-style][How to write user initialization file with literate programming style]]
-  - [[#how-to-include-org-codes-with-asdf-package-inferred-system-extension][how to include Org code with ASDF package-inferred-system extension]]
-  - [[#how-to-tangle-to-a-bundle-of-lisp-files-from-one-org-file][how to tangle to a bundle of lisp files from one Org file]]
-  - [[#packages-written-by-literate-lisp][packages written by literate-lisp]]
-  - [[#a-demo-literate-application][A demo literate application]]
-    - [[#the-asd-file][The ASD file]]
-    - [[#a-demo-package-for-this-file][a demo package for this file]]
-    - [[#test-cases][Test cases]]
-
 * Introduction
 [[https://github.com/jingtaozf/literate-lisp][literate-lisp]] provides an easy way to use [[http://www.literateprogramming.com/][literal programming]] in Common Lisp language.
 It extends the Common Lisp [[https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node187.html][reader syntax]]
